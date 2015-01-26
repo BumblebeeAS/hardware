@@ -1,5 +1,5 @@
 /*
-  mcp_can.h
+  can.h
   2012 Copyright (c) Seeed Technology Inc.  All right reserved.
 
   Author:Loovee
@@ -23,7 +23,7 @@
 #ifndef _MCP2515_H_
 #define _MCP2515_H_
 
-#include "mcp_can_dfs.h"
+#include "can_defines.h"
 
 #define MAX_CHAR_IN_MESSAGE 8
 
