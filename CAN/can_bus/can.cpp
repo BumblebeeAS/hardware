@@ -458,7 +458,7 @@ void MCP_CAN::mcp2515_read_id( const INT8U mcp_addr, INT8U* ext, INT32U* id )
 void MCP_CAN::mcp2515_write_canMsg( const INT8U buffer_sidh_addr)
 {
     INT8U mcp_addr;
-    mcp_addr = buffer_sidh_addr;
+	mcp_addr = buffer_sidh_addr;										/*Address of free Tx buffer*/
     mcp2515_setRegisterS(mcp_addr+5, m_nDta, m_nDlc );                  /* write data bytes             */
     if ( m_nRtr == 1)                                                   /* if RTR set bit in byte       */
     {
@@ -515,7 +515,6 @@ INT8U MCP_CAN::mcp2515_getNextFreeTXBuf(INT8U *txbuf_n)                 /* get N
 
     res = MCP_ALLTXBUSY;
     *txbuf_n = 0x00;
-
                                                                         /* check all 3 TX-Buffers       */
     for (i=0; i<MCP_N_TXBUFFERS; i++) {
         ctrlval = mcp2515_readRegister( ctrlregs[i] );
@@ -665,6 +664,7 @@ INT8U MCP_CAN::init_Filt(INT8U num, INT8U ext, INT32U ulData)
 #endif
       return res;
     }
+
 #if DEBUG_MODE
     Serial.print("set Filter success!!\r\n");
 #else
@@ -704,6 +704,7 @@ INT8U MCP_CAN::setMsg(INT32U id, INT8U ext, INT8U len, INT8U *pData)
     m_nID     = id;
     m_nDlc    = len;
     for(i = 0; i<MAX_CHAR_IN_MESSAGE; i++)
+
     {
         m_nDta[i] = *(pData+i);
     }
