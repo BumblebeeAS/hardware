@@ -326,11 +326,11 @@ INT8U MCP_CAN::mcp2515_init(const INT8U canSpeed)                       /* mcp25
     delay(10);
 #endif
 
-                                                                        /* set boadrate                 */
+                                                                        /* set baud rate                 */
     if(mcp2515_configRate(canSpeed))
     {
 #if DEBUG_MODE
-      Serial.print("set rate fall!!\r\n");
+      Serial.print("set rate fail!!\r\n");
 #else
       delay(10);
 #endif
@@ -491,7 +491,7 @@ void MCP_CAN::mcp2515_read_canMsg( const INT8U buffer_sidh_addr)        /* read 
         m_nRtr = 0;
     }
 
-    m_nDlc &= MCP_DLC_MASK;
+    m_nDlc &= MCP_DLC_MASK;												/*Clear top four bits to isolate only DLC */
     mcp2515_readRegisterS( mcp_addr+5, &(m_nDta[0]), m_nDlc );
 }
 
@@ -746,12 +746,12 @@ INT8U MCP_CAN::sendMsg()
         return CAN_GETTXBFTIMEOUT;                                      /* get tx buff time out         */
     }
     uiTimeOut = 0;
-    mcp2515_write_canMsg( txbuf_n);
-    mcp2515_start_transmit( txbuf_n );
+    mcp2515_write_canMsg( txbuf_n);										/* writes data and data length to registers */
+    mcp2515_start_transmit( txbuf_n );									/* sets the transmit request bit in CTRL register */
     do
     {
         uiTimeOut++;        
-        res1= mcp2515_readRegister(txbuf_n);  			                /* read send buff ctrl reg 	*/
+        res1= mcp2515_readRegister(txbuf_n);  			                /* read send buff ctrl reg...Questionable not txbuf_n -1? 	*/
         res1 = res1 & 0x08;                               		
     }while(res1 && (uiTimeOut < TIMEOUTVALUE));   
     if(uiTimeOut == TIMEOUTVALUE)                                       /* send msg timeout             */	
@@ -880,14 +880,7 @@ INT8U MCP_CAN::checkError(void)
 {
     INT8U eflg = mcp2515_readRegister(MCP_EFLG);
 
-    if ( eflg & MCP_EFLG_ERRORMASK ) 
-    {
-        return CAN_CTRLERROR;
-    }
-    else 
-    {
-        return CAN_OK;
-    }
+	return eflg;
 }
 
 /*********************************************************************************************************
