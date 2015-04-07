@@ -853,6 +853,15 @@ INT8U MCP_CAN::readMsgBufID(INT32U *ID, INT8U *len, INT8U buf[])
     }
     return rc;
 }
+/*********************************************************************************************************
+** Function name:           checkReceive
+** Descriptions:            check if got something
+*********************************************************************************************************/
+INT8U MCP_CAN::checkTXStatus(INT8U buf)
+{
+  if(buf)  return mcp2515_readRegister(MCP_TXB1CTRL);
+  else return mcp2515_readRegister(MCP_TXB0CTRL);
+}
 
 /*********************************************************************************************************
 ** Function name:           checkReceive
