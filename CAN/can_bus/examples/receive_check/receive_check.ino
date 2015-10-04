@@ -4,7 +4,7 @@
 
 
 #include <SPI.h>
-#include "mcp_can.h"
+#include <mcp_can.h>
 
 
 unsigned char Flag_Recv = 0;
@@ -13,7 +13,7 @@ unsigned char buf[8];
 char str[20];
 
 
-MCP_CAN CAN(10);                                            // Set CS to pin 10
+MCP_CAN CAN(8);                                            // Set CS to pin 8
 
 void setup()
 {

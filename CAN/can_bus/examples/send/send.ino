@@ -2,7 +2,7 @@
 #include <mcp_can.h>
 #include <SPI.h>
 
-MCP_CAN CAN(10);                                      // Set CS to pin 10
+MCP_CAN CAN(8);                                      // Set CS to pin 8
 
 void setup()
 {
