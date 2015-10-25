@@ -109,6 +109,8 @@ public:
     INT8U checkError(void);                                         /* if something error           */
     INT32U getCanId(void);                                          /* get can id when receive      */
     INT8U isRemoteRequest(void);                                    /* get RR flag when receive     */
+	INT8U setupCANFrame(INT8U *buf, INT8U pos, INT8U size, INT32U val);
+	INT32U parseCANFrame(INT8U *buf, INT8U pos, INT8U size);
 };
 
 #endif

@@ -910,6 +910,43 @@ INT8U MCP_CAN::isRemoteRequest(void)
 {
     return m_nRtr;
 } 
+
+
+/*********************************************************************************************************
+** Function name:           setupCANFrame
+** Descriptions:            Populates the CAN frame array with integer values
+** Parameters:				buf* -  CAN frame array to be populated
+							pos -  position in the CAN frame array starting from 0
+							size - size of the data value to be parsed
+							val - value of the data value
+*********************************************************************************************************/
+INT8U MCP_CAN::setupCANFrame(INT8U *buf, INT8U pos, INT8U size, INT32U val)
+{
+	for (byte j = 0; j<size; j++)
+	{
+		buf[pos + j] = val >> 8 * j;
+	}
+	return 1;
+}
+
+/*********************************************************************************************************
+** Function name:           parseCANFrame
+** Descriptions:            Parses the CAN frame array into integer values
+** Parameters:				buf* -  CAN frame array to be parsed
+							pos -  position in the CAN frame array starting from 0
+							size - size of the data value to be parsed
+*********************************************************************************************************/
+INT32U MCP_CAN::parseCANFrame(INT8U *buf, INT8U pos, INT8U size)
+{
+	INT32U val  = 0;
+	for (byte j = 0; j<size; j++)
+	{
+		val = val +  buf[pos + size -  j - 1];
+		if(j < size -1) val = val << 8;
+	}
+	return val;
+}
+
 /*********************************************************************************************************
   END FILE
 *********************************************************************************************************/
