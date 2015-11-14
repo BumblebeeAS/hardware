@@ -31,8 +31,20 @@
 #define LCD_ON 1
 #define LCD_OFF 0
 
+#define MANI_1 30
+#define MANI_2 31
+#define MANI_3 32
+#define MANI_4 33
+#define MANI_5 34
+#define MANI_6 41
+#define MANI_7 40
+#define MANI_8 37
+#define MANI_9 36
 
-
-
+#define Ex_Pressure_ID 2
+#define Manipulator_ID 3
+#define LED_ID 9
+#define Statistic_ID 10
+#define CAN_Stats_ID 23
 
 #endif // _DEFINES_H
