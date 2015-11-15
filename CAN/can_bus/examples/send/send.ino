@@ -7,6 +7,9 @@ MCP_CAN CAN(8);                                      // Set CS to pin 8
 void setup()
 {
     Serial.begin(115200);
+    pinMode(10, OUTPUT);
+    digitalWrite(10, HIGH);
+    
 
 START_INIT:
 

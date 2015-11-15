@@ -29,6 +29,10 @@ void loop()
     // send data:  id = 0x00, standrad flame, data len = 8, stmp: data buf
     CAN.sendMsgBuf(0x00, 0, 8, stmp);
     delay(100);                       // send data per 100ms
+
+    if(Serial.available() > 0){
+      Serial.println("Received");
+    }
 }
 
 /*********************************************************************************************************
