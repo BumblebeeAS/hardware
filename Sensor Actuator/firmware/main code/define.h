@@ -13,9 +13,11 @@
 
 
 
+
 #define ATM 99974 //Pascals or 14.5PSI
 #define PSI100 689475
 #define PSI30 206842
+#define INTPRES_REF 5
 #define LPF_CONSTANT 0.7
 #define PRESSURE_TYPE_ABSOLUTE_100 0
 #define PRESSURE_TYPE_GAUGE_30 1
@@ -27,7 +29,7 @@
 #define TempAddr3 0x4B	// SCL
 #define ADC_16 0x48 //
 #define NORMAL 0
-#define DEBUG_BB 1
+#define DEBUG_INFO 1
 #define LCD_ON 1
 #define LCD_OFF 0
 
@@ -41,10 +43,6 @@
 #define MANI_8 37
 #define MANI_9 36
 
-#define Ex_Pressure_ID 2
-#define Manipulator_ID 3
-#define LED_ID 9
-#define Statistic_ID 10
-#define CAN_Stats_ID 23
+#define CAN_Chip_Select 8
 
 #endif // _DEFINES_H

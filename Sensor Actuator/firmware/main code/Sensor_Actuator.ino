@@ -20,8 +20,7 @@
 
 #include "sensors_actuators.h"
 #include "define.h"
-
-#include <MemoryFree.h>
+#include "can_defines.h"
 
 //Constant declaration
 #include <Arduino.h>
@@ -38,7 +37,7 @@
 #include <stdint.h>
 //Constants definition
 #define PRESSURE_TYPE PRESSURE_TYPE_GAUGE_30
-#define DEBUG_MODE NORMAL//DEBUG_INFO
+#define DEBUG_MODE NORMAL
 #define VERSION 1.2
 
 //Timming variables - to ensure the loop run at correct frequency
@@ -86,15 +85,16 @@ void setup()
 	  Serial.println("NORMAL Mode INFO");
 	CAN_init();
 	leds_init();
-        humid_init();
-        manipulators_init();
-        pressure_init();
+	Serial.println("CAN and leds: OK");
+    manipulators_init();
+	Serial.println("Manipulators: OK");
+    pressure_init();
+	Serial.println("Pressure: OK");
 
-        attachInterrupt(0, MCP2515_ISR, FALLING); // start interrupt
-      
+    attachInterrupt(0, MCP2515_ISR, FALLING); // start interrupt
+	Serial.println("ALL OK");
   //Initialize MainLoop Timing variables
 	currentTime = loopTime = PressureFilterLoop_10 = ExterPress_loop_50 = Mani_loop_100 = Statues_loop_250 = LEDArray_loop_500 = millis();
-
 }
 
 void MCP2515_ISR(){
@@ -105,37 +105,6 @@ void MCP2515_ISR(){
 int counter = 0;
 void loop()
 {
-    //if there is stuff in buffer
-    if(FLAGMsg = true){
-      FLAGMsg = false;
-      //read where is it from
-      CAN.readMsgBuf(&len, buf);    // read data,  len: data length, buf: data buf
-       
-      switch (CAN.getCanId()){
-      case Manipulator_ID:{//ID = 3 (number)
-         //put into manipulator buffer
-         Manipulator_buf1 = buf[0];
-         Manipulator_buf2 = buf[1];
-         break; 
-        }
-        
-        case LED_ID:{//ID = 9 (number)
-        //put in the LED buffer
-        LED1_buf= buf[0];
-        LED2_buf= buf[1];
-        Serial.print(LED1_buf);
-        Serial.print("  ");
-        Serial.println(LED2_buf);
-        break; 
-        }
-        default:{
-         //TODO=>throw an error 
-        }
-
-      }
-      CAN.clearMsg();
-  }
-  
    currentTime=millis();  
    if(currentTime > ExterPress_loop_50 + 50){
        
@@ -143,7 +112,7 @@ void loop()
        //publish pressure data
        PressureBuf[0] = pressure;
        PressureBuf[1] = pressure>>8;
-       CAN.sendMsgBuf(Ex_Press_ID, 0, 2, PressureBuf);
+	   CAN.sendMsgBuf(CAN_pressure, 0, 2, PressureBuf);
        //Serial.print(PressureBuf[0]);
        //Serial.print("  ");
        //Serial.println(PressureBuf[1]);
@@ -159,41 +128,38 @@ void loop()
     currentTime=millis();  
     if(currentTime > Statues_loop_250 + 250){
             switch(state){
-               case 0:{
+               case 0:
                  //start I2C Read
-                 humid.startRead();
+                 humid.measurementRequest();
                  Pub_Press = true;
-                 break;
-               }
-               case 1:{
+				 checkCANmsg();
+				 break;
+               case 1:
                  //Get I2C Data
                  //push into send state buf
-                 humid.singleRead();
+                 humid.dataFetch();
                  StatuesBuf[0] = humid.getTemperature() + 0.5;
                  StatuesBuf[1] = humid.getHumidity() + 0.5;
                  break;                 
-               }
-               case 2:{
+               case 2:
                  //InternalPressure Reading
                  StatuesBuf[2] = (byte)readInternalPressure();
                  Pub_Press = true;
                 break;                 
-               }
-               case 3:{
+               case 3:
                  //Publish message onto the CAN bus
-                 CAN.sendMsgBuf(Statistics_ID, 0, 3, StatuesBuf);
-                 //Serial.println(StatuesBuf[0]);
-                 //Serial.println(StatuesBuf[1]);
-                 //Serial.println(StatuesBuf[2]);
+				 CAN.sendMsgBuf(CAN_SA_stats, 0, 3, StatuesBuf);
+                 Serial.println(StatuesBuf[0]);
+                 Serial.println(StatuesBuf[1]);
+                 Serial.println(StatuesBuf[2]);
                  CAN_State_Buf[0]=CAN.checkError();
                  CAN_State_Buf[1]=CAN.checkTXStatus(0);//check buffer 0
                  CAN_State_Buf[2]=CAN.checkTXStatus(1);//check buffer 1
                  //Serial.println(CAN_State_Buf[0]);
                  //Serial.println(CAN_State_Buf[1]);
                  //Serial.println(CAN_State_Buf[2]);
-                 CAN.sendMsgBuf(CAN_Stats_ID,0,3,CAN_State_Buf);
-                 break;                 
-               }
+				 CAN.sendMsgBuf(CAN_SA_BUS_stats, 0, 3, CAN_State_Buf);
+                 break;   
             }
               if(state != 4)  state++;
                  else  state = 0;
@@ -220,7 +186,6 @@ void loop()
         }
   }
   
-   
     currentTime=millis();       
     if(currentTime > Mani_loop_100 + 100){
        PORTC = Manipulator_buf1;//pin 2 is not being used 
@@ -235,10 +200,6 @@ void loop()
        #endif
        Mani_loop_100 = currentTime;
      }
-     
-     
-    
-
      currentTime=millis();  
      if(currentTime > LEDArray_loop_500 + 500){
             led.colour(LED1_buf);
@@ -251,20 +212,18 @@ void loop()
      
 }
 
-
-
 void CAN_init(){
 START_INIT:
-    if(CAN_OK == CAN.begin(CAN_500KBPS)){                   // init can bus : baudrate = 500k
-        #if DEBUG_MODE == DEBUG_INFO
+    if(CAN_OK == CAN.begin(CAN_1000KBPS)){                   // init can bus : baudrate = 500k
+        #if DEBUG_MODE == NORMAL
           Serial.println("CAN init ok!");
         #endif           
     }
     else{
-        #if DEBUG_MODE == DEBUG_INFO
+        #if DEBUG_MODE == NORMAL
           Serial.println("CAN init fail");
           Serial.println("Init CAN again");
-          delay(100);
+          delay(1000);
         #endif           
         goto START_INIT;
     }
@@ -273,11 +232,11 @@ START_INIT:
     CAN.init_Mask(1, 0, 0x3ff);// you need to set both of them
     
     //register number, extension, 
-    CAN.init_Filt(0, 0, Ex_Press_ID);//Pressure
-    CAN.init_Filt(1, 0, Manipulator_ID);//Manipulator
-    CAN.init_Filt(2, 0, LED_ID);//LED Array
-    CAN.init_Filt(3, 0, Statistics_ID);//Sensor & Actuator Statistics 
-    CAN.init_Filt(4, 0, CAN_Stats_ID);//Sensor & Actuator CAN Stats
+	CAN.init_Filt(0, 0, CAN_pressure);//Pressure
+	CAN.init_Filt(1, 0, CAN_manipulator);//Manipulator
+	CAN.init_Filt(2, 0, CAN_LED);//LED Array
+	CAN.init_Filt(3, 0, CAN_SA_stats);//Sensor & Actuator Statistics 
+	CAN.init_Filt(4, 0, CAN_SA_BUS_stats);//Sensor & Actuator CAN Stats
 
     //Interrupt not working yet 0 for Pin D2, Interrupt service routine ,Falling edge 
 
@@ -297,17 +256,16 @@ void leds_init()
 }
 
 void humid_init()
-{	
-	
-	humid.init();
-	humid.startRead();
+{
+	humid.measurementRequest();
         //push data out
         state = 0;
 	delay(1000);
 }
 void pressure_init()
 {
-	//do i need it???
+	ads1115.begin();
+	delay(100);
 	if(readPressure() > 3000)
 	{
         //push data
@@ -338,14 +296,14 @@ int16_t readPressure()
     int16_t adc;
     adc = ads1115.readADC_SingleEnded(0);
 
- return adc;
+	return adc;
 }
 
 int16_t readInternalPressure()
 {
     int16_t InternalPress;
     InternalPress = ads1115.readADC_SingleEnded(1);
-
+	InternalPress = ((float)InternalPress*0.0001875) / (INTPRES_REF*0.0040) + 10;
  return InternalPress;
 }
 
@@ -357,4 +315,40 @@ void readPressureFilter()
    {
 	   pressure = pressure + LPF_CONSTANT*(float)(temp - pressure);
    }
+}
+
+void checkCANmsg()
+{
+	//if there is stuff in buffer
+	if (CAN_MSGAVAIL == CAN.checkReceive())
+	{
+		FLAGMsg = false;
+		Serial.println("interrupt!");
+		//read where is it from
+		CAN.readMsgBuf(&len, buf);    // read data,  len: data length, buf: data buf
+
+		switch (CAN.getCanId()){
+		case CAN_manipulator:{//ID = 3 (number)
+			//put into manipulator buffer
+			Manipulator_buf1 = buf[0];
+			Manipulator_buf2 = buf[1];
+			break;
+		}
+
+		case CAN_LED:{//ID = 9 (number)
+			//put in the LED buffer
+			LED1_buf = buf[0];
+			LED2_buf = buf[1];
+			Serial.print(LED1_buf);
+			Serial.print("  ");
+			Serial.println(LED2_buf);
+			break;
+		}
+		default:{
+			//TODO=>throw an error 
+		}
+
+		}
+		CAN.clearMsg();
+	}
 }
