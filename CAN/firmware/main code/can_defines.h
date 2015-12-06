@@ -1,5 +1,5 @@
-#ifndef _DEFINE_H_
-#define _DEFINE_H_
+#ifndef _CAN_DEFINES_H_
+#define _CAN_DEFINES_H_
 
 #define CAN_thruster_1 0
 #define CAN_thruster_2 1
@@ -30,4 +30,5 @@
 #define CAN_PMB1_BUS_stats 26
 #define CAN_PMB2_BUS_stats 27
 #define CAN_SBC_BUS_stats 28
+#define CAN_HEARBEAT 29
 #endif
