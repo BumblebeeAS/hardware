@@ -24,7 +24,7 @@
 #include "defines.h"
 
 MCP_CAN CAN(8);
-byte buf[8];
+uint8_t buf[8];
 uint32_t id = 0;
 uint8_t len = 0;
 uint8_t sbc_bus_stats[3];
@@ -41,18 +41,18 @@ START_INIT:
 
 	if (CAN_OK == CAN.begin(CAN_1000KBPS))                   // init can bus : baudrate = 500k
 	{
-		Serial.println("CAN BUS init ok!");
+		Serial.println("CAN BUS: OK");
 	}
 	else
 	{
-		Serial.println("CAN BUS init fail");
-		Serial.println("Init CAN BUS again");
+		Serial.println("CAN BUS: FAILED");
+		Serial.println("CAN BUS: Reinitializing");
 		delay(1000);
 		goto START_INIT;
 	}
 }
 
-uint8_t led_buf[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+uint8_t led_buf[9] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 uint16_t cur_time = 0;
 
 //Serial read frame
@@ -123,7 +123,7 @@ void loop()
 						{
 							heartbeat_loop = millis();
 						}
-						CAN.sendMsgBuf(read_id, 0, read_size, read_buffer);
+						//CAN.sendMsgBuf(read_id, 0, read_size, read_buffer);
 						read_flag = 0;
 						read_ctr = 0;
 					}
@@ -144,9 +144,23 @@ void loop()
 	if (CAN_MSGAVAIL == CAN.checkReceive())
 	{
 		CAN.readMsgBufID(&id, &len, buf);// read data,  len: data length, buf: data buf
-		Serial.write("#");
+		Serial.write(START_BYTE);
 		Serial.write(id);
 		Serial.write(len);
 		Serial.write(buf, len);
 	}
 }
+
+/*
+void byteStuff(uint8_t &buffer)
+{
+	for (int i = 0; i < 8; i++)
+
+	{
+		if (buffer[i] == START_BYTE)
+		{
+			
+		}
+	}
+}
+*/
