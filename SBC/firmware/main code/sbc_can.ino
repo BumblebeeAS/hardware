@@ -27,6 +27,7 @@ MCP_CAN CAN(8);
 uint8_t buf[8];
 uint32_t id = 0;
 uint8_t len = 0;
+
 uint8_t sbc_bus_stats[3];
 uint16_t heartbeat_ctr = 0;
 uint16_t heartbeat_loop = 0;
@@ -145,22 +146,9 @@ void loop()
 	{
 		CAN.readMsgBufID(&id, &len, buf);// read data,  len: data length, buf: data buf
 		Serial.write(START_BYTE);
+		Serial.write(START_BYTE);
 		Serial.write(id);
 		Serial.write(len);
-		Serial.write(buf, len);
+		for(int i = 0;i<len;i++)	Serial.write(buf[i]);
 	}
 }
-
-/*
-void byteStuff(uint8_t &buffer)
-{
-	for (int i = 0; i < 8; i++)
-
-	{
-		if (buffer[i] == START_BYTE)
-		{
-			
-		}
-	}
-}
-*/
