@@ -3,15 +3,13 @@
 #include <Thrusters.h>
 #include <Math.h>
 
-#define RATE 0.2  /// MUST BE LESS THAN 1
+#define RATE 0.4  /// MUST BE LESS THAN 1
 String sinit = "";
 
 Thrusters::Thrusters(int pin1, int pin2)
 {
 	motor1 = pin2;
 	motor2 = pin1;
-	esc1.attach(motor1);
-	esc2.attach(motor2);
 }
 
 int Thrusters::increment_1(int throttleold, int throttlenew){
@@ -51,6 +49,8 @@ void Thrusters::acc(int throttleOld1, int throttle1, int throttleOld2, int throt
 
 void Thrusters::mov(int input)
 {
+	esc1.attach(motor1);
+	esc2.attach(motor2);
 int throttle1, throttleOld1;
 int throttle2, throttleOld2;
 

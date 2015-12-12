@@ -9,27 +9,28 @@ void setup()
 
 void loop()
 {
-  while(Serial.available() > 0)
-  {
-    int inChar = Serial.read();
-    if (isDigit(inChar)) 
-    {
-        pwm =(pwm*10)+(inChar-48);  
-    }
-    if (inChar == '\n') 
-    {
-      		analogWrite(13, pwm); //Channel 1
-      		analogWrite(4, pwm); //Channel 2
+  pwm = 230;
+    		analogWrite(13, pwm); //Channel 1
+  		analogWrite(4, pwm); //Channel 2
 		analogWrite(11, pwm); //Channel 3
 
 		analogWrite(12, pwm); //Channel 4
 		analogWrite(10, pwm); //Channel 5
 		analogWrite(9, pwm); //Channel 6
 
-		pwm = 0;
-    }
-  }   	
-        delay(500);
+		
+        delay(500000);
+		pwm = 20;
+  		analogWrite(13, pwm); //Channel 1
+  		analogWrite(4, pwm); //Channel 2
+		analogWrite(11, pwm); //Channel 3
+
+		analogWrite(12, pwm); //Channel 4
+		analogWrite(10, pwm); //Channel 5
+		analogWrite(9, pwm); //Channel 6
+
+
+        delay(500000);
 }
 
 void initThrusters()
