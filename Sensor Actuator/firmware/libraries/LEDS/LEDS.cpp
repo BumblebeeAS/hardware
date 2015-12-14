@@ -1,4 +1,4 @@
-#include <LEDS.h>
+include <LEDS.h>
 
 
 LEDS::LEDS(int pin1,int pin2,int pin3)
