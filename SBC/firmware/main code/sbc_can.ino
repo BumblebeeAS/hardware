@@ -57,7 +57,7 @@ uint8_t led_buf[9] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 uint16_t cur_time = 0;
 
 //Serial read frame
-uint8_t incoming_data = 0;
+int16_t incoming_data = 0;
 uint8_t read_flag = 0;
 uint8_t read_buffer[8];
 uint8_t read_size;
@@ -98,12 +98,17 @@ void loop()
 		//read
 		while(incoming_data = Serial.read())
 		{
+			if (incoming_data == -1) return;
 			if (incoming_data == START_BYTE && !read_flag)
 			{
 				read_flag = 1;
 				read_ctr = 1;
 			}
-			else if (read_flag)
+			else if (incoming_data == START_BYTE && read_flag)
+			{
+				read_flag++;
+			}
+			else if (read_flag == 2)
 			{
 				if (read_ctr == 1)
 				{
@@ -117,19 +122,20 @@ void loop()
 				}
 				else if (read_ctr > 2)
 				{
-					if (read_ctr = 2 + read_size)
+					read_buffer[read_ctr - 3] = incoming_data;
+					if (read_ctr == (2 + read_size))
 					{
 						//Check for HEARTBEAT from SBC
 						if (read_id == CAN_HEARBEAT)
 						{
 							heartbeat_loop = millis();
 						}
-						//CAN.sendMsgBuf(read_id, 0, read_size, read_buffer);
+						CAN.sendMsgBuf(read_id, 0, read_size, read_buffer);
 						read_flag = 0;
 						read_ctr = 0;
 					}
 					else {
-						read_buffer[read_ctr - 2] = incoming_data;
+						read_buffer[read_ctr - 3] = incoming_data;
 						read_ctr++;
 					}
 				}
