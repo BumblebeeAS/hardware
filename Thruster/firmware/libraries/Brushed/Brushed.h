@@ -6,72 +6,72 @@
 /*=========================================================================
     PWM PINS
     -----------------------------------------------------------------------*/
-    #define PWM1								13
-    #define PWM2								4
-    #define PWM3 								11
-    #define PWM4								12
-    #define PWM5								10
-    #define PWM6								9
+    #define PWM3								13
+    #define PWM4								4
+    #define PWM7 								11
+    #define PWM5								12
+    #define PWM6								10
+    #define PWM8								9
 /*=========================================================================*/
 
 /*=========================================================================
     CHANNEL 1 PINS
     -----------------------------------------------------------------------*/
-    #define CHN_1_RESET							(0b00000100)
-    #define CHN_1_PWM							(0b00001000)
-    #define CHN_1_SR 							(0b00010000)			
-    #define CHN_1_FF1							(0b00000010)
-    #define CHN_1_FF2							(0b00000001)
+    #define CHN_3_RESET							(B00000100)
+    #define CHN_3_PWM							(B00001000)
+    #define CHN_3_SR 							(B00010000)			
+    #define CHN_3_FF1							(B00000010)
+    #define CHN_3_FF2							(B00000001)
 /*=========================================================================*/
 
 /*=========================================================================
     CHANNEL 2 PINS
     -----------------------------------------------------------------------*/
-    #define CHN_2_RESET							(0b00000100)
-    #define CHN_2_PWM							(0b00001000)
-    #define CHN_2_SR 							(0b00010000)			
-    #define CHN_2_FF1							(0b10000000)
-    #define CHN_2_FF2							(0b01000000)
+    #define CHN_4_RESET							(B00000100)
+    #define CHN_4_PWM							(B00001000)
+    #define CHN_4_SR 							(B00010000)			
+    #define CHN_4_FF1							(B10000000)
+    #define CHN_4_FF2							(B01000000)
 /*=========================================================================*/
 
 /*=========================================================================
     CHANNEL 3 PINS
     -----------------------------------------------------------------------*/
-    #define CHN_3_RESET							(0b00000100)
-    #define CHN_3_PWM							(0b00000010)
-    #define CHN_3_SR 							(0b00000001)			
-    #define CHN_3_FF1							(0b00001000)
-    #define CHN_3_FF2							(0b00010000)
+    #define CHN_7_RESET							(B00000100)
+    #define CHN_7_PWM							(B00000010)
+    #define CHN_7_SR 							(B00000001)			
+    #define CHN_7_FF1							(B00001000)
+    #define CHN_7_FF2							(B00010000)
 /*=========================================================================*/
 
 /*=========================================================================
     CHANNEL 4 PINS
     -----------------------------------------------------------------------*/
-    #define CHN_4_RESET							(0b00000100)
-    #define CHN_4_PWM							(0b00001000)
-    #define CHN_4_SR 							(0b00010000)			
-    #define CHN_4_FF1							(0b00000010)
-    #define CHN_4_FF2							(0b00000001)
+    #define CHN_5_RESET							(B00000100)
+    #define CHN_5_PWM							(B00001000)
+    #define CHN_5_SR 							(B00010000)			
+    #define CHN_5_FF1							(B00000010)
+    #define CHN_5_FF2							(B00000001)
 /*=========================================================================*/
 
 /*=========================================================================
     CHANNEL 5 PINS
     -----------------------------------------------------------------------*/
-    #define CHN_5_RESET							(0b00000100)
-    #define CHN_5_PWM							(0b00000010)
-    #define CHN_5_SR 							(0b00000001)			
-    #define CHN_5_FF1							(0b00001000)
-    #define CHN_5_FF2							(0b00010000)
+    #define CHN_6_RESET							(B00000100)
+    #define CHN_6_PWM							(B00000010)
+    #define CHN_6_SR 							(B00000001)			
+    #define CHN_6_FF1							(B00001000)
+    #define CHN_6_FF2							(B00010000)
 /*=========================================================================*/
 
 /*=========================================================================
     CHANNEL 6 PINS
     -----------------------------------------------------------------------*/
-    #define CHN_6_RESET							(0b00000100)
-    #define CHN_6_PWM							(0b00000010)
-    #define CHN_6_SR 							(0b00000001)		
-    #define CHN_6_FF1							(0b00001000)
-    #define CHN_6_FF2							(0b00010000)
+    #define CHN_8_RESET							(B00000100)
+    #define CHN_8_PWM							(B00000010)
+    #define CHN_8_SR 							(B00000001)		
+    #define CHN_8_FF1							(B00001000)
+    #define CHN_8_FF2							(B00010000)
 /*=========================================================================*/
 
 class Brushed
@@ -81,17 +81,17 @@ public:
 	void begin();
 	void reset(uint8_t channel);
 	void resetAll(void);
-	void run(uint8_t channel, uint8_t speed);
-    void runAll(uint8_t speed);
+	void run(uint8_t channel, int16_t speed);
+    void runAll(int16_t speed);
 	void stop(uint8_t channel);
 	void stopAll(void);
 private:
-	void reset1(void);
-	void reset2(void);
 	void reset3(void);
 	void reset4(void);
+	void reset7(void);
 	void reset5(void);
 	void reset6(void);
+	void reset8(void);
 };
 
 #endif

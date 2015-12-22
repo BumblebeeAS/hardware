@@ -3,7 +3,7 @@
 #include <Thrusters.h>
 #include <Math.h>
 
-#define RATE 0.4  /// MUST BE LESS THAN 1
+#define RATE 0.2  /// MUST BE LESS THAN 1
 String sinit = "";
 
 Thrusters::Thrusters(int pin1, int pin2)
@@ -14,6 +14,7 @@ Thrusters::Thrusters(int pin1, int pin2)
 
 int Thrusters::increment_1(int throttleold, int throttlenew){
 	int i = throttleold;
+	delay(100);
 	if (throttlenew > throttleold){
     i = i + ceil(RATE * (throttlenew - throttleold));
 		esc1.writeMicroseconds(i);
@@ -27,6 +28,7 @@ int Thrusters::increment_1(int throttleold, int throttlenew){
 
 int Thrusters::increment_2(int throttleold, int throttlenew){
 	int i = throttleold;
+	delay(100);
 	if (throttlenew > throttleold){
     i = i + ceil(RATE * (throttlenew - throttleold));
 		esc2.writeMicroseconds(i);

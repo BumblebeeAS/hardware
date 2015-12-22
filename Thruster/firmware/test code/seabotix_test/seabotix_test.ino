@@ -9,7 +9,7 @@ void setup()
 
 void loop()
 {
-  pwm = 230;
+  pwm = 235;
     		analogWrite(13, pwm); //Channel 1
   		analogWrite(4, pwm); //Channel 2
 		analogWrite(11, pwm); //Channel 3

@@ -1,5 +1,6 @@
 #include <Brushed.h>
 #include <Servo.h>
+#include <math.h>
 #include <Thrusters.h>
 
 Brushed motor;
