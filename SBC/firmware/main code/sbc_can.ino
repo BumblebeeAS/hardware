@@ -31,13 +31,13 @@ uint8_t len = 0;
 uint8_t sbc_bus_stats[3];
 uint16_t heartbeat_ctr = 0;
 uint16_t heartbeat_loop = 0;
-uint16_t sbc_bus_loop = 0;
+uint32_t sbc_bus_loop = 0;
 
 void setup()
 {
   /* add setup code here */
 	Serial.begin(115200);
-
+	sbc_bus_loop = millis();
 START_INIT:
 
 	if (CAN_OK == CAN.begin(CAN_1000KBPS))                   // init can bus : baudrate = 500k
@@ -51,6 +51,7 @@ START_INIT:
 		delay(1000);
 		goto START_INIT;
 	}
+	
 }
 
 uint8_t led_buf[9] = { 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -78,15 +79,18 @@ void loop()
 	/*****************************************/
 	/*  Transmit CAN Diagnostics			 */
 	/*****************************************/
-
-	if (sbc_bus_loop - millis() > 1000)
+	
+	
+	if ((millis() - sbc_bus_loop ) > 1000)
 	{
 		CAN.setupCANFrame(sbc_bus_stats, 0, 1, CAN.checkError());
 		CAN.setupCANFrame(sbc_bus_stats, 1, 1, CAN.checkTXStatus(0));
 		CAN.setupCANFrame(sbc_bus_stats, 2, 1, CAN.checkTXStatus(1));
-		CAN.sendMsgBuf(CAN_SBC_BUS_stats, 0, 3, sbc_bus_stats);
+		CAN.sendMsgBuf(CAN_SBC_BUS_stats, 0, 4, sbc_bus_stats);
+		
 		sbc_bus_loop = millis();
 	}
+	
 
 	/*****************************************/
 	/*  Check for incoming commands from SBC */
