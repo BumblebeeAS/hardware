@@ -9,7 +9,7 @@
 //#     ## #     ## ##     # ##     #  ##  ##
 // # ####   # ####   #######  #######   ####
 //
-////Sensor & Actuator Board for BBAUV 3.0
+////Backplane for BBAUV 3.0
 //Firmware Version :             v1.0
 //
 // Written by Vanessa Cassandra
@@ -18,15 +18,17 @@
 //###################################################
 //###################################################
 
-#include backplane.h
-#include define.h
-#include can_defines.h
-
-//Constant declaration
+#include "backplane.h"
+#include "define.h"
+#include "can_defines.h"
 #include <Arduino.h>
 #include <SPI.h> //for CAN controller
 #include <can.h>
 #include <Adafruit_ADS1015.h>
+#include <TempAD7414.h>
+#include <Wire.h>
+
+TempAD7414 temp_sens(96);
 
 MCP_CAN CAN(CAN_Chip_Select); 
 
@@ -38,6 +40,11 @@ static uint8_t smartkill_buf;
 static uint8_t CAN_State_Buf[3]; //CAN tx & error statues buffer
 static uint8_t StatsBuf[3]; //size to be determined
 static uint8_t StatsBuf2[3]; //size to be determined
+static uint8_t currentReading[3];
+static uint8_t voltageReading5V;
+static uint8_t voltageReading12V;
+static uint8_t dummy;
+static uint8_t temp;
 
 static uint32_t loopTime;
 static uint32_t currentTime;
@@ -52,40 +59,52 @@ void setup(){
 	Serial.println("All OK");
 	currentTime = loopTime = millis();
 
+  temp_sens.initTempAD7414(); //temp sensor
+
 
 }
 
 void loop(){
 	//send and receive messages every xx ms
 	currentTime = millis();
-	if(currentTime > loopTime){
+	if(currentTime > loopTime + 200){
 		checkCANmsg();
 		checkSmartKill();
-		Serial.println("Thruster: %d", smartkill_buf[0]);
-		Serial.println("SA: %d", smartkill_buf[1]);
-		Serial.println("Telemetry: %d", smartkill_buf[2]);
+    Serial.println("SMARTKILL:");
+		Serial.println(smartkill_buf, BIN);
+    temp = temp_sens.getTemp();
+    Serial.println(temp);
 
-		StatsBuf[0] = currentReading1;
-		StatsBuf[1] = currentReading2;
-		StatsBuf[2] = voltageReading5V;
-		StatsBuf[3] = voltageReading12V;
-		StatsBuf2[0] = dummy;
+    StatsBuf[0] = temp;  
+//    Serial.println(StatsBuf[0]);
+//    Serial.println(StatsBuf[1]);
+    CAN.sendMsgBuf(CAN_backplane_stats, 0, 1, StatsBuf); //id, extended frame(1) or normal(0), no of bytes sent, data
+    
+    
+//		StatsBuf[0] = currentReading[0];
+//		StatsBuf[1] = currentReading[1];
+//		StatsBuf[2] = voltageReading5V;
+//		StatsBuf[3] = voltageReading12V;
+//		StatsBuf2[0] = dummy;
 
 
-		//Publish stats onto the CAN bus
-		CAN.sendMsgBuf(CAN_backplane_stats, 0, 3, StatsBuf);
-		Serial.println(StatsBuf[0]);
-		Serial.println(StatsBuf[1]);
-		Serial.println(StatsBuf[2]);
+//		//Publish stats onto the CAN bus
+//		CAN.sendMsgBuf(CAN_backplane_stats, 0, 3, StatsBuf);
+//		Serial.println(StatsBuf[0]);
+//		Serial.println(StatsBuf[1]);
+//		Serial.println(StatsBuf[2]);
 
 		//check CAN status and send back status
 		CAN_State_Buf[0]=CAN.checkError();
 		CAN_State_Buf[1]=CAN.checkTXStatus(0);//check buffer 0
 		CAN_State_Buf[2]=CAN.checkTXStatus(1);//check buffer 1
-		//Serial.println(CAN_State_Buf[0]);
-		//Serial.println(CAN_State_Buf[1]);
-		//Serial.println(CAN_State_Buf[2]);
-		CAN.sendMsgBuf(CAN_backplane_BUS_stats, 0, 3, CAN_State_Buf);
+    Serial.println("CAN STATUS:");
+		Serial.println(CAN_State_Buf[0]);
+		Serial.println(CAN_State_Buf[1]);
+		Serial.println(CAN_State_Buf[2]);
+		CAN.sendMsgBuf(CAN_backplane_BUS_stats, 0, 3, CAN_State_Buf); //CAN_backplane_BUS_stats ID = 22
+
+   loopTime = currentTime;
 
 	}
 
@@ -121,36 +140,36 @@ START_INIT:
 void smartkill_init(){
 	pinMode(SA_EN, OUTPUT);
 	pinMode(THRUST_EN, OUTPUT);
-	pinMode(TELE_EN, OUTPUT);
+	DDRD = DDRD | B01000000; //set PD6 as output (TELE_EN)
 	pinMode(POE_NAV, OUTPUT);
 	pinMode(POE_SONAR, OUTPUT);
 	pinMode(POE_ACOU, OUTPUT);
+  
 	//enable everything
 	digitalWrite(SA_EN, HIGH);
 	digitalWrite(THRUST_EN, HIGH);
-	digitalWrite(TELE_EN, HIGH);
+	PORTD |= B01000000; //enable telemetry
 	digitalWrite(POE_NAV, HIGH);
 	digitalWrite(POE_SONAR, HIGH);
 	digitalWrite(POE_ACOU, HIGH);
 }
 
 void checkSmartKill(){
-	if(smartkill_buf[0] = TRUE)	//bit 0 = thruster
+	if((smartkill_buf & 0x01) == 1)	//bit 0 = thruster
 		digitalWrite(THRUST_EN, LOW);	//kill thruster
 	else
 		digitalWrite(THRUST_EN, HIGH);	//enable thruster
 	
 
-	if(smartkill_buf[1] = TRUE)	//bit 1 = SA
+	if(((smartkill_buf >> 1) & 0x01) == 1)	//bit 1 = SA
 		digitalWrite(SA_EN, LOW);	//kill SA
 	else
-		digitalWrite(SA_EN, HIGH);	//enable SA
-
-
-	if(smartkill_buf[2] = TRUE)	//bit 2 = telemetery
-		digitalWrite(TELE_EN, LOW);	//kill telemetery
+    digitalWrite(SA_EN, HIGH);  //enable SA
+		
+	if(((smartkill_buf >> 2) & 0x01) == 1)	//bit 2 = telemetery
+		PORTD &= ~(B01000000);	//kill telemetery
 	else
-		digitalWrite(TELE_EN, HIGH);	//enable telemetery
+		PORTD |= B01000000;	//enable telemetery
 	
 }
 
@@ -163,6 +182,7 @@ void checkCANmsg(){
 
 		if(CAN.getCanId() == CAN_backplane_kill){	//ID = 11
 			//put into smartkill buffer
+      Serial.println("RECEIVED!");
 			smartkill_buf = buf[0];
 		}else{
 			//throw an error
