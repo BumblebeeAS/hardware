@@ -59,7 +59,7 @@ void setup(){
 	smartkill_init();
 	Serial.println("Smart kill OK");
 	Serial.println("All OK");
-	currentTime = smartkillTime = statsTime = canStatsTime = millis();
+	smartkillTime = statsTime = canStatsTime = millis();
 
   temp_sens.initTempAD7414(); //temp sensor
 
@@ -67,18 +67,16 @@ void setup(){
 
 void loop(){
 	//send and receive messages every xx ms
-	currentTime = millis();
-	if(currentTime > smartkillTime + 250){
+	if((millis() - smartkillTime) > 250){
 		checkCANmsg();
 		checkSmartKill();
     Serial.println("SMARTKILL:");
 		Serial.println(smartkill_buf, BIN);
 
-   smartkillTime = currentTime;
+    smartkillTime = millis();
 	}
 
-  currentTime = millis();
-  if(currentTime > statsTime + 500){
+  if((millis() - statsTime) > 500){
     temp = temp_sens.getTemp();
     Serial.println(temp);
 
@@ -87,7 +85,7 @@ void loop(){
 //    Serial.println(StatsBuf[1]);
     CAN.sendMsgBuf(CAN_backplane_stats, 0, 1, StatsBuf); //id, extended frame(1) or normal(0), no of bytes sent, data
 
-    statsTime = currentTime;
+    statsTime = millis();
   }
  
 //		StatsBuf[0] = currentReading[0];
@@ -96,8 +94,7 @@ void loop(){
 //		StatsBuf[3] = voltageReading12V;
 //		StatsBuf2[0] = dummy;
 
-  currentTime = millis();
-  if(currentTime > canStatsTime + 1000){
+  if((millis() - canStatsTime) > 1000){
 		//check CAN status and send back status
 		CAN_State_Buf[0]=CAN.checkError();
 		CAN_State_Buf[1]=CAN.checkTXStatus(0);//check buffer 0
@@ -108,7 +105,7 @@ void loop(){
 		Serial.println(CAN_State_Buf[2]);
 		CAN.sendMsgBuf(CAN_backplane_BUS_stats, 0, 3, CAN_State_Buf); //CAN_backplane_BUS_stats ID = 22
 
-    canStatsTime = currentTime;
+    canStatsTime = millis();
 
 	}
 

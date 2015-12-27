@@ -10,14 +10,15 @@
 
 //Internal stats
 #define HUMIDITY 0
-#define INTERNAL_PRESS 1
+#define INT_PRESS 1
 #define PMB1_PRESS 2
 #define PMB2_PRESS 3
 #define BP_TEMP 4
 #define SA_TEMP 5
-#define TH_TEMP 6
-#define PMB1_TEMP 7
-#define PMB2_TEMP 8
+#define TH_TEMP1 6
+#define TH_TEMP2 7
+#define PMB1_TEMP 8
+#define PMB2_TEMP 9
 
 //Power stats
 #define BATT1_CAPACITY 0
