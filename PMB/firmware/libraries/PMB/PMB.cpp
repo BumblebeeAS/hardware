@@ -3,7 +3,10 @@
 #include <PMB.h>
 
 PMB::PMB()
-	:ADS(ADDR_ADC),	TempSensor(CONFIG_TEMP_SENS, ADDR_TEMP_SENS), CAN(PIN_CAN_SS), EEPROM(ADDR_EEPROM0, ADDR_EEPROM1)
+	:ADS(ADDR_ADC)
+	,TempSensor(CONFIG_TEMP_SENS, ADDR_TEMP_SENS)
+	,CAN(PIN_CAN_SS)
+	,EEPROM(ADDR_EEPROM0, ADDR_EEPROM1)
 	// ,display(DISPLAY_RESET)
 	{}
 
@@ -21,7 +24,7 @@ void PMB::init(){
 	ADS.init();
 	TempSensor.initTempAD7414();
 	CAN_init();
-	// EEPROM.init();
+	EEPROM.init();
 
 	//check for other PMB on the CANBUS 3 times
 	uint8_t n = 0;
@@ -122,7 +125,7 @@ uint16_t PMB::extractMin(uint16_t *source, uint8_t size){
 }
 
 void PMB::calculateCurrent(){
-	shunt_current = float((shunt_voltage_filtered/SHUNT_RESISTOR*CURRENT_RATIO)+CURRENT_OFFSET);
+	shunt_current = float((shunt_voltage_filtered*CURRENT_RATIO)+CURRENT_OFFSET);
 }
 
 void PMB::calculateCapacity(){
@@ -133,7 +136,7 @@ void PMB::calculateCapacity(){
 
 void PMB::readPressure(){
 	uint16_t raw_ADC_value = ADS.readChannel(CHANNEL_PRESSURE);
-	board_pressure = uint8_t(((float)raw_ADC_value*0.0001875) / (INTPRES_REF*0.0040) + 10);;
+	board_pressure = uint8_t(((float)raw_ADC_value*0.0001875) / (INTPRES_REF*0.0040) + 10);
 }
 
 void PMB::readTemperature(){

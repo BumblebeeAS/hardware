@@ -3,6 +3,8 @@
 
 #define PMB_DEBUG_MODE				1
 
+//these are the correct ones
+
 // #define MAIN_LOOP_INTERVAL 			100
 // #define MSG_LOOP_INTERVAL 			500
 // #define CAN_STATUS_LOOP_INTERVAL 	1000
