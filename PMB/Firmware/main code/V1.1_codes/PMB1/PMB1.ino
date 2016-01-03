@@ -460,6 +460,7 @@ void loop(){
     //temp x1     (0-255)
     int_temp = (int)temp;
 
+    if (publishCount >= 5){
       publishSerial();
       publishCount = 0;    
     } else {

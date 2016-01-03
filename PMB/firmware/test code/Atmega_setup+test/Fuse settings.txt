@@ -1,0 +1,51 @@
+// Note that for extended fuse, 0x05 is the same as 0xFD
+
+For ATMEGA 328P ON THE PMB V1.2:
+FUSE SETTINGS
+BODLEVEL = 2V7
+RSTDISBL = [ ]
+DWEN = [ ]
+SPIEN = [X]
+WDTON = [ ]
+EESAVE = [ ]
+BOOTSZ = 1024W_3C00
+BOOTRST = [X]
+CKDIV8 = [ ]
+CKOUT = [ ]
+SUT_CKSEL = EXTXOSC_8MHZ_XX_16KCK_14CK_65MS
+
+EXTENDED = 0x05 (valid)
+HIGH = 0xDA (valid)
+LOW = 0xFF (valid)
+
+BOOTLOADER:
+C:\Program Files (x86)\Arduino\hardware\arduino\avr\bootloaders\atmega\ATmegaBOOT_168_atmega328_pro_8MHz.hex
+
+ARDUINO SELECTION:
+Arduino Uno
+
+FOR ATMEGA 328 ON PMB V2
+
+BODLEVEL = 2V7
+RSTDISBL = [ ]
+DWEN = [ ]
+SPIEN = [X]
+WDTON = [ ]
+EESAVE = [ ]
+BOOTSZ = 1024W_3C00
+BOOTRST = [X]
+CKDIV8 = [ ]
+CKOUT = [ ]
+SUT_CKSEL = EXTXOSC_8MHZ_XX_16KCK_14CK_65MS
+
+EXTENDED = 0x05 (valid)
+HIGH = 0xDA (valid)
+LOW = 0xFF (valid)
+
+BOOTLOADER:
+C:\Program Files (x86)\Arduino\hardware\arduino\avr\bootloaders\atmega\ATmegaBOOT_168_atmega328.hex
+
+ARDUINO SELECTION:
+Arduino Pro or Pro Mini(Atmega328 5V 16 MHz)
+
+\\test
