@@ -40,7 +40,7 @@ void PMB::init(){
 	}
 	calculateCurrent();
 
-	if(shunt_current < 0.5){
+	if(shunt_current < 0.2){
 		getCapFromBattVolt();
 	}else{
 		getCapFromStorage();

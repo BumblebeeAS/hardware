@@ -5,13 +5,13 @@
 
 //these are the correct ones
 
-// #define MAIN_LOOP_INTERVAL 			100
-// #define MSG_LOOP_INTERVAL 			500
-// #define CAN_STATUS_LOOP_INTERVAL 	1000
+#define MAIN_LOOP_INTERVAL 			100
+#define MSG_LOOP_INTERVAL 			500
+#define CAN_STATUS_LOOP_INTERVAL 	1000
 
-#define MAIN_LOOP_INTERVAL 			1000
-#define MSG_LOOP_INTERVAL 			2000
-#define CAN_STATUS_LOOP_INTERVAL 	5000
+// #define MAIN_LOOP_INTERVAL 			1000
+// #define MSG_LOOP_INTERVAL 			2000
+// #define CAN_STATUS_LOOP_INTERVAL 	5000
 
 #define PIN_POWEROFF_SIGNAL			5				
 #define PIN_PMB_POWER				3
