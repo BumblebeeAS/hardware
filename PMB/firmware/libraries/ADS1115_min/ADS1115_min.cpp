@@ -22,16 +22,16 @@ uint16_t ADS1115::readChannel(uint8_t input){
 	uint16_t combined = 0;
 	switch(input){
 		case 0:
-		config_high_byte = 82;	//01000010
+		config_high_byte = 66;	//01000010
 		break;
 		case 1:
-		config_high_byte = 98;	//‭01010010‬
+		config_high_byte = 82;	//‭01010010‬
 		break;
 		case 2:
-		config_high_byte = 114;	//‭01100010‬
+		config_high_byte = 98;	//‭01100010‬
 		break;
 		case 3:
-		config_high_byte = 66;	//‭01110010‬
+		config_high_byte = 114;	//‭01110010‬
 		break;
 	}
 	Wire.beginTransmission(address);  // transmit to device #72 (0b1001000)  
