@@ -3,7 +3,7 @@
 #define CALIBRATION_H
 
 //maximum battery capacity
-#define maxCapacity				6500.0
+#define BATTERY_CAPACITY 		10000
 
 #define PMB_no					1
 
@@ -15,18 +15,18 @@
 	#define coef_d              -43182.43852
 
 	//current measurement caliberation
-	#define CURRENT_RATIO       0.0017 
-	#define CURRENT_OFFSET      0.0212
+	#define CURRENT_RATIO       1.7123 
+	#define CURRENT_OFFSET      21.202
 
 	//voltage readings caliberation
-	#define cell6_adc_ratio     0.0378
+	#define cell6_adc_ratio     37.793
 	#define cell5_adc_ratio     0.197181814  
 	#define cell4_adc_ratio     0.244377275  
 	#define cell3_adc_ratio     0.325966493  
 	#define cell2_adc_ratio     0.497397968  
 	#define cell1_adc_ratio     0.993694855  
 
-	#define cell6_adc_offset    0.1027  
+	#define cell6_adc_offset    102.67 
 	#define cell5_adc_offset    0.05269355 
 	#define cell4_adc_offset    -0.1076     
 	#define cell3_adc_offset    -0.1076     

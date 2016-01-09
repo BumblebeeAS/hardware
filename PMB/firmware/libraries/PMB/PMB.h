@@ -3,17 +3,12 @@
 #ifndef PMB_H
 #define PMB_H
 
-#include <Arduino.h>
-#include <SPI.h>
-#include <Wire.h>
-
 #include <calibration.h>
 #include <PMB_defines.h>
 
 #include <ADS1115_min.h>
 #include <TempAD7414.h>
 #include <can.h>
-#include <can_defines.h>
 #include "can_defines.h"
 #include <EEPROMPlus.h>
 #include <SSD1306_text.h>
@@ -54,6 +49,8 @@ private:
 	uint16_t extractMin(uint16_t *source, uint8_t size);
 	void checkForPMB1();
 	void displayTextOLED(char* text, uint8_t size);
+	void getCapFromVolt();
+	void getCapFromStorage();
 public:
 	PMB();
 

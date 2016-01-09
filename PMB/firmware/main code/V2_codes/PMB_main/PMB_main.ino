@@ -8,8 +8,8 @@ int lastMsgLoop = 0;
 int lastCANStatusLoop = 0;
 
 void setup(){
+  Serial.begin(9600);
 	thisPMB.init();
-	Serial.begin(9600);
 }
 
 void loop(){
@@ -40,9 +40,9 @@ void loop(){
 		thisPMB.readPressure();
 		thisPMB.readTemperature();
 		//serial for debugging purposes
-		 thisPMB.publishSerial();
-		thisPMB.publishPMBStats();
-		// thisPMB.updateDisplay();
+		thisPMB.publishSerial();
+    thisPMB.publishPMBStats();
+		thisPMB.updateDisplay();
 	}
 
 	//teritary loop for transmitting CAN status

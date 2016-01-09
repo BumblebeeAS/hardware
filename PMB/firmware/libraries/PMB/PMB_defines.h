@@ -1,8 +1,6 @@
 #ifndef PMB_DEFINES_H
 #define PMB_DEFINES_H
 
-#define PMB_DEBUG_MODE				1
-
 //these are the correct ones
 
 #define MAIN_LOOP_INTERVAL 			100
@@ -19,15 +17,13 @@
 
 //PLEASE MAKE IT ODD
 #define MEDIAN_FILTER_SIZE			5
-
-#define BATTERY_CAPACITY 			10000
 		
 #define CELLS						6
 		
 #define CONFIG_TEMP_SENS			96
 
 #define ADDR_TEMP_SENS				0X4E
-#define ADDR_ADC					72
+#define ADDR_ADC					0x48
 #define ADDR_EEPROM0				0X50
 #define ADDR_EEPROM1				0X51
 #define ADDR_OLED					0X3D
@@ -37,8 +33,8 @@
 		
 #define PIN_CAN_SS					8
 
-#define CHANNEL_CURRENT_SENS		0
-#define CHANNEL_PRESSURE			2
+#define CHANNEL_CURRENT_SENS		2
+#define CHANNEL_PRESSURE			1
 
 #define INTPRES_REF 				5
 

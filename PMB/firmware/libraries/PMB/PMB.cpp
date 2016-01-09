@@ -37,25 +37,14 @@ void PMB::init(){
 	//do multiple times to initialise the array
 	for (uint8_t i = 0; i < MEDIAN_FILTER_SIZE; ++i){
 		getShuntCurrent();
+		delay(10);
 	}
+	Serial.println(shunt_current);
 
-	if(shunt_current < 0.2){
-		//get capacity from battery volt
-
-		uint16_t tempBattVoltage = 0;
-		for (uint8_t i = 0; i < 10; ++i){
-			tempBattVoltage += uint16_t((analogRead(7) * cell6_adc_ratio) + cell6_adc_offset);
-		}
-
-		tempBattVoltage = float(tempBattVoltage/20.0);  
-		percentage_left = pow(tempBattVoltage,3)*coef_a + pow(tempBattVoltage,2)*coef_b + tempBattVoltage*coef_c + coef_d;
-		capacity_left = percentage_left/100.0 * BATTERY_CAPACITY;
+	if(shunt_current < 200){
+		getCapFromVolt();
 	}else{
-		//get capacity from storage
-
-		// uint8_t* buf;
-		// EEPROM.dumbMultiRead(10, buf);
-		// capacity_left = uint16_t(CAN.parseCANFrame(buf, 0, 2));
+		getCapFromStorage();
 	}
 
 	//read other values so they are initialised
@@ -65,6 +54,24 @@ void PMB::init(){
 
 	//finally turn power to the vehicle on
 	powerUpVehicle();
+}
+
+void PMB::getCapFromVolt(){
+	Serial.println("getting from volt!");
+	uint16_t tempBattVoltage = 0;
+	for (uint8_t i = 0; i < 10; ++i){
+		tempBattVoltage += uint16_t((analogRead(7) * cell6_adc_ratio) + cell6_adc_offset);
+	}
+
+	tempBattVoltage = float(tempBattVoltage/20.0);  
+	percentage_left = pow(tempBattVoltage,3)*coef_a + pow(tempBattVoltage,2)*coef_b + tempBattVoltage*coef_c + coef_d;
+	capacity_left = percentage_left/100.0 * BATTERY_CAPACITY;
+}
+
+void PMB::getCapFromStorage(){
+	// uint8_t* buf;
+	// EEPROM.dumbMultiRead(10, buf);
+	// capacity_left = uint16_t(CAN.parseCANFrame(buf, 0, 2));
 }
 
 void PMB::readCellVoltages(){
@@ -77,9 +84,27 @@ void PMB::readCellVoltages(){
 }
 
 void PMB::getShuntCurrent(){
-	shunt_voltage_raw_array[shunt_voltage_raw_index] = ADS.readChannel(CHANNEL_CURRENT_SENS);
+	uint16_t ads_raw = ADS.readChannel(1);
+
+	// Serial.print("raw ADC0: ");
+	// Serial.print(ADS.readChannel(0));
+	// delay(10);
+	// Serial.print(" raw ADC1: ");
+	// Serial.print(ADS.readChannel(1));
+	// delay(10);
+	// Serial.print(" raw ADC2: ");
+	// Serial.print(ADS.readChannel(2));
+	// delay(10);   
+	// Serial.print(" raw ADC3: ");
+	// Serial.println(ADS.readChannel(3));
+	// delay(10);
+
+	shunt_voltage_raw_array[shunt_voltage_raw_index] = ads_raw;
 
 	shunt_voltage_filtered = median(shunt_voltage_raw_array);
+	Serial.print("Filtered ADC: ");
+	Serial.println(shunt_voltage_filtered);
+	
 	shunt_current = float((shunt_voltage_filtered*CURRENT_RATIO)+CURRENT_OFFSET);
 
 	shunt_voltage_raw_index++;
@@ -119,13 +144,17 @@ uint16_t PMB::extractMin(uint16_t *source, uint8_t size){
 }	
 
 void PMB::calculateCapacity(){
-	capacity_used += shunt_current*MAIN_LOOP_INTERVAL/1000.0/3600.0;
+	capacity_used += shunt_current*MAIN_LOOP_INTERVAL/1000/3600;
     capacity_left = BATTERY_CAPACITY - capacity_used;
     percentage_left = capacity_left/100.0;
 }
 
 void PMB::readPressure(){
-	board_pressure = uint8_t(((float)(ADS.readChannel(CHANNEL_PRESSURE))*0.0001875) / (INTPRES_REF*0.0040) + 10);
+	delay(10);
+	uint16_t raw_value = ADS.readChannel(1);
+    Serial.print("Pres raw: ");
+    Serial.println(raw_value);
+	board_pressure = uint8_t(((float)(raw_value)*0.0001875) / (INTPRES_REF*0.0040) + 10);
 }
 
 void PMB::readTemperature(){
@@ -133,16 +162,20 @@ void PMB::readTemperature(){
 }
 
 void PMB::publishSerial(){
-	if (PMB_DEBUG_MODE){
 		Serial.print("Board Pressure: ");
 		Serial.println(board_pressure);
 		//cell Volts  6x2 (3700-4200)
 		Serial.print("cell voltages: ");
 		Serial.print(cell_voltage[0]);
+		Serial.print(" : ");
 		Serial.print(cell_voltage[1]);
+		Serial.print(" : ");
 		Serial.print(cell_voltage[2]);
+		Serial.print(" : ");
 		Serial.print(cell_voltage[3]);
+		Serial.print(" : ");
 		Serial.print(cell_voltage[4]);
+		Serial.print(" : ");
 		Serial.println(cell_voltage[5]);
 		//current     x2 (0-15000)
 		Serial.print("Shunt current: ");
@@ -156,7 +189,6 @@ void PMB::publishSerial(){
 		//temp x1     (0-255)
 		Serial.print("Board temp: ");
 		Serial.println(board_temperature);
-	}
 }
 
 void PMB::publishPMBStats(){
@@ -270,29 +302,37 @@ void PMB::displayTextOLED(char* text, uint8_t size){
 	display.setCursor(2, 10);
     display.setTextSize(size, 1);
     display.write(text);
+    display.clear();
 }
 
 void PMB::updateDisplay(){	
-	display.clear();
-	display.setCursor(2, 10);
-    display.setTextSize(2, 1);
-    display.write("fuck everything");
+	// display.clear();
+    display.setTextSize(1, 1);
+	display.setCursor(0, 0);
+    display.write("Batt %: ");
+    display.print(percentage_left);
+	display.setCursor(2, 0);
+    display.write("Pod Temp: ");
+    display.print(board_temperature);
+	display.setCursor(3, 0);
+    display.write("Pod Pres: ");
+    display.print(board_pressure);
 }
 
 void PMB::shutDownPMB(){
-	displayTextOLED("PMB OFF", 2);
+	displayTextOLED("PMB SHUTDOWN", 1);
 	delay(2000);
 	digitalWrite(PIN_PMB_POWER, HIGH);
 }
 
 void PMB::shutDownVehicle(){	
-	displayTextOLED("VEH OFF", 2);
+	displayTextOLED("VEHICLE SHUTDOWN", 1);
 	delay(2000);
 	digitalWrite(PIN_VEHICLE_POWER, LOW);
 }
 
 void PMB::powerUpVehicle(){
-	displayTextOLED("VEH ON", 2);
+	displayTextOLED("VEHICLE POWERUP", 1);
 	delay(1000);
 	digitalWrite(PIN_VEHICLE_POWER, HIGH);
 }

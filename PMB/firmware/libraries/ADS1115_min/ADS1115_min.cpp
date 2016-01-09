@@ -16,6 +16,7 @@ void ADS1115::init(){
 }
 
 uint16_t ADS1115::readChannel(uint8_t input){
+	delay(10);
 	int config_high_byte = 0;
 	byte high_byte = 0;
 	byte low_byte = 0;
