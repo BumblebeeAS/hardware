@@ -7,7 +7,7 @@
 
 class ADS1115{
 private:
-	int address;
+	uint8_t address;
 public:
 	ADS1115(int i2c_address);
 	void init();

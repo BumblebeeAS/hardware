@@ -13,7 +13,7 @@ Library to provide more efficient space management in EEPROMs
 
 class EEPROMPlus {
 private:
-  int EEPROMAddrBuf, EEPROMDataBuf = 0;
+  uint8_t EEPROMAddrBuf, EEPROMDataBuf = 0;
   uint16_t addrPointer, dataPointer = 0;
   
   void findStaringAddress();

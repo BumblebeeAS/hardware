@@ -27,10 +27,8 @@ void loop(){
 //    Serial.println("main loop");
 		thisPMB.readCellVoltages();
 //    Serial.println("cell volt");
-		thisPMB.readShuntVoltage();
-//    Serial.println("shunt volt");
-		thisPMB.calculateCurrent();
-//    Serial.println("current");
+		thisPMB.getShuntCurrent();
+//    Serial.println("shunt curr");
 		thisPMB.calculateCapacity();
 //    Serial.println("capacity");
 		thisPMB.logEEPROM();
