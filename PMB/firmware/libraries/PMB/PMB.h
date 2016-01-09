@@ -16,7 +16,8 @@
 #include <can_defines.h>
 #include "can_defines.h"
 #include <EEPROMPlus.h>
-#include <SSD1306_text.h>
+// #include <Adafruit_GFX.h>
+// #include <Adafruit_SSD1306.h>
 
 class PMB{
 private:
@@ -35,6 +36,10 @@ private:
 				
 	uint8_t board_pressure 									= 0;
 	uint8_t board_temperature 								= 0;
+	
+	//serial stuff
+	//make true to output ascii, false to output bitstream
+	bool ascii 												= true;
 
 	//for CAN
 	bool FLAGMsg 											= false;
@@ -47,19 +52,23 @@ private:
 	TempAD7414 TempSensor;
 	MCP_CAN CAN;
 	EEPROMPlus EEPROM;
-	SSD1306_text display;
+	// Adafruit_SSD1306 display;
 
 	void CAN_init();
+	void writeIntSerial(int data, int len);
+
+	void getCapFromBattVolt();
 	uint16_t median(uint16_t buffer[]);
 	uint16_t extractMin(uint16_t *source, uint8_t size);
+	void getCapFromStorage();
 	void checkForPMB1();
-	void displayTextOLED(char* text, uint8_t size);
 public:
 	PMB();
 
 	void init();
 	void readCellVoltages();
-	void getShuntCurrent();
+	void readShuntVoltage();
+	void calculateCurrent();
 	void calculateCapacity();
 	void readPressure();
 	void readTemperature();
@@ -68,7 +77,7 @@ public:
 	void publishPMBStats();
 	void publishCANStats();
 	void logEEPROM();
-	void updateDisplay();
+	// void updateDisplay();
 	void shutDownPMB();
 	void shutDownVehicle();
 	void powerUpVehicle();

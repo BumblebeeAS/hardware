@@ -1,8 +1,8 @@
 #include "EEPROMPlus.h"
 
 EEPROMPlus::EEPROMPlus(int i2c_address0, int i2c_address1){
-  EEPROMAddrBuf = uint8_t(i2c_address0);
-  EEPROMDataBuf = uint8_t(i2c_address1);
+  EEPROMAddrBuf = i2c_address0;
+  EEPROMDataBuf = i2c_address1;
   addrPointer = 0;
   dataPointer = 0;
 }

@@ -3,7 +3,7 @@
 #include <ADS1115_min.h>
 
 ADS1115::ADS1115(int i2c_address){
-	address = uint8_t(i2c_address);
+	address = i2c_address;
 }
 
 void ADS1115::init(){

@@ -31,9 +31,6 @@
 #define ADDR_EEPROM0				0X50
 #define ADDR_EEPROM1				0X51
 #define ADDR_OLED					0X3D
-
-//dummy pin to initialise the OLED ,actually connected to the MCU ground
-#define PIN_OLED_RESET				7
 		
 #define PIN_CAN_SS					8
 
