@@ -7,7 +7,7 @@ PMB::PMB()
 	,TempSensor(CONFIG_TEMP_SENS, ADDR_TEMP_SENS)
 	,CAN(PIN_CAN_SS)
 	,EEPROM(ADDR_EEPROM0, ADDR_EEPROM1)
-	// ,display(DISPLAY_RESET)
+	,display(PIN_OLED_RESET)
 	{}
 
 void PMB::init(){
@@ -20,7 +20,7 @@ void PMB::init(){
 	pinMode(PIN_VEHICLE_POWER, OUTPUT);
 	
 	//init devices
-	// display.begin(SSD1306_SWITCHCAPVCC, ADDR_OLED);
+	display.init();
 	ADS.init();
 	TempSensor.initTempAD7414();
 	CAN_init();
@@ -35,15 +35,27 @@ void PMB::init(){
 	}
 	//init current sensing
 	//do multiple times to initialise the array
-	for (int i = 0; i < MEDIAN_FILTER_SIZE; ++i){
-		readShuntVoltage();
+	for (uint8_t i = 0; i < MEDIAN_FILTER_SIZE; ++i){
+		getShuntCurrent();
 	}
-	calculateCurrent();
 
 	if(shunt_current < 0.2){
-		getCapFromBattVolt();
+		//get capacity from battery volt
+
+		uint16_t tempBattVoltage = 0;
+		for (uint8_t i = 0; i < 10; ++i){
+			tempBattVoltage += uint16_t((analogRead(7) * cell6_adc_ratio) + cell6_adc_offset);
+		}
+
+		tempBattVoltage = float(tempBattVoltage/20.0);  
+		percentage_left = pow(tempBattVoltage,3)*coef_a + pow(tempBattVoltage,2)*coef_b + tempBattVoltage*coef_c + coef_d;
+		capacity_left = percentage_left/100.0 * BATTERY_CAPACITY;
 	}else{
-		getCapFromStorage();
+		//get capacity from storage
+
+		// uint8_t* buf;
+		// EEPROM.dumbMultiRead(10, buf);
+		// capacity_left = uint16_t(CAN.parseCANFrame(buf, 0, 2));
 	}
 
 	//read other values so they are initialised
@@ -55,23 +67,6 @@ void PMB::init(){
 	powerUpVehicle();
 }
 
-void PMB::getCapFromBattVolt(){
-	int tempBattVoltage = 0;
-	for (int i = 0; i < 20; ++i){
-		tempBattVoltage += ((analogRead(7) * cell6_adc_ratio) + cell6_adc_offset);
-	}
-
-	tempBattVoltage = float(tempBattVoltage/20.0);  
-	percentage_left = pow(tempBattVoltage,3)*coef_a + pow(tempBattVoltage,2)*coef_b + tempBattVoltage*coef_c + coef_d;
-	capacity_left = percentage_left/100.0 * BATTERY_CAPACITY;
-}
-
-void PMB::getCapFromStorage(){
-	// uint8_t* buf;
-	// EEPROM.dumbMultiRead(10, buf);
-	// capacity_left = uint16_t(CAN.parseCANFrame(buf, 0, 2));
-}
-
 void PMB::readCellVoltages(){
 	cell_voltage[5] = ((analogRead(7) * cell6_adc_ratio) + cell6_adc_offset);
     cell_voltage[4] = ((analogRead(6) * cell5_adc_ratio) + cell5_adc_offset);
@@ -81,12 +76,11 @@ void PMB::readCellVoltages(){
     cell_voltage[0] = ((analogRead(0) * cell1_adc_ratio) + cell1_adc_offset);
 }
 
-void PMB::readShuntVoltage(){
-	uint16_t raw_ADC_value = ADS.readChannel(CHANNEL_CURRENT_SENS);
-	// shunt_voltage = raw_ADC_value/32767*4.096/40;
-	shunt_voltage_raw_array[shunt_voltage_raw_index] = raw_ADC_value;
+void PMB::getShuntCurrent(){
+	shunt_voltage_raw_array[shunt_voltage_raw_index] = ADS.readChannel(CHANNEL_CURRENT_SENS);
 
 	shunt_voltage_filtered = median(shunt_voltage_raw_array);
+	shunt_current = float((shunt_voltage_filtered*CURRENT_RATIO)+CURRENT_OFFSET);
 
 	shunt_voltage_raw_index++;
 	shunt_voltage_raw_index = shunt_voltage_raw_index%MEDIAN_FILTER_SIZE;
@@ -100,11 +94,11 @@ uint16_t PMB::median(uint16_t buffer[]){
 
 	uint16_t temp_buff[MEDIAN_FILTER_SIZE] = {0};
 
-	for (int k = 0; k < MEDIAN_FILTER_SIZE; k++){
+	for (uint8_t k = 0; k < MEDIAN_FILTER_SIZE; k++){
 		temp_buff[k] = buffer[k];
 	}
 
-	for (int i = 0; i <= median_index; i++){
+	for (uint8_t i = 0; i <= median_index; i++){
 		median_val = extractMin(&temp_buff[0], MEDIAN_FILTER_SIZE);
 	}
 
@@ -114,7 +108,7 @@ uint16_t PMB::median(uint16_t buffer[]){
 uint16_t PMB::extractMin(uint16_t *source, uint8_t size){
 	uint16_t temp_min = 0xFFFF;
 	uint8_t min_index = 0;
-	for (int i = 0; i < size; i++){
+	for (uint8_t i = 0; i < size; i++){
 		if(source[i] < temp_min){
 			min_index = i;
 			temp_min = source[i];
@@ -122,11 +116,7 @@ uint16_t PMB::extractMin(uint16_t *source, uint8_t size){
 	}
 	source[min_index] = 0xFFFF;
 	return temp_min;
-}
-
-void PMB::calculateCurrent(){
-	shunt_current = float((shunt_voltage_filtered*CURRENT_RATIO)+CURRENT_OFFSET);
-}
+}	
 
 void PMB::calculateCapacity(){
 	capacity_used += shunt_current*MAIN_LOOP_INTERVAL/1000.0/3600.0;
@@ -135,32 +125,14 @@ void PMB::calculateCapacity(){
 }
 
 void PMB::readPressure(){
-	uint16_t raw_ADC_value = ADS.readChannel(CHANNEL_PRESSURE);
-	board_pressure = uint8_t(((float)raw_ADC_value*0.0001875) / (INTPRES_REF*0.0040) + 10);
+	board_pressure = uint8_t(((float)(ADS.readChannel(CHANNEL_PRESSURE))*0.0001875) / (INTPRES_REF*0.0040) + 10);
 }
 
 void PMB::readTemperature(){
 	board_temperature = uint16_t(TempSensor.getTemp());
 }
 
-void PMB::writeIntSerial(int data, int len){
-  if(ascii){
-    Serial.print(data);
-  } else {
-    char* a = (char*)&data;  
-    int sent= Serial.write(a);
-
-    //to make up for remaining bytes
-    if(sent<len){
-      for(int i=0; i<(len-sent); i++){
-        Serial.write(0);
-      }
-    }
-  }  
-}
-
 void PMB::publishSerial(){
-  //everything written must be an int, so convert first in loop
 	if (PMB_DEBUG_MODE){
 		Serial.print("Board Pressure: ");
 		Serial.println(board_pressure);
@@ -184,26 +156,6 @@ void PMB::publishSerial(){
 		//temp x1     (0-255)
 		Serial.print("Board temp: ");
 		Serial.println(board_temperature);
-	}else{
-		//start byte
-		Serial.write('#');
-		//pressure    x1 (0-255)
-		writeIntSerial(int(board_pressure), 1);
-		//cell Volts  6x2 (3700-4200)
-		writeIntSerial(int(cell_voltage[0]), 2);
-		writeIntSerial(int(cell_voltage[1]), 2);
-		writeIntSerial(int(cell_voltage[2]), 2);
-		writeIntSerial(int(cell_voltage[3]), 2);
-		writeIntSerial(int(cell_voltage[4]), 2);
-		writeIntSerial(int(cell_voltage[5]), 2);
-		//current     x2 (0-15000)
-		writeIntSerial(int(shunt_current), 2);
-		//capacity    x1 (0-100)
-		writeIntSerial(int(percentage_left), 1);
-		//used mAh    x2 (0-65536)
-		writeIntSerial(int(capacity_left), 2);
-		//temp x1     (0-255)
-		writeIntSerial(int(board_temperature), 1);
 	}
 }
 
@@ -313,50 +265,34 @@ void PMB::logEEPROM(){
 	// EEPROM.dumbMultiWrite(10, buf);
 }
 
-// void PMB::updateDisplay(){	
-//   display.clearDisplay();
-//   display.setTextSize(5);
-//   display.setTextColor(WHITE);
-//   display.setCursor(0,0);
-//   display.println("PMB V2 aww yiss");
-//   display.display();
-//   delay(2000);
-//   display.clearDisplay();
+void PMB::displayTextOLED(char* text, uint8_t size){
+	display.clear();
+	display.setCursor(2, 10);
+    display.setTextSize(size, 1);
+    display.write(text);
+}
 
-// }
+void PMB::updateDisplay(){	
+	display.clear();
+	display.setCursor(2, 10);
+    display.setTextSize(2, 1);
+    display.write("fuck everything");
+}
 
 void PMB::shutDownPMB(){
-	// display.clearDisplay();
-	// display.setTextSize(5);
-	// display.setTextColor(WHITE);
-	// display.setCursor(0,0);
-	// display.println("PMB SHUTDOWN!");
-	// display.display();
-	// delay(2000);
-	// display.clearDisplay();
+	displayTextOLED("PMB OFF", 2);
+	delay(2000);
 	digitalWrite(PIN_PMB_POWER, HIGH);
 }
 
-void PMB::shutDownVehicle(){
-	// display.clearDisplay();
-	// display.setTextSize(5);
-	// display.setTextColor(WHITE);
-	// display.setCursor(0,0);
-	// display.println("VEHICLE SHUTDOWN");
-	// display.display();
-	// delay(2000);
-	// display.clearDisplay();
+void PMB::shutDownVehicle(){	
+	displayTextOLED("VEH OFF", 2);
+	delay(2000);
 	digitalWrite(PIN_VEHICLE_POWER, LOW);
 }
 
 void PMB::powerUpVehicle(){
-	// display.clearDisplay();
-	// display.setTextSize(5);
-	// display.setTextColor(WHITE);
-	// display.setCursor(0,0);
-	// display.println("VEHICLE POWERUP");
-	// display.display();
-	// delay(2000);
-	// display.clearDisplay();
+	displayTextOLED("VEH ON", 2);
+	delay(1000);
 	digitalWrite(PIN_VEHICLE_POWER, HIGH);
 }
