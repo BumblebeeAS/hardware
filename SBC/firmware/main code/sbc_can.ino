@@ -38,9 +38,10 @@ void setup()
   /* add setup code here */
 	Serial.begin(115200);
 	sbc_bus_loop = millis();
+	heartbeat_loop = millis();
 START_INIT:
 
-	if (CAN_OK == CAN.begin(CAN_1000KBPS))                   // init can bus : baudrate = 500k
+	if (CAN_OK == CAN.begin(CAN_1000KBPS))                   // init can bus : baudrate = 1000Kbps
 	{
 		Serial.println("CAN BUS: OK");
 	}
@@ -64,6 +65,7 @@ uint8_t read_buffer[8];
 uint8_t read_size;
 uint8_t read_id;
 uint8_t read_ctr;
+
 void loop()
 {
 	/*****************************************/
@@ -71,7 +73,7 @@ void loop()
 	/*  Maintain comms with SBC				 */
 	/*****************************************/
 
-	if (heartbeat_loop - millis() > HEARTBEAT_TIMEOUT)
+	if (millis() - heartbeat_loop > HEARTBEAT_TIMEOUT)
 	{
 		//dosomething
 	}
@@ -100,9 +102,14 @@ void loop()
 	if (Serial.available())
 	{
 		//read
-		while(incoming_data = Serial.read())
+		while(incoming_data > -1)
 		{
-			if (incoming_data == -1) return;
+			incoming_data = Serial.read();
+			if (incoming_data == -1)
+			{
+				incoming_data = 0;
+				break;
+			}
 			if (incoming_data == START_BYTE && !read_flag)
 			{
 				read_flag = 1;
@@ -130,7 +137,7 @@ void loop()
 					if (read_ctr == (2 + read_size))
 					{
 						//Check for HEARTBEAT from SBC
-						if (read_id == CAN_HEARBEAT)
+						if (read_id == CAN_heartbeat)
 						{
 							heartbeat_loop = millis();
 						}
@@ -160,5 +167,6 @@ void loop()
 		Serial.write(id);
 		Serial.write(len);
 		for(int i = 0;i<len;i++)	Serial.write(buf[i]);
+		
 	}
 }

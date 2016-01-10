@@ -8,11 +8,8 @@
 #define LED_Blue_2		4
 #define LED_Green_2		12
 
-#define ADS_ADD 		73
-#define ADS_ADD_BACKUP	72
-
-
-
+#define ADS_ADD_INT 73 // Sense 2
+#define ADS_ADD_EXT	72 // Sense 3 Connect external to this.
 
 #define ATM 99974 //Pascals or 14.5PSI
 #define PSI100 689475

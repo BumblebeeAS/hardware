@@ -9,10 +9,12 @@
 //#     ## #     ## ##     # ##     #  ##  ##
 // # ####   # ####   #######  #######   ####
 //
-////Sensor & Actuator Board for BBAUV 3.0
-//Firmware Version :             v2.0
-//
 // Written by Goh Eng Wei
+
+// Change Log for v1.2:
+// - Updated with CPU Temp
+// - re-ordered priorities for CAN Messages
+
 // Change Log for v1.1:
 // - Updated with Heartbeat CAN Message
 // - re-ordered priorities for CAN Messages
@@ -39,20 +41,21 @@
 #define CAN_PMB2_stats 13
 #define CAN_PMB2_stats2 14
 #define CAN_PMB2_stats3 15
-#define CAN_backplane_stats 16
-#define CAN_backplane_stats2 17
-#define CAN_backplane_BUS_stats 18
-#define CAN_SA_BUS_stats 19
-#define CAN_thruster_BUS_stats 20
-#define CAN_telemetry_BUS_stats 21
-#define CAN_PMB1_BUS_stats 22
-#define CAN_PMB2_BUS_stats 23
-#define CAN_SBC_BUS_stats 24
-#define CAN_DVL_velocity 25
-#define CAN_earth_odometry 26
-#define CAN_relative_odometry 27
-#define CAN_imu_1 28
-#define CAN_imu_2 29
+#define CAN_CPU 16
+#define CAN_backplane_stats 17
+#define CAN_backplane_stats2 18
+#define CAN_backplane_BUS_stats 19
+#define CAN_SA_BUS_stats 20
+#define CAN_thruster_BUS_stats 21
+#define CAN_telemetry_BUS_stats 22
+#define CAN_PMB1_BUS_stats 23
+#define CAN_PMB2_BUS_stats 24
+#define CAN_SBC_BUS_stats 25
+#define CAN_DVL_velocity 26
+#define CAN_earth_odometry 27
+#define CAN_relative_odometry 28
+#define CAN_imu_1 29
+#define CAN_imu_2 30
 
 
 
