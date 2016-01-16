@@ -28,6 +28,16 @@
 #define BATT2_CURRENT 4
 #define BATT2_VOLTAGE 5
 
+//Heartbeat
+#define SA 1
+#define THRUSTER 2
+#define TELEMETRY 3
+#define BACKPLANE 4
+#define SBC_CAN 5
+#define SBC 6
+#define PMB1 7
+#define PMB2 8
+
 /*
 Navigation stats:
 - IMU
