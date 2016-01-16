@@ -11,6 +11,8 @@
 //
 // Written by Goh Eng Wei
 
+// Change Log for v1.3:
+// - Updated with new Heartbeat types
 // Change Log for v1.2:
 // - Updated with CPU Temp
 // - re-ordered priorities for CAN Messages
@@ -57,7 +59,14 @@
 #define CAN_imu_1 29
 #define CAN_imu_2 30
 
-
-
+//CAN Heartbeat
+#define HEARTBEAT_SA 1
+#define HEARTBEAT_THRUSTER 2
+#define HEARTBEAT_TELEMETRY 3
+#define HEARTBEAT_BACKPLANE 4
+#define HEARTBEAT_SBC_CAN 5
+#define HEARTBEAT_SBC 6
+#define HEARTBEAT_PMB1 7
+#define HEARTBEAT_PMB2 8
 
 #endif
