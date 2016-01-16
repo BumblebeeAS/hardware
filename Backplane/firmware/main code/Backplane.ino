@@ -40,6 +40,7 @@ static uint8_t smartkill_buf;
 static uint8_t CAN_State_Buf[3]; //CAN tx & error statues buffer
 static uint8_t StatsBuf[3]; //size to be determined
 static uint8_t StatsBuf2[3]; //size to be determined
+static uint8_t heartbeat[1];
 static uint8_t currentReading[3];
 static uint8_t voltageReading5V;
 static uint8_t voltageReading12V;
@@ -62,6 +63,7 @@ void setup(){
 	smartkillTime = statsTime = canStatsTime = millis();
 
   temp_sens.initTempAD7414(); //temp sensor
+  heartbeat[0] = HEARTBEAT_BACKPLANE;
 
 }
 
@@ -84,7 +86,7 @@ void loop(){
 //    Serial.println(StatsBuf[0]);
 //    Serial.println(StatsBuf[1]);
     CAN.sendMsgBuf(CAN_backplane_stats, 0, 1, StatsBuf); //id, extended frame(1) or normal(0), no of bytes sent, data
-
+    CAN.sendMsgBuf(CAN_heartbeat, 0, 1, heartbeat);
     statsTime = millis();
   }
  
@@ -157,9 +159,9 @@ void smartkill_init(){
 
 void checkSmartKill(){
 	if((smartkill_buf & 0x01) == 1)	//bit 0 = thruster
-		digitalWrite(THRUST_EN, LOW);	//kill thruster
+		PORTF &= ~(B00000001);	//kill thruster
 	else
-		digitalWrite(THRUST_EN, HIGH);	//enable thruster
+		PORTF |= B00000001;	//enable thruster
 	
 
 	if(((smartkill_buf >> 1) & 0x01) == 1)	//bit 1 = SA
