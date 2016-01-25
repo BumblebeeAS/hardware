@@ -1,6 +1,5 @@
 #include <SPI.h> // for CAN Controller
 #include <can.h>
-#include <can_defines.h>
 #include "can_defines.h"
 
 //dummy values to test CAN
