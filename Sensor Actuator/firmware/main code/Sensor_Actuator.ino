@@ -69,11 +69,14 @@ uint8_t CAN_State_Buf[3]; //CAN tx & error statues buffer
 
 unsigned char len = 0; //length of CAN message, taken care by library
 uint8_t buf[8];  //Buffer for CAN message
-uint8_t Manipulator_buf1, Manipulator_buf2, Mani_Temp;//Buffers for manipulators trigger
+uint8_t heartbeat_buf[2];
+uint16_t manipulator_buf;
+uint8_t mani_ctr[NUM_MANI];
+uint8_t mani_delay[NUM_MANI] = { 0, 0, MANI_TORP_DELAY, 0, MANI_TORP_DELAY, 0, MANI_DROPPER_DELAY, 0, 0 };
 uint8_t StatuesBuf[3];//Temp humidity and internal pressure buffer
 uint8_t PressureBuf[2];//external pressure buffer
 int16_t pressure;//Pressure Sensor Definitions
-
+uint32_t heartbeat_loop;
 
 void setup()
 {
@@ -94,13 +97,35 @@ void setup()
 
 	Serial.println("ALL OK");
   //Initialize MainLoop Timing variables
-	currentTime = loopTime = PressureFilterLoop_10 = ExterPress_loop_50 = Mani_loop_100 = Statues_loop_250 = LEDArray_loop_500 = millis();
+	currentTime = loopTime = heartbeat_loop = PressureFilterLoop_10 = ExterPress_loop_50 = 
+		Mani_loop_100 = Statues_loop_250 = LEDArray_loop_500 = millis();
 }
 
 int counter = 0;
 void loop()
 {
    currentTime=millis();  
+
+   /*****************************************/
+   /*  Heartbeat							 */
+   /*  Send out Heartbeat for sync			 */
+   /*****************************************/
+   
+   if (currentTime > heartbeat_loop + 500)
+   {
+	   CAN.setupCANFrame(heartbeat_buf, 1, 0, HEARTBEAT_SA);
+	   heartbeat_buf[0] = HEARTBEAT_SA;
+	   CAN.sendMsgBuf(CAN_heartbeat, 0, 1, heartbeat_buf);
+	   heartbeat_loop = currentTime;
+   }
+   
+   currentTime = millis();
+
+
+   /*****************************************/
+   /*  Pressure Reading						 */
+   /*	Sampling External pressure			 */
+   /*****************************************/
    if(currentTime > ExterPress_loop_50 + 50){
        
        Pub_Press = true;
@@ -181,12 +206,49 @@ void loop()
   }
   
     currentTime=millis();       
-    if(currentTime > Mani_loop_100 + 100){
-       PORTC = Manipulator_buf1;//pin 2 is not being used 
-       //Mani_Temp = PORTG & B11111100;
-       Manipulator_buf2 = Manipulator_buf2 & B00000011;//Pin 0 and 1
-      // PORTG = Mani_Temp | Manipulator_buf2;
-       #if DEBUG_MODE == DEBUG_INFO
+	if (currentTime > Mani_loop_100 + 100)
+	{
+		//DROPPER counter sequence
+		if (mani_ctr[DROPPER] == MANI_DROPPER_DELAY)
+		{
+			digitalWrite(MANI_7, HIGH);
+			mani_ctr[DROPPER] --;
+		}
+		else if (mani_ctr[DROPPER] > 1)	mani_ctr[DROPPER] --;
+		else if (mani_ctr[DROPPER] == 1)
+		{
+			digitalWrite(MANI_7, LOW);
+			mani_ctr[DROPPER]--;
+		}
+
+		//TORPEDO counter sequence
+		if (mani_ctr[TORP1] == MANI_TORP_DELAY)
+		{
+			Serial.print("trig1");
+			digitalWrite(MANI_3, HIGH);
+			mani_ctr[TORP1] --;
+		}
+		else if (mani_ctr[TORP1] > 1)	mani_ctr[TORP1] --;
+		else if (mani_ctr[TORP1] == 1)
+		{
+			digitalWrite(MANI_3, LOW);
+			mani_ctr[TORP1]--;
+		}
+
+		//TORPEDO counter sequence
+		if (mani_ctr[TORP2] == MANI_TORP_DELAY)
+		{
+			digitalWrite(MANI_5, HIGH);
+			mani_ctr[TORP2] --;
+		}
+		else if (mani_ctr[TORP2] > 1)	mani_ctr[TORP2] --;
+		else if (mani_ctr[TORP2] == 1)
+		{
+			digitalWrite(MANI_5, LOW);
+			mani_ctr[TORP2]--;
+		}
+
+#if DEBUG_MODE == DEBUG_INFO
 	   Serial.print("ma:");   
 	   Serial.println(millis() - currentTime);//change the debug mode
        #endif
@@ -210,7 +272,7 @@ void CAN_init(){
 START_INIT:
     if(CAN_OK == CAN.begin(CAN_1000KBPS)){                   // init can bus : baudrate = 500k
         #if DEBUG_MODE == NORMAL
-          Serial.println("CAN init: OK");
+          Serial.println("CAN init: OK"); 
         #endif           
     }
     else{
@@ -233,7 +295,6 @@ START_INIT:
 	CAN.init_Filt(4, 0, CAN_SA_BUS_stats);//Sensor & Actuator CAN Stats
 
     //Interrupt not working yet 0 for Pin D2, Interrupt service routine ,Falling edge 
-
 }
 
 void leds_init()
@@ -258,7 +319,7 @@ void pressure_init()
 {
 	ads1115_int.begin();
 	Serial.print("int:");
-	//Serial.println(ads1115_int.set_continuous_conv(1);
+	Serial.println(ads1115_int.set_continuous_conv(1));
 	ads1115_ext.begin();
 	Serial.print("ext:");
 	Serial.println(ads1115_ext.set_continuous_conv(0));
@@ -290,8 +351,8 @@ uint16_t readPressure()
     uint16_t adc;
 	ads1115_int.set_continuous_conv(0);
 	adc = ads1115_int.readADC_Continuous();
-	Serial.print("ep:");
-	Serial.println(adc);
+	//Serial.print("ep:");
+	//Serial.println(adc);
 	return adc;
 }
 
@@ -303,15 +364,15 @@ int16_t readInternalPressure()
 	InternalPress = ads1115_int.readADC_Continuous();
 	ads1115_int.set_continuous_conv(0);
 	delay(5);
-	Serial.print("ip:");
-	Serial.println(InternalPress);
+	//Serial.print("ip:");
+	//Serial.println(InternalPress);
 	InternalPress = ((float)InternalPress*0.0001875) / (INTPRES_REF*0.0040) + 10;
  return InternalPress;
 }
 
 /* Discrete Low Pass Filter to reduce noise in signal */
-void readPressureFilter()
-{
+	void readPressureFilter()
+	{
    int16_t temp = readPressure();
    if(temp != 0)
    {
@@ -328,18 +389,23 @@ void checkCANmsg()
 		CAN.readMsgBuf(&len, buf);    // read data,  len: data length, buf: data buf
 
 		switch (CAN.getCanId()){
-		case CAN_manipulator:{//ID = 3 (number)
+		case CAN_manipulator:{
 			//put into manipulator buffer
-			Manipulator_buf1 = buf[0];
-			Manipulator_buf2 = buf[1];
-			Serial.println("mani!");
-			Serial.print(buf[0]);
-			Serial.print(" ");
-			Serial.println(buf[1]);
+			manipulator_buf = buf[1] << 8;
+			manipulator_buf = manipulator_buf + buf[0];
+			for (uint8_t i = 0; i < NUM_MANI; i++)
+			{
+				if (i == LINEAR)
+				{
+					if (manipulator_buf & (1 << i)) digitalWrite(MANI_9, HIGH);
+					else digitalWrite(MANI_9, LOW);
+				}
+				if (manipulator_buf & (1 << i))	mani_ctr[i] = mani_delay[i];
+			}
+
 			//Return acknowledgement
-			buf[2] = 1;
-			buf[3] = buf[0]^buf[1] ; //XOR Checksum
-			CAN.sendMsgBuf(CAN.getCanId(), 0, len + 1, buf);
+			buf[2] = buf[0]^buf[1] ; //XOR Checksum
+			CAN.sendMsgBuf(CAN.getCanId(), 0, 3, buf);
 			break;
 		}
 

@@ -30,6 +30,8 @@
 #define LCD_ON 1
 #define LCD_OFF 0
 
+///Manipulator definitions
+#define NUM_MANI 9
 #define MANI_1 30
 #define MANI_2 31
 #define MANI_3 32
@@ -39,7 +41,14 @@
 #define MANI_7 40
 #define MANI_8 37
 #define MANI_9 36
+#define DROPPER 6 // Map to M7
+#define TORP1 2 // Map to M3
+#define TORP2 4 // Map to M5
+#define LINEAR 8 // Map to M9
+#define MANI_DROPPER_DELAY 3
+#define MANI_TORP_DELAY 3
 
 #define CAN_Chip_Select 8
+#define HEARTBEAT_TIMEOUT 500
 
 #endif // _DEFINES_H
