@@ -3,7 +3,7 @@
 #include <Thrusters.h>
 #include <Math.h>
 
-#define RATE 0.2  /// MUST BE LESS THAN 1
+#define RATE 0.05  /// MUST BE LESS THAN 1
 String sinit = "";
 
 Thrusters::Thrusters(int pin1, int pin2)
@@ -14,7 +14,6 @@ Thrusters::Thrusters(int pin1, int pin2)
 
 int Thrusters::increment_1(int throttleold, int throttlenew){
 	int i = throttleold;
-	delay(100);
 	if (throttlenew > throttleold){
     i = i + ceil(RATE * (throttlenew - throttleold));
 		esc1.writeMicroseconds(i);
@@ -28,7 +27,6 @@ int Thrusters::increment_1(int throttleold, int throttlenew){
 
 int Thrusters::increment_2(int throttleold, int throttlenew){
 	int i = throttleold;
-	delay(100);
 	if (throttlenew > throttleold){
     i = i + ceil(RATE * (throttlenew - throttleold));
 		esc2.writeMicroseconds(i);
@@ -45,35 +43,83 @@ void Thrusters::acc(int throttleOld1, int throttle1, int throttleOld2, int throt
 
 	if (throttleOld1 != throttle1 && throttleOld2 != throttle2){
 		acc(increment_1(throttleOld1, throttle1), throttle1, increment_2(throttleOld2, throttle2), throttle2);
+    return;
 	}
+  else if(throttleOld1 != throttle1 && throttleOld2 == throttle2){
+    acc(increment_1(throttleOld1, throttle1), throttle1, increment_2(throttleOld2, throttle2), throttle2);
+    return;
+  }
+  else if(throttleOld1 == throttle1 && throttleOld2 != throttle2){
+    acc(increment_1(throttleOld1, throttle1), throttle1, increment_2(throttleOld2, throttle2), throttle2);
+    return;
+  }
 
 }
 
-void Thrusters::mov(int input)
+void Thrusters::mov(int input1, int input2)
 {
-	esc1.attach(motor1);
-	esc2.attach(motor2);
+esc1.attach(motor1);
+esc2.attach(motor2);
 int throttle1, throttleOld1;
 int throttle2, throttleOld2;
 
 throttleOld1 = esc1.readMicroseconds();
 throttleOld2 = esc2.readMicroseconds();
-if(input > 0)    {throttle1 = thrusterForward1(input);
-           throttle2 = thrusterForward2(input);
-          }
-if(input < 0)    {throttle1 = thrusterReverse1(input);
-           throttle2 = thrusterReverse2(input); 
-          }
-if(input == 0)   {throttle1 = thrusterStop();
-           throttle2 = thrusterStop();
-          }
+
+if(input1 > 0)    {throttle1 = thrusterForward1(input1);}
+if(input1 < 0)    {throttle1 = thrusterReverse1(input1);}
+if(input1 == 0)   {throttle1 = thrusterStop();}
+
+if(input2 > 0)    {throttle2 = thrusterForward2(input2);}
+if(input2 < 0)    {throttle2 = thrusterReverse2(input2);}
+if(input2 == 0)   {throttle2 = thrusterStop();}
+
+
 acc(throttleOld1, throttle1,throttleOld2, throttle2);
 return;
 }
 
+void Thrusters::movThruster1(int input1)
+{
+esc1.attach(motor1);
+esc2.attach(motor2);
+int throttle1, throttleOld1;
+int throttleOld2;
+
+throttleOld1 = esc1.readMicroseconds();
+throttleOld2 = esc2.readMicroseconds();
+
+if(input1 > 0)    {throttle1 = thrusterForward1(input1);} 
+if(input1 < 0)    {throttle1 = thrusterReverse1(input1);}
+if(input1 == 0)   {throttle1 = thrusterStop();}
+
+acc(throttleOld1, throttle1,throttleOld2, throttleOld2);
+return;
+}
+
+void Thrusters::movThruster2(int input2)
+{
+esc1.attach(motor1);
+esc2.attach(motor2);
+int throttleOld1;
+int throttle2, throttleOld2;
+
+throttleOld1 = esc1.readMicroseconds();
+throttleOld2 = esc2.readMicroseconds();
+
+if(input2 > 0)    {throttle2 = thrusterForward2(input2);}
+if(input2 < 0)    {throttle2 = thrusterReverse2(input2);}
+if(input2 == 0)   {throttle2 = thrusterStop();}
+
+acc(throttleOld1,throttleOld1,throttleOld2, throttle2);
+return;
+}
+
+
+
 int Thrusters::thrusterForward1(int input)
 {
-int throttle = map(input, 1, 3200, 1607, 1942);
+int throttle = map(input, 1, 3200, 1606, 1942);
 //int throttle = map(input, 1, 3200, 1610, 2010);
 //int throttle = map(input, 1, 3200, 1420, 1000);
 return throttle;
@@ -81,7 +127,7 @@ return throttle;
 
 int Thrusters::thrusterReverse1(int input)
 {
-int throttle = map(input, -3200, -1, 1063, 1398);
+int throttle = map(input, -3200, -1, 1063, 1399);
 //int throttle = map(input, -3200, -1, 995, 1395);
 //int throttle = map(input, -3200, -1, 2000, 1580);
 return throttle;
@@ -89,7 +135,7 @@ return throttle;
 
 int Thrusters::thrusterForward2(int input)
 {
-int throttle = map(input, 1, 3200, 1616, 1951);
+int throttle = map(input, 1, 3200, 1615, 1951);
 //int throttle = map(input, 1, 3200, 1592, 1992);
 //int throttle = map(input, 1, 3200, 1420, 1000);
 return throttle;
@@ -97,7 +143,7 @@ return throttle;
 
 int Thrusters::thrusterReverse2(int input)
 {
-int throttle = map(input, -3200, -1, 1055, 1390);
+int throttle = map(input, -3200, -1, 1055, 1391);
 //int throttle = map(input, -3200, -1, 2000, 1580);
 return throttle;
 }
