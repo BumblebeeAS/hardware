@@ -17,6 +17,6 @@
 #define THRUSTER_7 1
 #define THRUSTER_8 2
 
-
+#define HEARTBEAT_TIMEOUT 500
 
 #endif // _DEFINES_H
