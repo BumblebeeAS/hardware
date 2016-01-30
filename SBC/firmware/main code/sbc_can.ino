@@ -10,10 +10,12 @@
 // # ####   # ####   #######  #######   ####
 //
 ////SBC to CAN interface for BBAUV 3.0
-//Firmware Version :             v1.0
+//Firmware Version :             v1.1
 //
 // Written by Goh Eng Wei
-// Change Log for v1.0:
+// Change Log for v1.1:
+// - Added heartbeat to sbc CAN
+// - Removed CAN status messsages to be sent out. Redundant.
 //###################################################
 //###################################################
 //###################################################
@@ -53,7 +55,7 @@ START_INIT:
 		delay(1000);
 		goto START_INIT;
 	}
-	
+	Serial.println("INITIATING TRANSMISSION...");
 }
 
 uint8_t led_buf[9] = { 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -69,6 +71,7 @@ uint8_t read_ctr;
 
 void loop()
 {
+	/*
 	/*****************************************/
 	/*  Heartbeat							 */
 	/*  Maintain comms with SBC				 */
@@ -81,7 +84,7 @@ void loop()
 		CAN.sendMsgBuf(CAN_heartbeat, 0, 1, buf);
 		heartbeat_loop = millis();
 	}
-
+	
 	/*****************************************/
 	/*  Transmit CAN Diagnostics			 */
 	/*****************************************/
@@ -89,10 +92,10 @@ void loop()
 	
 	if ((millis() - sbc_bus_loop ) > 1000)
 	{
-		CAN.setupCANFrame(sbc_bus_stats, 0, 1, CAN.checkError());
-		CAN.setupCANFrame(sbc_bus_stats, 1, 1, CAN.checkTXStatus(0));
-		CAN.setupCANFrame(sbc_bus_stats, 2, 1, CAN.checkTXStatus(1));
-		CAN.sendMsgBuf(CAN_SBC_BUS_stats, 0, 4, sbc_bus_stats);
+		//CAN.setupCANFrame(sbc_bus_stats, 0, 1, CAN.checkError());
+		//CAN.setupCANFrame(sbc_bus_stats, 1, 1, CAN.checkTXStatus(0));
+		//CAN.setupCANFrame(sbc_bus_stats, 2, 1, CAN.checkTXStatus(1));
+		//CAN.sendMsgBuf(CAN_SBC_BUS_stats, 0, 4, sbc_bus_stats);
 		
 		sbc_bus_loop = millis();
 	}
@@ -163,6 +166,7 @@ void loop()
 	/*Check for incoming CAN messages from CAN Bus*/
 	/*			 Transmit CAN messages to SBC     */
 	/**********************************************/
+	
 	if (CAN_MSGAVAIL == CAN.checkReceive())
 	{
 		CAN.readMsgBufID(&id, &len, buf);// read data,  len: data length, buf: data buf
@@ -171,6 +175,7 @@ void loop()
 		Serial.write(id);
 		Serial.write(len);
 		for(int i = 0;i<len;i++)	Serial.write(buf[i]);
-		
+	
 	}
+	
 }
