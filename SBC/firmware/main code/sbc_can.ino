@@ -28,9 +28,10 @@ uint8_t buf[8];
 uint32_t id = 0;
 uint8_t len = 0;
 
+uint8_t heartbeat;
 uint8_t sbc_bus_stats[3];
 uint16_t heartbeat_ctr = 0;
-uint16_t heartbeat_loop = 0;
+uint32_t heartbeat_loop = 0;
 uint32_t sbc_bus_loop = 0;
 
 void setup()
@@ -72,10 +73,13 @@ void loop()
 	/*  Heartbeat							 */
 	/*  Maintain comms with SBC				 */
 	/*****************************************/
-
-	if (millis() - heartbeat_loop > HEARTBEAT_TIMEOUT)
+	
+	if ((millis() - heartbeat_loop) > HEARTBEAT_TIMEOUT)
 	{
-		//dosomething
+		CAN.setupCANFrame(buf, 0, 0, HEARTBEAT_SBC_CAN);
+		buf[0] = HEARTBEAT_SBC_CAN;
+		CAN.sendMsgBuf(CAN_heartbeat, 0, 1, buf);
+		heartbeat_loop = millis();
 	}
 
 	/*****************************************/
