@@ -35,6 +35,7 @@ uint8_t sbc_bus_stats[3];
 uint16_t heartbeat_ctr = 0;
 uint32_t heartbeat_loop = 0;
 uint32_t sbc_bus_loop = 0;
+uint32_t time_test = 0;
 
 void setup()
 {
@@ -146,7 +147,7 @@ void loop()
 						//Check for HEARTBEAT from SBC
 						if (read_id == CAN_heartbeat)
 						{
-							heartbeat_loop = millis();
+							//Serial.println("hb!");
 						}
 						CAN.sendMsgBuf(read_id, 0, read_size, read_buffer);
 						read_flag = 0;
@@ -167,6 +168,7 @@ void loop()
 	/*			 Transmit CAN messages to SBC     */
 	/**********************************************/
 	
+	
 	if (CAN_MSGAVAIL == CAN.checkReceive())
 	{
 		CAN.readMsgBufID(&id, &len, buf);// read data,  len: data length, buf: data buf
@@ -175,7 +177,5 @@ void loop()
 		Serial.write(id);
 		Serial.write(len);
 		for(int i = 0;i<len;i++)	Serial.write(buf[i]);
-	
 	}
-	
 }

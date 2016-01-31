@@ -59,7 +59,7 @@ void loop()
 		hb_buf[0] = HEARTBEAT_THRUSTER;
 		CAN.sendMsgBuf(CAN_heartbeat, 0, 1, hb_buf);
 		hb_local_timer = millis();
-		if (hb_local_timer - hb_sync_timer > 2000)
+		if (hb_local_timer - hb_sync_timer > 3000)
 		{
 			Serial.print("dis:");
 			Serial.print(hb_local_timer);
