@@ -217,7 +217,7 @@ void screen_init(){
 	screen.textTransparent(RA8875_YELLOW);
 
 	/* ... and render some more text! */
-	screen.textWrite("Life is terrible");
+	screen.textWrite("Bumblebee AUV");
 }
 
 void screen_prepare(){
