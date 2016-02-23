@@ -19,6 +19,7 @@
 #define TH_TEMP2 7
 #define PMB1_TEMP 8
 #define PMB2_TEMP 9
+#define CPU_TEMP 10
 
 //Power stats
 #define BATT1_CAPACITY 0
