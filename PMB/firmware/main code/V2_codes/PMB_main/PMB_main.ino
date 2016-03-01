@@ -9,6 +9,7 @@ int lastCANStatusLoop = 0;
 
 void setup(){
   Serial.begin(9600);
+  delay(500);
 	thisPMB.init();
 }
 
@@ -18,6 +19,7 @@ void loop(){
 
 	//See if need to shutdown
 	if(digitalRead(PIN_POWEROFF_SIGNAL)){
+    Serial.println(digitalRead(PIN_POWEROFF_SIGNAL));
 	    thisPMB.shutDownPMB();
 	}
 

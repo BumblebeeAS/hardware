@@ -7720,269 +7720,6 @@ Texas Instruments and Fairchild Semiconductor, ect.&lt;br&gt;
 </deviceset>
 </devicesets>
 </library>
-<library name="SparkFun-LED">
-<description>&lt;h3&gt;SparkFun Electronics' preferred foot prints&lt;/h3&gt;
-In this library you'll find discrete LEDs for illumination or indication, but no displays.&lt;br&gt;&lt;br&gt;
-We've spent an enormous amount of time creating and checking these footprints and parts, but it is the end user's responsibility to ensure correctness and suitablity for a given componet or application. If you enjoy using this library, please buy one of our products at www.sparkfun.com.
-&lt;br&gt;&lt;br&gt;
-&lt;b&gt;Licensing:&lt;/b&gt; CC v3.0 Share-Alike You are welcome to use this library for commercial purposes. For attribution, we ask that when you begin to sell your device using our footprint, you email us with a link to the product being sold. We want bragging rights that we helped (in a very small part) to create your 8th world wonder. We would like the opportunity to feature your device on our homepage.</description>
-<packages>
-<package name="LED-0603">
-<wire x1="0.46" y1="0.17" x2="0" y2="0.17" width="0.2032" layer="21"/>
-<wire x1="-0.46" y1="0.17" x2="0" y2="0.17" width="0.2032" layer="21"/>
-<wire x1="0" y1="0.17" x2="0.2338" y2="-0.14" width="0.2032" layer="21"/>
-<wire x1="-0.0254" y1="0.1546" x2="-0.2184" y2="-0.14" width="0.2032" layer="21"/>
-<smd name="C" x="0" y="0.75" dx="0.8" dy="0.8" layer="1"/>
-<smd name="A" x="0" y="-0.75" dx="0.8" dy="0.8" layer="1"/>
-<text x="-0.6985" y="-0.889" size="0.4064" layer="25" rot="R90">&gt;NAME</text>
-<text x="1.0795" y="-1.016" size="0.4064" layer="27" rot="R90">&gt;VALUE</text>
-</package>
-<package name="LED-1206">
-<wire x1="-1" y1="1" x2="-2.4" y2="1" width="0.2032" layer="21"/>
-<wire x1="-2.4" y1="1" x2="-2.4" y2="-1" width="0.2032" layer="21"/>
-<wire x1="-2.4" y1="-1" x2="-1" y2="-1" width="0.2032" layer="21"/>
-<wire x1="1" y1="1" x2="2.4" y2="1" width="0.2032" layer="21"/>
-<wire x1="2.4" y1="1" x2="2.4" y2="-1" width="0.2032" layer="21"/>
-<wire x1="2.4" y1="-1" x2="1" y2="-1" width="0.2032" layer="21"/>
-<wire x1="0.3" y1="0.7" x2="0.3" y2="0" width="0.2032" layer="21"/>
-<wire x1="0.3" y1="0" x2="0.3" y2="-0.7" width="0.2032" layer="21"/>
-<wire x1="0.3" y1="0" x2="-0.3" y2="0.6" width="0.2032" layer="21"/>
-<wire x1="-0.3" y1="0.6" x2="-0.3" y2="-0.6" width="0.2032" layer="21"/>
-<wire x1="-0.3" y1="-0.6" x2="0.3" y2="0" width="0.2032" layer="21"/>
-<smd name="A" x="-1.5" y="0" dx="1.2" dy="1.4" layer="1"/>
-<smd name="C" x="1.5" y="0" dx="1.2" dy="1.4" layer="1"/>
-<text x="-0.889" y="1.397" size="0.4064" layer="25">&gt;NAME</text>
-<text x="-1.016" y="-1.778" size="0.4064" layer="27">&gt;VALUE</text>
-</package>
-<package name="LUXEON-REBEL">
-<smd name="ANODE" x="-1.39" y="2.63" dx="1.91" dy="2.03" layer="1" roundness="50"/>
-<smd name="CATHODE" x="1.39" y="2.63" dx="1.91" dy="2.03" layer="1" roundness="50"/>
-<smd name="P$3" x="0" y="-1.42" dx="4.68" dy="3.03" layer="1" roundness="50"/>
-<text x="-2.54" y="3.175" size="0.508" layer="25">&gt;NAME</text>
-<text x="-2.54" y="-3.175" size="0.508" layer="27">&gt;VALUE</text>
-</package>
-<package name="LED-1206-BOTTOM">
-<wire x1="-2" y1="0.4" x2="-2" y2="-0.4" width="0.127" layer="49"/>
-<wire x1="-2.4" y1="0" x2="-1.6" y2="0" width="0.127" layer="49"/>
-<wire x1="1.6" y1="0" x2="2.4" y2="0" width="0.127" layer="49"/>
-<wire x1="-1.27" y1="0" x2="-0.381" y2="0" width="0.127" layer="49"/>
-<wire x1="-0.381" y1="0" x2="-0.381" y2="0.635" width="0.127" layer="49"/>
-<wire x1="-0.381" y1="0.635" x2="0.254" y2="0" width="0.127" layer="49"/>
-<wire x1="0.254" y1="0" x2="-0.381" y2="-0.635" width="0.127" layer="49"/>
-<wire x1="-0.381" y1="-0.635" x2="-0.381" y2="0" width="0.127" layer="49"/>
-<wire x1="0.254" y1="0" x2="0.254" y2="0.635" width="0.127" layer="49"/>
-<wire x1="0.254" y1="0" x2="0.254" y2="-0.635" width="0.127" layer="49"/>
-<wire x1="0.254" y1="0" x2="1.27" y2="0" width="0.127" layer="49"/>
-<rectangle x1="-0.75" y1="-0.75" x2="0.75" y2="0.75" layer="51"/>
-<smd name="A" x="-1.8" y="0" dx="1.5" dy="1.6" layer="1"/>
-<smd name="C" x="1.8" y="0" dx="1.5" dy="1.6" layer="1"/>
-<hole x="0" y="0" drill="2.3"/>
-<polygon width="0" layer="51">
-<vertex x="1.1" y="-0.5"/>
-<vertex x="1.1" y="0.5"/>
-<vertex x="1.6" y="0.5"/>
-<vertex x="1.6" y="0.25" curve="90"/>
-<vertex x="1.4" y="0.05"/>
-<vertex x="1.4" y="-0.05" curve="90"/>
-<vertex x="1.6" y="-0.25"/>
-<vertex x="1.6" y="-0.5"/>
-</polygon>
-<polygon width="0" layer="51">
-<vertex x="-1.1" y="0.5"/>
-<vertex x="-1.1" y="-0.5"/>
-<vertex x="-1.6" y="-0.5"/>
-<vertex x="-1.6" y="-0.25" curve="90"/>
-<vertex x="-1.4" y="-0.05"/>
-<vertex x="-1.4" y="0.05" curve="90"/>
-<vertex x="-1.6" y="0.25"/>
-<vertex x="-1.6" y="0.5"/>
-</polygon>
-</package>
-</packages>
-<symbols>
-<symbol name="LED">
-<wire x1="1.27" y1="0" x2="0" y2="-2.54" width="0.254" layer="94"/>
-<wire x1="0" y1="-2.54" x2="-1.27" y2="0" width="0.254" layer="94"/>
-<wire x1="1.27" y1="-2.54" x2="0" y2="-2.54" width="0.254" layer="94"/>
-<wire x1="0" y1="-2.54" x2="-1.27" y2="-2.54" width="0.254" layer="94"/>
-<wire x1="1.27" y1="0" x2="0" y2="0" width="0.254" layer="94"/>
-<wire x1="0" y1="0" x2="-1.27" y2="0" width="0.254" layer="94"/>
-<wire x1="0" y1="0" x2="0" y2="-2.54" width="0.1524" layer="94"/>
-<wire x1="-2.032" y1="-0.762" x2="-3.429" y2="-2.159" width="0.1524" layer="94"/>
-<wire x1="-1.905" y1="-1.905" x2="-3.302" y2="-3.302" width="0.1524" layer="94"/>
-<text x="3.556" y="-4.572" size="1.778" layer="95" rot="R90">&gt;NAME</text>
-<text x="5.715" y="-4.572" size="1.778" layer="96" rot="R90">&gt;VALUE</text>
-<pin name="C" x="0" y="-5.08" visible="off" length="short" direction="pas" rot="R90"/>
-<pin name="A" x="0" y="2.54" visible="off" length="short" direction="pas" rot="R270"/>
-<polygon width="0.1524" layer="94">
-<vertex x="-3.429" y="-2.159"/>
-<vertex x="-3.048" y="-1.27"/>
-<vertex x="-2.54" y="-1.778"/>
-</polygon>
-<polygon width="0.1524" layer="94">
-<vertex x="-3.302" y="-3.302"/>
-<vertex x="-2.921" y="-2.413"/>
-<vertex x="-2.413" y="-2.921"/>
-</polygon>
-</symbol>
-</symbols>
-<devicesets>
-<deviceset name="LED-BLUE" prefix="D" uservalue="yes">
-<description>&lt;H3&gt;Blue LEDs for production use&lt;/H3&gt;&lt;p&gt;
-Various blue LEDs stocked by SparkFun production&lt;br&gt;
-0603 - DIO-08575&lt;br&gt;
-Rebel - DIO-09553&lt;br&gt;
-1206 - DIO-09911</description>
-<gates>
-<gate name="G$1" symbol="LED" x="0" y="2.54"/>
-</gates>
-<devices>
-<device name="0603" package="LED-0603">
-<connects>
-<connect gate="G$1" pin="A" pad="A"/>
-<connect gate="G$1" pin="C" pad="C"/>
-</connects>
-<technologies>
-<technology name="">
-<attribute name="PROD_ID" value="DIO-08575"/>
-<attribute name="VALUE" value="BLUE"/>
-</technology>
-</technologies>
-</device>
-<device name="1206" package="LED-1206">
-<connects>
-<connect gate="G$1" pin="A" pad="A"/>
-<connect gate="G$1" pin="C" pad="C"/>
-</connects>
-<technologies>
-<technology name="">
-<attribute name="PROD_ID" value="DIO-09911"/>
-<attribute name="VALUE" value="BLUE" constant="no"/>
-</technology>
-</technologies>
-</device>
-<device name="REBEL" package="LUXEON-REBEL">
-<connects>
-<connect gate="G$1" pin="A" pad="ANODE"/>
-<connect gate="G$1" pin="C" pad="CATHODE"/>
-</connects>
-<technologies>
-<technology name="">
-<attribute name="PROD_ID" value="DIO-09553"/>
-<attribute name="VALUE" value="BLUE"/>
-</technology>
-</technologies>
-</device>
-</devices>
-</deviceset>
-<deviceset name="LED-GREEN" prefix="D" uservalue="yes">
-<description>Various green LEDs&lt;br&gt;
-0603- DIO-00821&lt;br&gt;
-LARGE- DIO-00862&lt;br&gt;
-LILYPAD- DIO-09910&lt;br&gt;</description>
-<gates>
-<gate name="G$1" symbol="LED" x="0" y="0"/>
-</gates>
-<devices>
-<device name="0603" package="LED-0603">
-<connects>
-<connect gate="G$1" pin="A" pad="A"/>
-<connect gate="G$1" pin="C" pad="C"/>
-</connects>
-<technologies>
-<technology name="">
-<attribute name="PROD_ID" value="DIO-00821" constant="no"/>
-<attribute name="VALUE" value="GREEN" constant="no"/>
-</technology>
-</technologies>
-</device>
-<device name="LILYPAD" package="LED-1206">
-<connects>
-<connect gate="G$1" pin="A" pad="A"/>
-<connect gate="G$1" pin="C" pad="C"/>
-</connects>
-<technologies>
-<technology name="">
-<attribute name="PROD_ID" value="DIO-09910"/>
-<attribute name="VALUE" value="GREEN" constant="no"/>
-</technology>
-</technologies>
-</device>
-<device name="LARGE" package="LED-1206">
-<connects>
-<connect gate="G$1" pin="A" pad="A"/>
-<connect gate="G$1" pin="C" pad="C"/>
-</connects>
-<technologies>
-<technology name="">
-<attribute name="PROD_ID" value="DIO-00862" constant="no"/>
-<attribute name="VALUE" value="GREEN" constant="no"/>
-</technology>
-</technologies>
-</device>
-<device name="1206-BOTTOM" package="LED-1206-BOTTOM">
-<connects>
-<connect gate="G$1" pin="A" pad="A"/>
-<connect gate="G$1" pin="C" pad="C"/>
-</connects>
-<technologies>
-<technology name="">
-<attribute name="PROD_ID" value="DIO-11076" constant="no"/>
-<attribute name="VALUE" value="Green" constant="no"/>
-</technology>
-</technologies>
-</device>
-</devices>
-</deviceset>
-<deviceset name="LED-RED" prefix="D" uservalue="yes">
-<description>Assorted Red LEDs&lt;br&gt;
-LilyPad 1206- DIO-09912&lt;br&gt;
-1206- DIO-00809&lt;br&gt;
-0603- DIO-00819</description>
-<gates>
-<gate name="G$1" symbol="LED" x="0" y="0"/>
-</gates>
-<devices>
-<device name="0603" package="LED-0603">
-<connects>
-<connect gate="G$1" pin="A" pad="A"/>
-<connect gate="G$1" pin="C" pad="C"/>
-</connects>
-<technologies>
-<technology name="">
-<attribute name="PROD_ID" value="DIO-00819"/>
-<attribute name="VALUE" value="RED" constant="no"/>
-</technology>
-</technologies>
-</device>
-<device name="1206" package="LED-1206">
-<connects>
-<connect gate="G$1" pin="A" pad="A"/>
-<connect gate="G$1" pin="C" pad="C"/>
-</connects>
-<technologies>
-<technology name="">
-<attribute name="PROD_ID" value="DIO-00809"/>
-<attribute name="VALUE" value="RED" constant="no"/>
-</technology>
-</technologies>
-</device>
-<device name="LILYPAD" package="LED-1206">
-<connects>
-<connect gate="G$1" pin="A" pad="A"/>
-<connect gate="G$1" pin="C" pad="C"/>
-</connects>
-<technologies>
-<technology name="">
-<attribute name="PROD_ID" value="DIO-09912"/>
-<attribute name="VALUE" value="RED" constant="no"/>
-</technology>
-</technologies>
-</device>
-</devices>
-</deviceset>
-</devicesets>
-</library>
 <library name="pinhead">
 <description>&lt;b&gt;Pin Header Connectors&lt;/b&gt;&lt;p&gt;
 &lt;author&gt;Created by librarian@cadsoft.de&lt;/author&gt;</description>
@@ -8858,6 +8595,242 @@ Standard 0603 ceramic capacitor, and 0.1" leaded capacitor.</description>
 <rectangle x1="4.445" y1="-1.905" x2="5.08" y2="1.905" layer="43"/>
 <rectangle x1="5.08" y1="-1.27" x2="5.715" y2="1.27" layer="43"/>
 </package>
+<package name="LED-2P-2.54-6MM">
+<wire x1="1.9049" y1="1.9049" x2="1.9049" y2="-1.9049" width="0.4064" layer="21" curve="278.795288"/>
+<wire x1="1.9049" y1="-1.9049" x2="1.9049" y2="1.9049" width="0.4064" layer="21"/>
+<wire x1="2.032" y1="1.905" x2="2.032" y2="-1.905" width="0.127" layer="39" curve="281.928974"/>
+<wire x1="2.032" y1="-1.905" x2="2.032" y2="1.905" width="0.127" layer="39"/>
+<pad name="+" x="-1.2698" y="0" drill="0.889" diameter="1.651" shape="octagon"/>
+<pad name="-" x="1.2698" y="0" drill="0.889" diameter="1.651"/>
+<text x="-2.54" y="3.302" size="0.889" layer="25" ratio="11">&gt;NAME</text>
+<text x="-1.651" y="1.016" size="1.016" layer="21" ratio="10">+</text>
+<text x="0.889" y="1.016" size="1.016" layer="21" ratio="10">-</text>
+<text x="0.381" y="-2.413" size="0.889" layer="27" ratio="11" rot="R90">&gt;VALUE</text>
+</package>
+<package name="LED-2P-2.54-5MM-90D">
+<wire x1="-2.5" y1="0" x2="2.5" y2="0" width="0.127" layer="49"/>
+<wire x1="2.5" y1="0" x2="2.5" y2="6" width="0.127" layer="49"/>
+<wire x1="2.5" y1="6" x2="0" y2="8.5" width="0.127" layer="49" curve="90"/>
+<wire x1="0" y1="8.5" x2="-2.5" y2="6" width="0.127" layer="49" curve="90"/>
+<wire x1="-2.5" y1="6" x2="-2.5" y2="0" width="0.127" layer="49"/>
+<wire x1="-2.413" y1="6.223" x2="2.54" y2="6.223" width="0.127" layer="39" curve="-171.202589"/>
+<wire x1="-2.413" y1="6.223" x2="-2.413" y2="0" width="0.127" layer="39"/>
+<wire x1="-2.413" y1="0" x2="2.54" y2="0" width="0.127" layer="39"/>
+<wire x1="2.54" y1="0" x2="2.54" y2="6.223" width="0.127" layer="39"/>
+<pad name="+" x="-1.27" y="0" drill="0.889" diameter="1.651" shape="square"/>
+<pad name="-" x="1.27" y="0" drill="0.889" diameter="1.651"/>
+<text x="-1.905" y="0.762" size="1.778" layer="49" ratio="10">+</text>
+<text x="0.635" y="0.762" size="1.778" layer="49" ratio="10">-</text>
+<text x="-1.905" y="8.89" size="0.889" layer="49" ratio="11">&gt;NAME</text>
+<text x="-2.286" y="3.175" size="0.889" layer="49" ratio="11">&gt;VALUE</text>
+<polygon width="0.127" layer="49">
+<vertex x="2.54" y="0.635"/>
+<vertex x="-3.175" y="0.635"/>
+<vertex x="-3.175" y="0"/>
+<vertex x="2.54" y="0"/>
+</polygon>
+</package>
+<package name="RADIAL-2P-2.54-3.0MM">
+<description>&lt;B&gt;LED&lt;/B&gt;&lt;p&gt;
+3 mm, round</description>
+<wire x1="1.5748" y1="-1.27" x2="1.5748" y2="1.27" width="0.254" layer="51"/>
+<wire x1="-1.524" y1="0" x2="-1.1708" y2="0.9756" width="0.1524" layer="51" curve="-39.80361" cap="flat"/>
+<wire x1="-1.524" y1="0" x2="-1.1391" y2="-1.0125" width="0.1524" layer="51" curve="41.633208" cap="flat"/>
+<wire x1="1.1571" y1="0.9918" x2="1.524" y2="0" width="0.1524" layer="51" curve="-40.601165" cap="flat"/>
+<wire x1="1.1708" y1="-0.9756" x2="1.524" y2="0" width="0.1524" layer="51" curve="39.80361" cap="flat"/>
+<wire x1="0" y1="1.524" x2="1.2401" y2="0.8858" width="0.1524" layer="21" curve="-54.461337" cap="flat"/>
+<wire x1="-1.2192" y1="0.9144" x2="0" y2="1.524" width="0.1524" layer="21" curve="-53.130102" cap="flat"/>
+<wire x1="0" y1="-1.524" x2="1.203" y2="-0.9356" width="0.1524" layer="21" curve="52.126876" cap="flat"/>
+<wire x1="-1.203" y1="-0.9356" x2="0" y2="-1.524" width="0.1524" layer="21" curve="52.126876" cap="flat"/>
+<wire x1="-0.635" y1="0" x2="0" y2="0.635" width="0.1524" layer="51" curve="-90" cap="flat"/>
+<wire x1="-1.016" y1="0" x2="0" y2="1.016" width="0.1524" layer="51" curve="-90" cap="flat"/>
+<wire x1="0" y1="-0.635" x2="0.635" y2="0" width="0.1524" layer="51" curve="90" cap="flat"/>
+<wire x1="0" y1="-1.016" x2="1.016" y2="0" width="0.1524" layer="51" curve="90" cap="flat"/>
+<wire x1="0" y1="2.032" x2="1.561" y2="1.3009" width="0.254" layer="21" curve="-50.193108" cap="flat"/>
+<wire x1="-1.7929" y1="0.9562" x2="0" y2="2.032" width="0.254" layer="21" curve="-61.926949" cap="flat"/>
+<wire x1="0" y1="-2.032" x2="1.5512" y2="-1.3126" width="0.254" layer="21" curve="49.763022" cap="flat"/>
+<wire x1="-1.7643" y1="-1.0082" x2="0" y2="-2.032" width="0.254" layer="21" curve="60.255215" cap="flat"/>
+<wire x1="-2.032" y1="0" x2="-1.7891" y2="0.9634" width="0.254" layer="51" curve="-28.301701" cap="flat"/>
+<wire x1="-2.032" y1="0" x2="-1.7306" y2="-1.065" width="0.254" layer="51" curve="31.60822" cap="flat"/>
+<wire x1="1.5748" y1="1.2954" x2="1.5748" y2="0.7874" width="0.254" layer="21"/>
+<wire x1="1.5748" y1="-1.2954" x2="1.5748" y2="-0.8382" width="0.254" layer="21"/>
+<wire x1="1.524" y1="1.27" x2="1.524" y2="-1.27" width="0.127" layer="39" curve="282.680383"/>
+<wire x1="1.524" y1="-1.27" x2="1.524" y2="1.27" width="0.127" layer="39"/>
+<pad name="A" x="-1.27" y="0" drill="0.8128"/>
+<pad name="K" x="1.27" y="0" drill="0.8128"/>
+<text x="-1.905" y="2.286" size="0.889" layer="25" ratio="11">&gt;NAME</text>
+<text x="-1.905" y="-0.254" size="0.635" layer="27" ratio="10">&gt;VALUE</text>
+</package>
+<package name="LED-2P-2.54-L4.8XW2.54MM">
+<wire x1="-2.54" y1="1.27" x2="-2.54" y2="-1.27" width="0.127" layer="21"/>
+<wire x1="-2.54" y1="-1.27" x2="2.286" y2="-1.27" width="0.127" layer="21"/>
+<wire x1="2.286" y1="-1.27" x2="2.794" y2="-1.27" width="0.127" layer="21"/>
+<wire x1="2.794" y1="-1.27" x2="2.794" y2="1.27" width="0.127" layer="21"/>
+<wire x1="2.794" y1="1.27" x2="2.286" y2="1.27" width="0.127" layer="21"/>
+<wire x1="2.286" y1="1.27" x2="-2.54" y2="1.27" width="0.127" layer="21"/>
+<wire x1="2.286" y1="1.27" x2="2.286" y2="-1.27" width="0.127" layer="21"/>
+<pad name="A" x="-1.27" y="0" drill="0.8128"/>
+<pad name="K" x="1.27" y="0" drill="0.8128"/>
+<text x="-1.905" y="1.524" size="0.889" layer="25" ratio="11">&gt;NAME</text>
+<text x="-1.905" y="-1.016" size="0.635" layer="27" ratio="10">&gt;VALUE</text>
+<rectangle x1="-2.54" y1="-1.27" x2="2.794" y2="1.27" layer="39"/>
+</package>
+<package name="LED-0603">
+<wire x1="-1.3335" y1="0.635" x2="1.3335" y2="0.635" width="0.127" layer="21"/>
+<wire x1="1.3335" y1="0.635" x2="1.3335" y2="-0.635" width="0.127" layer="21"/>
+<wire x1="1.3335" y1="-0.635" x2="-1.3335" y2="-0.635" width="0.127" layer="21"/>
+<wire x1="-1.3335" y1="-0.635" x2="-1.3335" y2="0.635" width="0.127" layer="21"/>
+<wire x1="-0.127" y1="0.381" x2="-0.127" y2="-0.381" width="0.127" layer="21"/>
+<wire x1="-0.127" y1="-0.381" x2="0" y2="-0.1905" width="0.127" layer="21"/>
+<wire x1="0" y1="-0.1905" x2="0.127" y2="0" width="0.127" layer="21"/>
+<wire x1="0.127" y1="0" x2="0" y2="0.1905" width="0.127" layer="21"/>
+<wire x1="0" y1="0.1905" x2="-0.127" y2="0.381" width="0.127" layer="21"/>
+<wire x1="-0.0635" y1="0.254" x2="-0.0635" y2="-0.254" width="0.127" layer="21"/>
+<wire x1="0" y1="0.1905" x2="0" y2="-0.1905" width="0.127" layer="21"/>
+<smd name="+" x="-0.762" y="0" dx="0.762" dy="0.889" layer="1" roundness="25"/>
+<smd name="-" x="0.762" y="0" dx="0.762" dy="0.889" layer="1" roundness="25"/>
+<text x="-1.905" y="0.889" size="0.889" layer="25" ratio="11">&gt;NAME</text>
+<text x="-1.143" y="-0.3175" size="0.635" layer="27" ratio="10">&gt;VALUE</text>
+<rectangle x1="-1.27" y1="-0.5715" x2="1.27" y2="0.5715" layer="39"/>
+</package>
+<package name="LED-0805">
+<wire x1="1.5875" y1="0.889" x2="1.5875" y2="-0.889" width="0.127" layer="21"/>
+<wire x1="1.5875" y1="-0.889" x2="-1.5875" y2="-0.889" width="0.127" layer="21"/>
+<wire x1="-1.5875" y1="-0.889" x2="-1.5875" y2="0.889" width="0.127" layer="21"/>
+<wire x1="-1.5875" y1="0.889" x2="1.5875" y2="0.889" width="0.127" layer="21"/>
+<wire x1="-0.1905" y1="0.508" x2="-0.1905" y2="0.254" width="0.127" layer="21"/>
+<wire x1="-0.1905" y1="0.254" x2="-0.1905" y2="0" width="0.127" layer="21"/>
+<wire x1="-0.1905" y1="0" x2="-0.1905" y2="-0.254" width="0.127" layer="21"/>
+<wire x1="-0.1905" y1="-0.254" x2="-0.1905" y2="-0.508" width="0.127" layer="21"/>
+<wire x1="-0.1905" y1="-0.508" x2="0" y2="-0.254" width="0.127" layer="21"/>
+<wire x1="0" y1="-0.254" x2="0.1905" y2="0" width="0.127" layer="21"/>
+<wire x1="0.1905" y1="0" x2="-0.1905" y2="0.508" width="0.127" layer="21"/>
+<wire x1="-0.1905" y1="0.508" x2="0.127" y2="-0.0635" width="0.127" layer="21"/>
+<wire x1="0.127" y1="-0.0635" x2="-0.1905" y2="0.254" width="0.127" layer="21"/>
+<wire x1="-0.1905" y1="0.254" x2="0.0635" y2="-0.127" width="0.127" layer="21"/>
+<wire x1="0.0635" y1="-0.127" x2="-0.1905" y2="0" width="0.127" layer="21"/>
+<wire x1="-0.1905" y1="0" x2="0" y2="-0.254" width="0.127" layer="21"/>
+<wire x1="0" y1="-0.254" x2="-0.1905" y2="-0.254" width="0.127" layer="21"/>
+<smd name="+" x="-0.889" y="0" dx="0.889" dy="1.27" layer="1" roundness="25"/>
+<smd name="-" x="0.889" y="0" dx="0.889" dy="1.27" layer="1" roundness="25"/>
+<text x="-1.905" y="1.143" size="0.889" layer="25" font="vector" ratio="11">&gt;NAME</text>
+<text x="-1.397" y="-0.3175" size="0.635" layer="27" ratio="10">&gt;VALUE</text>
+<rectangle x1="-1.5875" y1="-0.889" x2="1.5875" y2="0.889" layer="39"/>
+</package>
+<package name="LED-2P-2.54-5MM">
+<pad name="+" x="-1.2698" y="0" drill="0.889" diameter="1.651" shape="square"/>
+<pad name="-" x="1.2698" y="0" drill="0.889" diameter="1.651"/>
+<text x="-1.905" y="2.667" size="0.889" layer="27" ratio="11">&gt;NAME</text>
+<text x="-1.905" y="0.635" size="0.635" layer="27" ratio="10">&gt;VALUE</text>
+<circle x="0" y="0" radius="2.5" width="0.127" layer="21"/>
+</package>
+<package name="LED-SIDE-VIEW-0603-LEFT">
+<smd name="1" x="0" y="-0.95" dx="1" dy="1" layer="1" rot="R90"/>
+<smd name="2" x="0" y="0.95" dx="1" dy="1" layer="1" rot="R90"/>
+<polygon width="0.127" layer="21">
+<vertex x="-0.381" y="-0.127"/>
+<vertex x="0.381" y="-0.127"/>
+<vertex x="0" y="0.254"/>
+</polygon>
+<wire x1="-0.7" y1="-1.65" x2="-0.7" y2="-0.6" width="0.127" layer="21"/>
+<wire x1="-0.7" y1="-0.6" x2="-0.7" y2="0.6" width="0.127" layer="21"/>
+<wire x1="-0.7" y1="0.6" x2="-0.7" y2="1.65" width="0.127" layer="21"/>
+<wire x1="-0.7" y1="1.65" x2="0.7" y2="1.651" width="0.127" layer="21"/>
+<wire x1="0.7" y1="1.651" x2="0.7" y2="-1.65" width="0.127" layer="21"/>
+<wire x1="0.7" y1="-1.65" x2="-0.7" y2="-1.65" width="0.127" layer="21"/>
+<text x="-1.651" y="-1.905" size="0.889" layer="25" ratio="11" rot="R90">&gt;NAME</text>
+<text x="0.254" y="-1.524" size="0.635" layer="27" ratio="10" rot="R90">&gt;VALUE</text>
+<rectangle x1="-1.651" y1="-0.635" x2="1.651" y2="0.635" layer="39" rot="R90"/>
+<wire x1="-0.7" y1="-0.6" x2="-0.9" y2="-0.6" width="0.127" layer="21" style="dashdot"/>
+<wire x1="-1.1" y1="-0.6" x2="-1.3" y2="-0.6" width="0.127" layer="21" style="dashdot"/>
+<wire x1="-1.3" y1="-0.6" x2="-1.3" y2="-0.4" width="0.127" layer="21" style="dashdot"/>
+<wire x1="-1.3" y1="0.6" x2="-1.1" y2="0.6" width="0.127" layer="21" style="dashdot"/>
+<wire x1="-0.9" y1="0.6" x2="-0.7" y2="0.6" width="0.127" layer="21" style="dashdot"/>
+<wire x1="-1.3" y1="0.6" x2="-1.3" y2="0.4" width="0.127" layer="21" style="dashdot"/>
+<wire x1="-1.3" y1="-0.1" x2="-1.3" y2="0.1" width="0.127" layer="21" style="dashdot"/>
+</package>
+<package name="LED-SIDE-VIEW-0603-RIGHT">
+<smd name="1" x="0" y="-0.95" dx="1" dy="1" layer="1" rot="R90"/>
+<smd name="2" x="0" y="0.95" dx="1" dy="1" layer="1" rot="R90"/>
+<polygon width="0.127" layer="21">
+<vertex x="-0.381" y="-0.127"/>
+<vertex x="0.381" y="-0.127"/>
+<vertex x="0" y="0.254"/>
+</polygon>
+<wire x1="-0.7" y1="-1.65" x2="-0.7" y2="1.65" width="0.127" layer="21"/>
+<wire x1="-0.7" y1="1.65" x2="0.7" y2="1.651" width="0.127" layer="21"/>
+<wire x1="0.7" y1="1.651" x2="0.7" y2="-1.65" width="0.127" layer="21"/>
+<wire x1="0.7" y1="-1.65" x2="-0.7" y2="-1.65" width="0.127" layer="21"/>
+<text x="-1.016" y="-1.905" size="0.889" layer="25" ratio="11" rot="R90">&gt;NAME</text>
+<text x="0.254" y="-1.524" size="0.635" layer="27" ratio="10" rot="R90">&gt;VALUE</text>
+<rectangle x1="-1.651" y1="-0.635" x2="1.651" y2="0.635" layer="39" rot="R90"/>
+<wire x1="0.7" y1="0.6" x2="0.9" y2="0.6" width="0.127" layer="21" style="dashdot"/>
+<wire x1="1.1" y1="0.6" x2="1.3" y2="0.6" width="0.127" layer="21" style="dashdot"/>
+<wire x1="1.3" y1="0.6" x2="1.3" y2="0.4" width="0.127" layer="21" style="dashdot"/>
+<wire x1="1.3" y1="-0.6" x2="1.1" y2="-0.6" width="0.127" layer="21" style="dashdot"/>
+<wire x1="0.9" y1="-0.6" x2="0.7" y2="-0.6" width="0.127" layer="21" style="dashdot"/>
+<wire x1="1.3" y1="-0.6" x2="1.3" y2="-0.4" width="0.127" layer="21" style="dashdot"/>
+<wire x1="1.3" y1="0.1" x2="1.3" y2="-0.1" width="0.127" layer="21" style="dashdot"/>
+</package>
+<package name="LED-1206">
+<smd name="+" x="-1.6" y="0" dx="1.5" dy="1.5" layer="1"/>
+<smd name="-" x="1.6" y="0" dx="1.5" dy="1.5" layer="1"/>
+<wire x1="-1.6" y1="0.75" x2="1.6" y2="0.75" width="0.127" layer="21"/>
+<wire x1="1.6" y1="0.75" x2="1.6" y2="-0.75" width="0.127" layer="21"/>
+<wire x1="1.6" y1="-0.75" x2="-1.6" y2="-0.75" width="0.127" layer="21"/>
+<wire x1="-1.6" y1="-0.75" x2="-1.6" y2="0.75" width="0.127" layer="21"/>
+<wire x1="-0.254" y1="0.381" x2="-0.254" y2="-0.381" width="0.127" layer="21"/>
+<polygon width="0.127" layer="21">
+<vertex x="-0.381" y="0.508"/>
+<vertex x="-0.381" y="-0.508"/>
+<vertex x="0.381" y="0"/>
+</polygon>
+<text x="-2.54" y="1.016" size="0.889" layer="25" ratio="11">&gt;NAME</text>
+<text x="-1.524" y="-0.254" size="0.635" layer="27" ratio="10">&gt;VALUE</text>
+</package>
+<package name="LED-3528">
+<wire x1="-1.75" y1="1.4" x2="1.75" y2="1.4" width="0.127" layer="21"/>
+<wire x1="1.75" y1="1.4" x2="1.75" y2="-0.72315625" width="0.127" layer="21"/>
+<wire x1="1.75" y1="-0.72315625" x2="1.07315625" y2="-1.4" width="0.127" layer="21"/>
+<wire x1="1.07315625" y1="-1.4" x2="-1.75" y2="-1.4" width="0.127" layer="21"/>
+<wire x1="-1.75" y1="-1.4" x2="-1.75" y2="1.4" width="0.127" layer="21"/>
+<smd name="1" x="-1.5" y="0" dx="2.6" dy="1.5" layer="1" rot="R90"/>
+<smd name="2" x="1.5" y="0" dx="2.6" dy="1.5" layer="1" rot="R90"/>
+<text x="-1.905" y="1.778" size="0.889" layer="21" ratio="11">&gt;NAME</text>
+<text x="-1.651" y="-0.254" size="0.635" layer="27" ratio="10">&gt;VALUE</text>
+<rectangle x1="-1.75" y1="-1.4" x2="1.75" y2="1.4" layer="39"/>
+<polygon width="0.127" layer="21">
+<vertex x="-0.508" y="0.635"/>
+<vertex x="0.508" y="0"/>
+<vertex x="-0.508" y="-0.635"/>
+</polygon>
+</package>
+<package name="LED-0402">
+<smd name="+" x="-0.4445" y="0" dx="0.635" dy="0.635" layer="1" roundness="50" rot="R90"/>
+<smd name="-" x="0.4445" y="0" dx="0.635" dy="0.635" layer="1" roundness="50" rot="R90"/>
+<text x="-1.905" y="0.635" size="0.889" layer="25" ratio="11">&gt;NAME</text>
+<text x="-0.635" y="-0.127" size="0.254" layer="27" ratio="10">&gt;VALUE</text>
+<wire x1="-0.762" y1="-0.4445" x2="-0.889" y2="-0.3175" width="0.0762" layer="21" curve="-90"/>
+<wire x1="-0.889" y1="-0.3175" x2="-0.889" y2="0.3175" width="0.0762" layer="21"/>
+<wire x1="-0.889" y1="0.3175" x2="-0.762" y2="0.4445" width="0.0762" layer="21" curve="-90"/>
+<wire x1="-0.762" y1="0.4445" x2="0.5715" y2="0.4445" width="0.0762" layer="21"/>
+<wire x1="0.5715" y1="0.4445" x2="0.889" y2="0.127" width="0.0762" layer="21"/>
+<wire x1="0.889" y1="0.127" x2="0.889" y2="-0.127" width="0.0762" layer="21"/>
+<wire x1="0.889" y1="-0.127" x2="0.5715" y2="-0.4445" width="0.0762" layer="21"/>
+<wire x1="0.5715" y1="-0.4445" x2="-0.762" y2="-0.4445" width="0.0762" layer="21"/>
+</package>
+<package name="2P-SMD-D8.0MM">
+<circle x="0" y="0" radius="4" width="0.127" layer="21"/>
+<smd name="+" x="-6.5" y="-0.75" dx="2.1" dy="1.8" layer="1"/>
+<smd name="-" x="6.5" y="0.75" dx="2.1" dy="1.8" layer="1"/>
+<wire x1="-6.731" y1="1.905" x2="-6.731" y2="1.27" width="0.127" layer="21"/>
+<wire x1="-6.731" y1="1.27" x2="-6.731" y2="0.635" width="0.127" layer="21"/>
+<wire x1="-6.731" y1="1.27" x2="-6.096" y2="1.27" width="0.127" layer="21"/>
+<wire x1="-6.096" y1="1.905" x2="-6.096" y2="0.635" width="0.127" layer="21"/>
+<circle x="0" y="0" radius="4" width="0.127" layer="39"/>
+<text x="-1.905" y="4.445" size="0.889" layer="25" ratio="11">&gt;NAME</text>
+<text x="-1.905" y="-0.635" size="0.889" layer="25" ratio="11">&gt;VALUE</text>
+</package>
 </packages>
 <symbols>
 <symbol name="CRYSTAL">
@@ -8875,6 +8848,24 @@ Standard 0603 ceramic capacitor, and 0.1" leaded capacitor.</description>
 <text x="-3.81" y="-2.54" size="1.27" layer="96" ratio="10">&gt;VALUE</text>
 <pin name="2" x="3.81" y="0" visible="off" length="short" direction="pas" swaplevel="1" rot="R180"/>
 <pin name="1" x="-3.81" y="0" visible="off" length="short" direction="pas" swaplevel="1"/>
+</symbol>
+<symbol name="LED-1">
+<wire x1="-1.27" y1="-2.54" x2="-1.27" y2="2.54" width="0.254" layer="94"/>
+<wire x1="-1.27" y1="2.54" x2="-1.143" y2="2.413" width="0.254" layer="94"/>
+<wire x1="-1.143" y1="2.413" x2="-0.508" y2="1.778" width="0.254" layer="94"/>
+<wire x1="-0.508" y1="1.778" x2="1.27" y2="0" width="0.254" layer="94"/>
+<wire x1="1.27" y1="0" x2="-1.27" y2="-2.54" width="0.254" layer="94"/>
+<wire x1="1.27" y1="2.54" x2="1.27" y2="-2.54" width="0.254" layer="94"/>
+<wire x1="-1.143" y1="2.413" x2="0.889" y2="4.445" width="0.254" layer="94"/>
+<wire x1="0.889" y1="4.445" x2="0.127" y2="4.318" width="0.254" layer="94"/>
+<wire x1="0.889" y1="4.445" x2="0.762" y2="3.683" width="0.254" layer="94"/>
+<wire x1="-0.508" y1="1.778" x2="1.524" y2="3.81" width="0.254" layer="94"/>
+<wire x1="1.524" y1="3.81" x2="0.762" y2="3.683" width="0.254" layer="94"/>
+<wire x1="1.524" y1="3.81" x2="1.397" y2="3.048" width="0.254" layer="94"/>
+<text x="-5.08" y="1.27" size="1.27" layer="95" ratio="10">&gt;NAME</text>
+<text x="-5.08" y="-2.54" size="1.27" layer="96" ratio="10">&gt;VALUE</text>
+<pin name="+" x="-3.81" y="0" visible="off" length="short" direction="pas"/>
+<pin name="-" x="3.81" y="0" visible="off" length="short" direction="pas" rot="R180"/>
 </symbol>
 </symbols>
 <devicesets>
@@ -8905,6 +8896,130 @@ Standard 0603 ceramic capacitor, and 0.1" leaded capacitor.</description>
 <connects>
 <connect gate="X" pin="1" pad="1"/>
 <connect gate="X" pin="2" pad="2"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
+<deviceset name="LED" prefix="D" uservalue="yes">
+<gates>
+<gate name="LED" symbol="LED-1" x="0" y="0" swaplevel="1"/>
+</gates>
+<devices>
+<device name="-6MM" package="LED-2P-2.54-6MM">
+<connects>
+<connect gate="LED" pin="+" pad="+"/>
+<connect gate="LED" pin="-" pad="-"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="-FLSH_LED" package="LED-2P-2.54-5MM-90D">
+<connects>
+<connect gate="LED" pin="+" pad="+"/>
+<connect gate="LED" pin="-" pad="-"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="-3MM" package="RADIAL-2P-2.54-3.0MM">
+<connects>
+<connect gate="LED" pin="+" pad="A"/>
+<connect gate="LED" pin="-" pad="K"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="-SQUARE" package="LED-2P-2.54-L4.8XW2.54MM">
+<connects>
+<connect gate="LED" pin="+" pad="A"/>
+<connect gate="LED" pin="-" pad="K"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="-0603" package="LED-0603">
+<connects>
+<connect gate="LED" pin="+" pad="+"/>
+<connect gate="LED" pin="-" pad="-"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="-0805" package="LED-0805">
+<connects>
+<connect gate="LED" pin="+" pad="+"/>
+<connect gate="LED" pin="-" pad="-"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="-TEST" package="LED-2P-2.54-5MM">
+<connects>
+<connect gate="LED" pin="+" pad="+"/>
+<connect gate="LED" pin="-" pad="-"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="-LEFT" package="LED-SIDE-VIEW-0603-LEFT">
+<connects>
+<connect gate="LED" pin="+" pad="1"/>
+<connect gate="LED" pin="-" pad="2"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="-RIGHT" package="LED-SIDE-VIEW-0603-RIGHT">
+<connects>
+<connect gate="LED" pin="+" pad="1"/>
+<connect gate="LED" pin="-" pad="2"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="-1206" package="LED-1206">
+<connects>
+<connect gate="LED" pin="+" pad="+"/>
+<connect gate="LED" pin="-" pad="-"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="-3528" package="LED-3528">
+<connects>
+<connect gate="LED" pin="+" pad="1"/>
+<connect gate="LED" pin="-" pad="2"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="-0402" package="LED-0402">
+<connects>
+<connect gate="LED" pin="+" pad="+"/>
+<connect gate="LED" pin="-" pad="-"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="-8MM" package="2P-SMD-D8.0MM">
+<connects>
+<connect gate="LED" pin="+" pad="+"/>
+<connect gate="LED" pin="-" pad="-"/>
 </connects>
 <technologies>
 <technology name=""/>
@@ -11601,15 +11716,14 @@ These are standard SMD and PTH capacitors. Normally 10uF, 47uF, and 100uF in ele
 <part name="GND4" library="supply1" deviceset="GND" device=""/>
 <part name="R3" library="resistor" deviceset="R-EU_" device="R0805W" value="330"/>
 <part name="GND5" library="supply1" deviceset="GND" device=""/>
-<part name="D3" library="SparkFun-LED" deviceset="LED-BLUE" device="0603" value="BLUE"/>
 <part name="P+7" library="supply1" deviceset="+5V" device=""/>
-<part name="C2" library="Panasonic-EEEFT_EEEH" deviceset="EEE-" device="-CASE-D8" technology="FTV151XAP" value="150UF"/>
+<part name="C2" library="Panasonic-EEEFT_EEEH" deviceset="EEE-" device="-CASE-D8" technology="FTV151XAP" value="100UF"/>
 <part name="GND6" library="supply1" deviceset="GND" device=""/>
 <part name="JP2" library="pinhead" deviceset="PINHD-1X6" device="/90"/>
 <part name="JP3" library="pinhead" deviceset="PINHD-2X3" device=""/>
 <part name="SW1" library="mc32829(pb_sw)" deviceset="MC32829" device=""/>
 <part name="GND7" library="supply1" deviceset="GND" device=""/>
-<part name="C3" library="SparkFun-Capacitors" deviceset="CAP" device="0805" value="22p"/>
+<part name="C3" library="SparkFun-Capacitors" deviceset="CAP" device="0805" value="100p"/>
 <part name="R4" library="resistor" deviceset="R-EU_" device="R0805W" value="10k"/>
 <part name="P+8" library="supply1" deviceset="+5V" device=""/>
 <part name="P+9" library="supply1" deviceset="+5V" device=""/>
@@ -11695,11 +11809,6 @@ These are standard SMD and PTH capacitors. Normally 10uF, 47uF, and 100uF in ele
 <part name="P+19" library="supply1" deviceset="+5V" device=""/>
 <part name="GND23" library="supply1" deviceset="GND" device=""/>
 <part name="R27" library="resistor" deviceset="R-EU_" device="R0805W" value="10k"/>
-<part name="TX_CAN" library="SparkFun-LED" deviceset="LED-BLUE" device="0603" value="BLUE"/>
-<part name="RX_CAN" library="SparkFun-LED" deviceset="LED-GREEN" device="0603" value="GREEN"/>
-<part name="TXO" library="SparkFun-LED" deviceset="LED-BLUE" device="0603" value="BLUE"/>
-<part name="RXI" library="SparkFun-LED" deviceset="LED-GREEN" device="0603" value="GREEN"/>
-<part name="WARNING" library="SparkFun-LED" deviceset="LED-RED" device="0603" value="RED"/>
 <part name="R28" library="resistor" deviceset="R-EU_" device="R0805W" value="680"/>
 <part name="R29" library="resistor" deviceset="R-EU_" device="R0805W" value="680"/>
 <part name="R30" library="resistor" deviceset="R-EU_" device="R0805W" value="680"/>
@@ -11730,11 +11839,16 @@ These are standard SMD and PTH capacitors. Normally 10uF, 47uF, and 100uF in ele
 <part name="C19" library="SparkFun-Capacitors" deviceset="CAP" device="0805" value="10u"/>
 <part name="P+23" library="supply1" deviceset="VCC" device=""/>
 <part name="P+24" library="supply1" deviceset="VCC" device=""/>
-<part name="R36" library="resistor" deviceset="R-EU_" device="R0805W" value="100"/>
 <part name="GND26" library="supply1" deviceset="GND" device=""/>
 <part name="R37" library="resistor" deviceset="R-EU_" device="R0805W" value="68"/>
 <part name="R40" library="resistor" deviceset="R-EU_" device="R0805W" value="2.8k"/>
 <part name="C17" library="SparkFun-Capacitors" deviceset="CAP" device="0805" value="56n"/>
+<part name="WARNING" library="Discrete" deviceset="LED" device="-0805"/>
+<part name="TX0" library="Discrete" deviceset="LED" device="-0805" value="Blue"/>
+<part name="RXI" library="Discrete" deviceset="LED" device="-0805" value="Green"/>
+<part name="RX_CAN" library="Discrete" deviceset="LED" device="-0805" value="Green"/>
+<part name="TX_CAN" library="Discrete" deviceset="LED" device="-0805" value="Blue"/>
+<part name="POWER" library="Discrete" deviceset="LED" device="-0805" value="blue"/>
 </parts>
 <sheets>
 <sheet>
@@ -11871,7 +11985,6 @@ These are standard SMD and PTH capacitors. Normally 10uF, 47uF, and 100uF in ele
 <instance part="GND4" gate="1" x="248.92" y="187.96"/>
 <instance part="R3" gate="G$1" x="281.94" y="205.74" rot="R90"/>
 <instance part="GND5" gate="1" x="281.94" y="185.42"/>
-<instance part="D3" gate="G$1" x="281.94" y="195.58"/>
 <instance part="P+7" gate="1" x="274.32" y="226.06"/>
 <instance part="C2" gate="A" x="271.78" y="208.28" rot="R270"/>
 <instance part="GND6" gate="1" x="271.78" y="187.96"/>
@@ -11965,11 +12078,6 @@ These are standard SMD and PTH capacitors. Normally 10uF, 47uF, and 100uF in ele
 <instance part="P+19" gate="1" x="647.7" y="162.56"/>
 <instance part="GND23" gate="1" x="660.4" y="132.08"/>
 <instance part="R27" gate="G$1" x="660.4" y="144.78" rot="R90"/>
-<instance part="TX_CAN" gate="G$1" x="698.5" y="154.94" rot="R270"/>
-<instance part="RX_CAN" gate="G$1" x="698.5" y="144.78" rot="R270"/>
-<instance part="TXO" gate="G$1" x="698.5" y="134.62" rot="R270"/>
-<instance part="RXI" gate="G$1" x="698.5" y="124.46" rot="R270"/>
-<instance part="WARNING" gate="G$1" x="698.5" y="114.3" rot="R270"/>
 <instance part="R28" gate="G$1" x="708.66" y="154.94" rot="R180"/>
 <instance part="R29" gate="G$1" x="708.66" y="144.78" rot="R180"/>
 <instance part="R30" gate="G$1" x="708.66" y="134.62" rot="R180"/>
@@ -12000,11 +12108,16 @@ These are standard SMD and PTH capacitors. Normally 10uF, 47uF, and 100uF in ele
 <instance part="C19" gate="G$1" x="436.88" y="45.72"/>
 <instance part="P+23" gate="VCC" x="53.34" y="220.98"/>
 <instance part="P+24" gate="VCC" x="78.74" y="213.36"/>
-<instance part="R36" gate="G$1" x="121.92" y="210.82"/>
 <instance part="GND26" gate="1" x="599.44" y="187.96"/>
 <instance part="R37" gate="G$1" x="177.8" y="139.7"/>
 <instance part="R40" gate="G$1" x="134.62" y="144.78"/>
 <instance part="C17" gate="G$1" x="129.54" y="134.62"/>
+<instance part="WARNING" gate="LED" x="695.96" y="114.3" rot="R180"/>
+<instance part="TX0" gate="LED" x="695.96" y="134.62" rot="R180"/>
+<instance part="RXI" gate="LED" x="695.96" y="124.46" rot="R180"/>
+<instance part="RX_CAN" gate="LED" x="695.96" y="144.78" rot="R180"/>
+<instance part="TX_CAN" gate="LED" x="695.96" y="154.94" rot="R180"/>
+<instance part="POWER" gate="LED" x="281.94" y="193.04" rot="R270"/>
 </instances>
 <busses>
 </busses>
@@ -12149,27 +12262,7 @@ These are standard SMD and PTH capacitors. Normally 10uF, 47uF, and 100uF in ele
 <wire x1="144.78" y1="210.82" x2="152.4" y2="210.82" width="0.1524" layer="91"/>
 </segment>
 </net>
-<net name="SMF" class="0">
-<segment>
-<pinref part="RLY1" gate="RELAY" pin="12"/>
-<wire x1="106.68" y1="213.36" x2="111.76" y2="213.36" width="0.1524" layer="91"/>
-<wire x1="111.76" y1="213.36" x2="111.76" y2="210.82" width="0.1524" layer="91"/>
-<pinref part="RLY1" gate="RELAY" pin="9"/>
-<wire x1="111.76" y1="210.82" x2="111.76" y2="205.74" width="0.1524" layer="91"/>
-<wire x1="111.76" y1="205.74" x2="106.68" y2="205.74" width="0.1524" layer="91"/>
-<wire x1="116.84" y1="210.82" x2="111.76" y2="210.82" width="0.1524" layer="91"/>
-<junction x="111.76" y="210.82"/>
-<label x="109.22" y="213.36" size="1.778" layer="95"/>
-<pinref part="R36" gate="G$1" pin="1"/>
-</segment>
-</net>
 <net name="PE" class="0">
-<segment>
-<pinref part="PE1" gate="M" pin="PE"/>
-<wire x1="127" y1="210.82" x2="129.54" y2="210.82" width="0.1524" layer="91"/>
-<wire x1="129.54" y1="210.82" x2="129.54" y2="203.2" width="0.1524" layer="91"/>
-<pinref part="R36" gate="G$1" pin="2"/>
-</segment>
 <segment>
 <pinref part="R11" gate="G$1" pin="1"/>
 <pinref part="PE2" gate="M" pin="PE"/>
@@ -12207,6 +12300,19 @@ These are standard SMD and PTH capacitors. Normally 10uF, 47uF, and 100uF in ele
 <pinref part="PE4" gate="M" pin="PE"/>
 <wire x1="68.58" y1="139.7" x2="68.58" y2="111.76" width="0.1524" layer="91"/>
 </segment>
+<segment>
+<pinref part="PE1" gate="M" pin="PE"/>
+<wire x1="129.54" y1="203.2" x2="129.54" y2="210.82" width="0.1524" layer="91"/>
+<pinref part="RLY1" gate="RELAY" pin="12"/>
+<wire x1="106.68" y1="213.36" x2="111.76" y2="213.36" width="0.1524" layer="91"/>
+<pinref part="RLY1" gate="RELAY" pin="9"/>
+<wire x1="111.76" y1="213.36" x2="111.76" y2="210.82" width="0.1524" layer="91"/>
+<wire x1="111.76" y1="210.82" x2="111.76" y2="205.74" width="0.1524" layer="91"/>
+<wire x1="111.76" y1="205.74" x2="106.68" y2="205.74" width="0.1524" layer="91"/>
+<label x="109.22" y="213.36" size="1.778" layer="95"/>
+<wire x1="129.54" y1="210.82" x2="111.76" y2="210.82" width="0.1524" layer="91"/>
+<junction x="111.76" y="210.82"/>
+</segment>
 </net>
 <net name="GND" class="0">
 <segment>
@@ -12231,9 +12337,11 @@ These are standard SMD and PTH capacitors. Normally 10uF, 47uF, and 100uF in ele
 <junction x="203.2" y="200.66"/>
 </segment>
 <segment>
-<pinref part="D3" gate="G$1" pin="C"/>
 <pinref part="GND5" gate="1" pin="GND"/>
-<wire x1="281.94" y1="190.5" x2="281.94" y2="187.96" width="0.1524" layer="91"/>
+<wire x1="281.94" y1="190.5" x2="281.94" y2="189.23" width="0.1524" layer="91"/>
+<pinref part="POWER" gate="LED" pin="-"/>
+<wire x1="281.94" y1="189.23" x2="281.94" y2="187.96" width="0.1524" layer="91"/>
+<junction x="281.94" y="189.23"/>
 </segment>
 <segment>
 <pinref part="D2" gate="G$1" pin="1"/>
@@ -12493,8 +12601,10 @@ These are standard SMD and PTH capacitors. Normally 10uF, 47uF, and 100uF in ele
 <net name="N$7" class="0">
 <segment>
 <pinref part="R3" gate="G$1" pin="1"/>
-<pinref part="D3" gate="G$1" pin="A"/>
-<wire x1="281.94" y1="200.66" x2="281.94" y2="198.12" width="0.1524" layer="91"/>
+<wire x1="281.94" y1="200.66" x2="281.94" y2="196.85" width="0.1524" layer="91"/>
+<pinref part="POWER" gate="LED" pin="+"/>
+<wire x1="281.94" y1="196.85" x2="281.94" y2="198.12" width="0.1524" layer="91"/>
+<junction x="281.94" y="196.85"/>
 </segment>
 </net>
 <net name="+5V" class="0">
@@ -13299,44 +13409,56 @@ These are standard SMD and PTH capacitors. Normally 10uF, 47uF, and 100uF in ele
 </net>
 <net name="N$10" class="0">
 <segment>
-<pinref part="WARNING" gate="G$1" pin="A"/>
 <pinref part="R32" gate="G$1" pin="2"/>
-<wire x1="701.04" y1="114.3" x2="703.58" y2="114.3" width="0.1524" layer="91"/>
+<wire x1="701.04" y1="114.3" x2="699.77" y2="114.3" width="0.1524" layer="91"/>
+<pinref part="WARNING" gate="LED" pin="+"/>
+<wire x1="699.77" y1="114.3" x2="703.58" y2="114.3" width="0.1524" layer="91"/>
+<junction x="699.77" y="114.3"/>
 </segment>
 </net>
 <net name="N$11" class="0">
 <segment>
-<pinref part="RXI" gate="G$1" pin="A"/>
 <pinref part="R31" gate="G$1" pin="2"/>
-<wire x1="701.04" y1="124.46" x2="703.58" y2="124.46" width="0.1524" layer="91"/>
+<wire x1="701.04" y1="124.46" x2="699.77" y2="124.46" width="0.1524" layer="91"/>
+<pinref part="RXI" gate="LED" pin="+"/>
+<wire x1="699.77" y1="124.46" x2="703.58" y2="124.46" width="0.1524" layer="91"/>
+<junction x="699.77" y="124.46"/>
 </segment>
 </net>
 <net name="N$12" class="0">
 <segment>
-<pinref part="TXO" gate="G$1" pin="A"/>
 <pinref part="R30" gate="G$1" pin="2"/>
-<wire x1="701.04" y1="134.62" x2="703.58" y2="134.62" width="0.1524" layer="91"/>
+<wire x1="701.04" y1="134.62" x2="699.77" y2="134.62" width="0.1524" layer="91"/>
+<pinref part="TX0" gate="LED" pin="+"/>
+<wire x1="699.77" y1="134.62" x2="703.58" y2="134.62" width="0.1524" layer="91"/>
+<junction x="699.77" y="134.62"/>
 </segment>
 </net>
 <net name="N$13" class="0">
 <segment>
-<pinref part="RX_CAN" gate="G$1" pin="A"/>
 <pinref part="R29" gate="G$1" pin="2"/>
-<wire x1="701.04" y1="144.78" x2="703.58" y2="144.78" width="0.1524" layer="91"/>
+<wire x1="701.04" y1="144.78" x2="699.77" y2="144.78" width="0.1524" layer="91"/>
+<pinref part="RX_CAN" gate="LED" pin="+"/>
+<wire x1="699.77" y1="144.78" x2="703.58" y2="144.78" width="0.1524" layer="91"/>
+<junction x="699.77" y="144.78"/>
 </segment>
 </net>
 <net name="N$14" class="0">
 <segment>
-<pinref part="TX_CAN" gate="G$1" pin="A"/>
 <pinref part="R28" gate="G$1" pin="2"/>
-<wire x1="701.04" y1="154.94" x2="703.58" y2="154.94" width="0.1524" layer="91"/>
+<wire x1="701.04" y1="154.94" x2="699.77" y2="154.94" width="0.1524" layer="91"/>
+<pinref part="TX_CAN" gate="LED" pin="+"/>
+<wire x1="699.77" y1="154.94" x2="703.58" y2="154.94" width="0.1524" layer="91"/>
+<junction x="699.77" y="154.94"/>
 </segment>
 </net>
 <net name="TXCAN" class="0">
 <segment>
-<pinref part="TX_CAN" gate="G$1" pin="C"/>
-<wire x1="693.42" y1="154.94" x2="685.8" y2="154.94" width="0.1524" layer="91"/>
+<wire x1="693.42" y1="154.94" x2="692.15" y2="154.94" width="0.1524" layer="91"/>
 <label x="685.8" y="154.94" size="1.778" layer="95"/>
+<pinref part="TX_CAN" gate="LED" pin="-"/>
+<wire x1="692.15" y1="154.94" x2="685.8" y2="154.94" width="0.1524" layer="91"/>
+<junction x="692.15" y="154.94"/>
 </segment>
 <segment>
 <pinref part="CAN_TRANSIVER" gate="A" pin="TXD"/>
@@ -13351,9 +13473,11 @@ These are standard SMD and PTH capacitors. Normally 10uF, 47uF, and 100uF in ele
 </net>
 <net name="RXCAN" class="0">
 <segment>
-<pinref part="RX_CAN" gate="G$1" pin="C"/>
-<wire x1="693.42" y1="144.78" x2="685.8" y2="144.78" width="0.1524" layer="91"/>
+<wire x1="693.42" y1="144.78" x2="692.15" y2="144.78" width="0.1524" layer="91"/>
 <label x="685.8" y="144.78" size="1.778" layer="95"/>
+<pinref part="RX_CAN" gate="LED" pin="-"/>
+<wire x1="692.15" y1="144.78" x2="685.8" y2="144.78" width="0.1524" layer="91"/>
+<junction x="692.15" y="144.78"/>
 </segment>
 <segment>
 <pinref part="CAN_TRANSIVER" gate="A" pin="RXD"/>
@@ -13368,9 +13492,11 @@ These are standard SMD and PTH capacitors. Normally 10uF, 47uF, and 100uF in ele
 </net>
 <net name="D1/TXO" class="0">
 <segment>
-<pinref part="TXO" gate="G$1" pin="C"/>
-<wire x1="693.42" y1="134.62" x2="685.8" y2="134.62" width="0.1524" layer="91"/>
+<wire x1="693.42" y1="134.62" x2="692.15" y2="134.62" width="0.1524" layer="91"/>
 <label x="685.8" y="134.62" size="1.778" layer="95"/>
+<pinref part="TX0" gate="LED" pin="-"/>
+<wire x1="692.15" y1="134.62" x2="685.8" y2="134.62" width="0.1524" layer="91"/>
+<junction x="692.15" y="134.62"/>
 </segment>
 <segment>
 <pinref part="JP2" gate="A" pin="4"/>
@@ -13385,9 +13511,11 @@ These are standard SMD and PTH capacitors. Normally 10uF, 47uF, and 100uF in ele
 </net>
 <net name="D0/RXI" class="0">
 <segment>
-<pinref part="RXI" gate="G$1" pin="C"/>
-<wire x1="693.42" y1="124.46" x2="685.8" y2="124.46" width="0.1524" layer="91"/>
+<wire x1="693.42" y1="124.46" x2="692.15" y2="124.46" width="0.1524" layer="91"/>
 <label x="685.8" y="124.46" size="1.778" layer="95"/>
+<pinref part="RXI" gate="LED" pin="-"/>
+<wire x1="692.15" y1="124.46" x2="685.8" y2="124.46" width="0.1524" layer="91"/>
+<junction x="692.15" y="124.46"/>
 </segment>
 <segment>
 <pinref part="JP2" gate="A" pin="5"/>
@@ -13402,9 +13530,11 @@ These are standard SMD and PTH capacitors. Normally 10uF, 47uF, and 100uF in ele
 </net>
 <net name="D2" class="0">
 <segment>
-<pinref part="WARNING" gate="G$1" pin="C"/>
-<wire x1="693.42" y1="114.3" x2="685.8" y2="114.3" width="0.1524" layer="91"/>
+<wire x1="693.42" y1="114.3" x2="692.15" y2="114.3" width="0.1524" layer="91"/>
 <label x="688.34" y="114.3" size="1.778" layer="95"/>
+<pinref part="WARNING" gate="LED" pin="-"/>
+<wire x1="692.15" y1="114.3" x2="685.8" y2="114.3" width="0.1524" layer="91"/>
+<junction x="692.15" y="114.3"/>
 </segment>
 <segment>
 <pinref part="U6" gate="A" pin="PB2"/>
