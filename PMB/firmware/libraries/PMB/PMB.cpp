@@ -21,17 +21,18 @@ void PMB::init(){
 	
 	//init devices
 	display.init();
-	ADS.init();
+	// ADS.init();
+	ADS.begin();
 	TempSensor.initTempAD7414();
 	CAN_init();
 	EEPROM.init();
 
 	//check for other PMB on the CANBUS 3 times
 	uint8_t n = 0;
-	while(n<3){
+	while(n<20){
 		checkForPMB1();
 		n++;
-		delay(500);
+		delay(100);
 	}
 	//init current sensing
 	//do multiple times to initialise the array
@@ -39,7 +40,7 @@ void PMB::init(){
 		getShuntCurrent();
 		delay(10);
 	}
-	Serial.println(shunt_current);
+	// Serial.println(shunt_current);
 
 	if(shunt_current < 200){
 		getCapFromVolt();
@@ -75,16 +76,28 @@ void PMB::getCapFromStorage(){
 }
 
 void PMB::readCellVoltages(){
-	cell_voltage[5] = ((analogRead(7) * cell6_adc_ratio) + cell6_adc_offset);
-    cell_voltage[4] = ((analogRead(6) * cell5_adc_ratio) + cell5_adc_offset);
-    cell_voltage[3] = ((analogRead(3) * cell4_adc_ratio) + cell4_adc_offset);
-    cell_voltage[2] = ((analogRead(2) * cell3_adc_ratio) + cell3_adc_offset);
-    cell_voltage[1] = ((analogRead(1) * cell2_adc_ratio) + cell2_adc_offset);
-    cell_voltage[0] = ((analogRead(0) * cell1_adc_ratio) + cell1_adc_offset);
+// 	uint16_t cell6_raw = analogRead(PIN_CELL6);
+// 	Serial.print("cell6_raw: ");
+// 	Serial.println(cell6_raw);
+// 	cell6_raw_array[cell6_raw_index] = cell6_raw;
+// 	cell6_mean_array[cell6_raw_index] = median(cell6_raw_array);
+// 	cell6_filtered = mean(cell6_mean_array);
+// 	Serial.print("cell6_filtered: ");
+// 	Serial.println(cell6_filtered);
+// 	cell6_raw_index++;
+// 	cell6_raw_index = cell6_raw_index%MEDIAN_FILTER_SIZE;
+
+	cell_voltage[5] = ((analogRead(PIN_CELL6) * cell6_adc_ratio) + cell6_adc_offset);
+    cell_voltage[4] = ((analogRead(PIN_CELL5) * cell5_adc_ratio) + cell5_adc_offset);
+    cell_voltage[3] = ((analogRead(PIN_CELL4) * cell4_adc_ratio) + cell4_adc_offset);
+    cell_voltage[2] = ((analogRead(PIN_CELL3) * cell3_adc_ratio) + cell3_adc_offset);
+    cell_voltage[1] = ((analogRead(PIN_CELL2) * cell2_adc_ratio) + cell2_adc_offset);
+    cell_voltage[0] = ((analogRead(PIN_CELL1) * cell1_adc_ratio) + cell1_adc_offset);
 }
 
 void PMB::getShuntCurrent(){
-	uint16_t ads_raw = ADS.readChannel(1);
+	// uint16_t ads_raw = ADS.readChannel(CHANNEL_CURRENT_SENS);
+	uint16_t ads_raw = ADS.readADC_SingleEnded(CHANNEL_CURRENT_SENS);
 
 	// Serial.print("raw ADC0: ");
 	// Serial.print(ADS.readChannel(0));
@@ -102,8 +115,8 @@ void PMB::getShuntCurrent(){
 	shunt_voltage_raw_array[shunt_voltage_raw_index] = ads_raw;
 
 	shunt_voltage_filtered = median(shunt_voltage_raw_array);
-	Serial.print("Filtered ADC: ");
-	Serial.println(shunt_voltage_filtered);
+	// Serial.print("Filtered ADC: ");
+	// Serial.println(shunt_voltage_filtered);
 	
 	shunt_current = float((shunt_voltage_filtered*CURRENT_RATIO)+CURRENT_OFFSET);
 
@@ -123,11 +136,19 @@ uint16_t PMB::median(uint16_t buffer[]){
 		temp_buff[k] = buffer[k];
 	}
 
-	for (uint8_t i = 0; i <= median_index; i++){
+	for (uint8_t i = 0; i < median_index; i++){
 		median_val = extractMin(&temp_buff[0], MEDIAN_FILTER_SIZE);
 	}
 
 	return median_val;
+}
+
+uint16_t PMB::mean(uint16_t *buf){
+	int accum = 0;
+	for(uint8_t i=0; i< MEDIAN_FILTER_SIZE; i++){
+		accum += buf[i];
+	}
+	return accum/MEDIAN_FILTER_SIZE;
 }
 
 uint16_t PMB::extractMin(uint16_t *source, uint8_t size){
@@ -151,10 +172,11 @@ void PMB::calculateCapacity(){
 
 void PMB::readPressure(){
 	delay(10);
-	uint16_t raw_value = ADS.readChannel(1);
-    Serial.print("Pres raw: ");
-    Serial.println(raw_value);
-	board_pressure = uint8_t(((float)(raw_value)*0.0001875) / (INTPRES_REF*0.0040) + 10);
+	// uint16_t ads_raw = ADS.readChannel(CHANNEL_PRESSURE);
+	uint16_t ads_raw = ADS.readADC_SingleEnded(CHANNEL_PRESSURE);
+    // Serial.print("Pres raw: ");
+    // Serial.println(ads_raw);
+	board_pressure = uint8_t(((float)(ads_raw)*0.0001900) / (INTPRES_REF*0.0040) + 10);
 }
 
 void PMB::readTemperature(){
@@ -192,10 +214,6 @@ void PMB::publishSerial(){
 }
 
 void PMB::publishPMBStats(){
-	uint8_t PMB_stats1[8] = {0, 1, 2, 3 , 4, 5, 6, 7};
-	uint8_t PMB_stats2[8] = {8, 9, 10, 11, 12, 13, 14, 15};
-	uint8_t PMB_stats3[5] = {16, 17, 18};
-
 	//Frame 1: PMB_stats1
 	CAN.setupCANFrame(PMB_stats1, 0, 2, cell_voltage[0]);
 	CAN.setupCANFrame(PMB_stats1, 2, 2, cell_voltage[1]);
@@ -205,8 +223,12 @@ void PMB::publishPMBStats(){
 	//Frame 2: PMB_stats2
 	CAN.setupCANFrame(PMB_stats2, 0, 2, cell_voltage[4]);
 	CAN.setupCANFrame(PMB_stats2, 2, 2, cell_voltage[5]);
+	// Serial.println(cell_voltage[5], HEX);
+	// Serial.println(PMB_stats2[2], HEX);
+	// Serial.println(PMB_stats2[3]);
+	// Serial.println(PMB_stats2[3], HEX);
 	CAN.setupCANFrame(PMB_stats2, 4, 2, uint16_t(shunt_current));
-	CAN.setupCANFrame(PMB_stats2, 6, 2, uint16_t(shunt_current));
+	CAN.setupCANFrame(PMB_stats2, 6, 2, uint16_t(cell_voltage[5]));
 
 	//Frame 3: PMB_stats3
 	CAN.setupCANFrame(PMB_stats3, 0, 2, uint16_t(capacity_used));
@@ -228,6 +250,10 @@ void PMB::publishCANStats(){
 	PMB_CAN_stats[2]=CAN.checkTXStatus(1);//check buffer 1
 	
 	CAN.sendMsgBuf(ID_CAN_PMB_BUS_stats, 0, 3, PMB_CAN_stats);
+
+	//SEND HEARTBEAT
+	uint8_t hb[1] = {ID_CAN_HB};
+	CAN.sendMsgBuf(CAN_heartbeat, 0, 1, hb);
 }
 
 void PMB::MCP2515_ISR(){
@@ -268,20 +294,24 @@ START_INIT:
 void PMB::checkForPMB1(){
 	uint8_t len = 0; //length of CAN message, taken care by library
 	uint8_t buf[8] = {0}; 
+				Serial.println("checking");
 	//if there is stuff in buffer
 	if (CAN_MSGAVAIL == CAN.checkReceive()){
 		FLAGMsg = false;
 		// Serial.println("interrupt!");
 		//read where is it from
 		CAN.readMsgBuf(&len, buf);    // read data,  len: data length, buf: data buf
-
-		switch (CAN.getCanId()){
+		int tempID = CAN.getCanId();
+		Serial.println(tempID);
+		switch (tempID){
 			case CAN_PMB1_stats || CAN_PMB1_stats2 || CAN_PMB1_stats3://ID = 3 (number)
 				//PMB1 present, make this PMB2
 				ID_CAN_PMB_stats[0] = CAN_PMB2_stats;
 				ID_CAN_PMB_stats[1] = CAN_PMB2_stats2;
 				ID_CAN_PMB_stats[2] = CAN_PMB2_stats3;
 				ID_CAN_PMB_BUS_stats = CAN_PMB2_BUS_stats;
+				ID_CAN_HB = HEARTBEAT_PMB2;
+				Serial.println("making it 2");
 				break;
 			default:;
 			//TODO=>throw an error 
@@ -302,7 +332,6 @@ void PMB::displayTextOLED(char* text, uint8_t size){
 	display.setCursor(2, 10);
     display.setTextSize(size, 1);
     display.write(text);
-    display.clear();
 }
 
 void PMB::updateDisplay(){	
@@ -311,6 +340,9 @@ void PMB::updateDisplay(){
 	display.setCursor(0, 0);
     display.write("Batt %: ");
     display.print(percentage_left);
+	display.setCursor(1, 0);
+    display.write("Batt Volt: ");
+    display.print(cell_voltage[5]);
 	display.setCursor(2, 0);
     display.write("Pod Temp: ");
     display.print(board_temperature);
@@ -335,4 +367,5 @@ void PMB::powerUpVehicle(){
 	displayTextOLED("VEHICLE POWERUP", 1);
 	delay(1000);
 	digitalWrite(PIN_VEHICLE_POWER, HIGH);
+    display.clear();
 }

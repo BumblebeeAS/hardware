@@ -130,7 +130,7 @@ void EEPROMPlus::dumbMultiRead(uint16_t readAddr, uint8_t* buf){
     // Serial.println("wire avail");
 
     buf[head] = Wire.read();
-      Serial.println(buf[head]);
+      // Serial.println(buf[head]);
 
     head++;
   }  
@@ -138,7 +138,7 @@ void EEPROMPlus::dumbMultiRead(uint16_t readAddr, uint8_t* buf){
 }
 
 void EEPROMPlus::dumbMultiWrite(uint16_t writeAddr, uint8_t* data){
-  Serial.println("dumbmultiwrite");
+  // Serial.println("dumbmultiwrite");
   Wire.beginTransmission(EEPROMDataBuf);
   Wire.write((int)(writeAddr >> 8));   // MSB
   Wire.write((int)(writeAddr & 0xFF)); // LSB
