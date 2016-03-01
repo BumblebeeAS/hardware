@@ -411,7 +411,7 @@ void checkCANmsg(){
 		case CAN_PMB2_stats2:
 	        Serial.println("PMB2 stats 2");
 			powerStats[BATT2_CURRENT] = CAN.parseCANFrame(buf, 4, 2);
-			powerStats[BATT2_VOLTAGE] = CAN.parseCANFrame(buf, 4, 2);
+			powerStats[BATT2_VOLTAGE] = CAN.parseCANFrame(buf, 6, 2);
 	        pmb2_timeout = millis();
 			break;
 
