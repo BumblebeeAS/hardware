@@ -28,12 +28,28 @@ void PMB::init(){
 	EEPROM.init();
 
 	//check for other PMB on the CANBUS 3 times
-	uint8_t n = 0;
-	while(n<20){
-		checkForPMB1();
-		n++;
-		delay(100);
+	// uint8_t n = 0;
+	// while(n<20){
+	// 	checkForPMB1();
+	// 	n++;
+	// 	delay(100);
+	// }
+
+	//hardcoded way to get PMB CAN ID
+	if(PMB_no%2){
+		ID_CAN_PMB_stats[0] = CAN_PMB1_stats;
+		ID_CAN_PMB_stats[1] = CAN_PMB1_stats2;
+		ID_CAN_PMB_stats[2] = CAN_PMB1_stats3;
+		ID_CAN_PMB_BUS_stats = CAN_PMB1_BUS_stats;
+		ID_CAN_HB = HEARTBEAT_PMB1;
+	}else{		
+		ID_CAN_PMB_stats[0] = CAN_PMB2_stats;
+		ID_CAN_PMB_stats[1] = CAN_PMB2_stats2;
+		ID_CAN_PMB_stats[2] = CAN_PMB2_stats3;
+		ID_CAN_PMB_BUS_stats = CAN_PMB2_BUS_stats;
+		ID_CAN_HB = HEARTBEAT_PMB2;
 	}
+
 	//init current sensing
 	//do multiple times to initialise the array
 	for (uint8_t i = 0; i < MEDIAN_FILTER_SIZE; ++i){
@@ -88,6 +104,7 @@ void PMB::readCellVoltages(){
 // 	cell6_raw_index = cell6_raw_index%MEDIAN_FILTER_SIZE;
 
 	cell_voltage[5] = ((analogRead(PIN_CELL6) * cell6_adc_ratio) + cell6_adc_offset);
+
     cell_voltage[4] = ((analogRead(PIN_CELL5) * cell5_adc_ratio) + cell5_adc_offset);
     cell_voltage[3] = ((analogRead(PIN_CELL4) * cell4_adc_ratio) + cell4_adc_offset);
     cell_voltage[2] = ((analogRead(PIN_CELL3) * cell3_adc_ratio) + cell3_adc_offset);
