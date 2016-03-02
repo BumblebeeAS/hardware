@@ -123,7 +123,7 @@ void loop()
 				read_flag = 1;
 				read_ctr = 1;
 			}
-			else if (incoming_data == START_BYTE && read_flag)
+			else if (incoming_data == START_BYTE && read_flag == 1)
 			{
 				read_flag++;
 			}
