@@ -41,18 +41,18 @@
 	#define coef_d              -43182.43852
 
 	//current measurement caliberation
-	#define CURRENT_RATIO       1.7123 
-	#define CURRENT_OFFSET      21.202
+	#define CURRENT_RATIO       1.5173 
+	#define CURRENT_OFFSET      77.834
 
 	//voltage readings caliberation
-	#define cell6_adc_ratio     37.6
+	#define cell6_adc_ratio     29.353
 	#define cell5_adc_ratio     0.197181814  
 	#define cell4_adc_ratio     0.244377275  
 	#define cell3_adc_ratio     0.325966493  
 	#define cell2_adc_ratio     0.497397968  
 	#define cell1_adc_ratio     0.993694855  
 
-	#define cell6_adc_offset    150.1 
+	#define cell6_adc_offset    975.91 
 	#define cell5_adc_offset    0.05269355 
 	#define cell4_adc_offset    -0.1076     
 	#define cell3_adc_offset    -0.1076     
@@ -66,18 +66,18 @@
 	#define coef_d              -43182.43852
 
 	//current measurement caliberation
-	#define CURRENT_RATIO       1.7123 
-	#define CURRENT_OFFSET      21.202
+	#define CURRENT_RATIO       1.4851
+	#define CURRENT_OFFSET      104.61
 
 	//voltage readings caliberation
-	#define cell6_adc_ratio     37.9
+	#define cell6_adc_ratio     30.6277
 	#define cell5_adc_ratio     0.197181814  
 	#define cell4_adc_ratio     0.244377275  
 	#define cell3_adc_ratio     0.325966493  
 	#define cell2_adc_ratio     0.497397968  
 	#define cell1_adc_ratio     0.993694855  
 
-	#define cell6_adc_offset    80.2
+	#define cell6_adc_offset    896.64
 	#define cell5_adc_offset    0.05269355 
 	#define cell4_adc_offset    -0.1076     
 	#define cell3_adc_offset    -0.1076     
@@ -118,18 +118,18 @@
 	#define coef_d              -43182.43852
 
 	//current measurement caliberation 
-	#define CURRENT_RATIO       0.7216811031  
-	#define CURRENT_OFFSET      0.03
+	#define CURRENT_RATIO       1.5477 
+	#define CURRENT_OFFSET      50.578
 
 	//voltage readings caliberation
-	#define cell6_adc_ratio     0.0332 
+	#define cell6_adc_ratio     28.501 
 	#define cell5_adc_ratio     0.197181814  
 	#define cell4_adc_ratio     0.244377275  
 	#define cell3_adc_ratio     0.325966493  
 	#define cell2_adc_ratio     0.497397968  
 	#define cell1_adc_ratio     0.993694855  
 
-	#define cell6_adc_offset    -0.2543  
+	#define cell6_adc_offset    200.68  
 	#define cell5_adc_offset    0.05269355 
 	#define cell4_adc_offset    -0.1076     
 	#define cell3_adc_offset    -0.1076     
@@ -144,18 +144,18 @@
 	#define coef_d              -43182.43852
 
 	//current measurement caliberation 
-	#define CURRENT_RATIO       0.7216811031  
-	#define CURRENT_OFFSET      0.03
+	#define CURRENT_RATIO       1.5477  
+	#define CURRENT_OFFSET      50.578
 
 	//voltage readings caliberation
-	#define cell6_adc_ratio     0.0332 
+	#define cell6_adc_ratio     28.501 
 	#define cell5_adc_ratio     0.197181814  
 	#define cell4_adc_ratio     0.244377275  
 	#define cell3_adc_ratio     0.325966493  
 	#define cell2_adc_ratio     0.497397968  
 	#define cell1_adc_ratio     0.993694855  
 
-	#define cell6_adc_offset    -0.2543  
+	#define cell6_adc_offset    200.68  
 	#define cell5_adc_offset    0.05269355 
 	#define cell4_adc_offset    -0.1076     
 	#define cell3_adc_offset    -0.1076     
