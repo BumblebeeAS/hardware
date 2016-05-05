@@ -1,6 +1,6 @@
 void setup() {
   // put your setup code here, to run once:
-  analogReference(EXTERNAL);
+//  analogReference(EXTERNAL);
   Serial.begin(9600);
 }
 
