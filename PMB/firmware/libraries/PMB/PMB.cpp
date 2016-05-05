@@ -58,11 +58,11 @@ void PMB::init(){
 	}
 	// Serial.println(shunt_current);
 
-	if(shunt_current < 200){
+	// if(shunt_current < 200){
 		getCapFromVolt();
-	}else{
-		getCapFromStorage();
-	}
+	// }else{
+	// 	getCapFromStorage();
+	// }
 
 	//read other values so they are initialised
 	readCellVoltages();
@@ -82,6 +82,14 @@ void PMB::getCapFromVolt(){
 
 	tempBattVoltage = float(tempBattVoltage/20.0);  
 	percentage_left = pow(tempBattVoltage,3)*coef_a + pow(tempBattVoltage,2)*coef_b + tempBattVoltage*coef_c + coef_d;
+	// limiting range of percentage
+	if(percentage_left <=0){
+		percentage_left =0.0;
+	}
+	if(percentage_left >= 100){
+		percentage_left = 100.0;
+	}
+
 	capacity_left = percentage_left/100.0 * BATTERY_CAPACITY;
 }
 
@@ -355,15 +363,21 @@ void PMB::updateDisplay(){
 	// display.clear();
     display.setTextSize(1, 1);
 	display.setCursor(0, 0);
+    display.write("Battery Pod ");
+    display.print(PMB_no);
+	display.setCursor(1, 0);
     display.write("Batt %: ");
     display.print(percentage_left);
-	display.setCursor(1, 0);
+	display.setCursor(2, 0);
     display.write("Batt Volt: ");
     display.print(cell_voltage[5]);
-	display.setCursor(2, 0);
+	display.setCursor(3, 0);
+    display.write("Current drawn: ");
+    display.print(shunt_current);
+	display.setCursor(4, 0);
     display.write("Pod Temp: ");
     display.print(board_temperature);
-	display.setCursor(3, 0);
+	display.setCursor(5, 0);
     display.write("Pod Pres: ");
     display.print(board_pressure);
 }
