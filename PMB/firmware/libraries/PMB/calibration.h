@@ -5,14 +5,14 @@
 //maximum battery capacity
 #define BATTERY_CAPACITY 		10000
 
-#define PMB_no					3
+#define PMB_no				3
 
 #if PMB_no == 1
 	//cubic approximation coefficients
-	#define coef_a              2.801388537
-	#define coef_b              -208.6689126
-	#define coef_c              5196.993309
-	#define coef_d              -43182.43852
+	#define coef_a              7.5665
+	#define coef_b              -4.8897
+	#define coef_c              1.07299
+	#define coef_d              -7996.28471
 
 	//current measurement caliberation
 	#define CURRENT_RATIO       1.7123 
@@ -35,10 +35,10 @@
 
 #elif PMB_no == 2
 	//cubic approximation coefficients
-	#define coef_a              2.801388537
-	#define coef_b              -208.6689126
-	#define coef_c              5196.993309
-	#define coef_d              -43182.43852
+	#define coef_a              7.5665
+	#define coef_b              -4.8897
+	#define coef_c              1.07299
+	#define coef_d              -7996.28471
 
 	//current measurement caliberation
 	#define CURRENT_RATIO       1.5173 
@@ -60,10 +60,11 @@
 	#define cell1_adc_offset    0.00739624  
 
 #elif PMB_no == 3
-		#define coef_a              2.801388537
-	#define coef_b              -208.6689126
-	#define coef_c              5196.993309
-	#define coef_d              -43182.43852
+	//cubic approximation coefficients
+	#define coef_a              7.5665
+	#define coef_b              -4.8897
+	#define coef_c              1.07299
+	#define coef_d              -7996.28471
 
 	//current measurement caliberation
 	#define CURRENT_RATIO       1.4851
@@ -86,10 +87,10 @@
 
 #elif PMB_no == 4
 	//cubic approximation coefficients
-	#define coef_a              2.801388537
-	#define coef_b              -208.6689126
-	#define coef_c              5196.993309
-	#define coef_d              -43182.43852
+	#define coef_a              7.5665
+	#define coef_b              -4.8897
+	#define coef_c              1.07299
+	#define coef_d              -7996.28471
 
 	//current measurement caliberation
 	#define CURRENT_RATIO       0.7216811031  
@@ -112,10 +113,10 @@
 
 #elif PMB_no == 5
 	//cubic approximation coefficients
-	#define coef_a              2.801388537
-	#define coef_b              -208.6689126
-	#define coef_c              5196.993309
-	#define coef_d              -43182.43852
+	#define coef_a              7.5665
+	#define coef_b              -4.8897
+	#define coef_c              1.07299
+	#define coef_d              -7996.28471
 
 	//current measurement caliberation 
 	#define CURRENT_RATIO       1.5477 
@@ -138,10 +139,10 @@
 
 #elif PMB_no == 6
 	//cubic approximation coefficients
-	#define coef_a              2.801388537
-	#define coef_b              -208.6689126
-	#define coef_c              5196.993309
-	#define coef_d              -43182.43852
+	#define coef_a              7.5665
+	#define coef_b              -4.8897
+	#define coef_c              1.07299
+	#define coef_d              -7996.28471
 
 	//current measurement caliberation 
 	#define CURRENT_RATIO       1.5477  
