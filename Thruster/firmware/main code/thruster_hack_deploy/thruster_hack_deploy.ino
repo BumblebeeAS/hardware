@@ -1,13 +1,14 @@
 #include "can_defines.h"
 #include "define.h"
-#include <smcDriver_v2.h>
+#include "smcDriver_v2.h"
 #include <Arduino.h>
 #include <Servo.h>
 #include <SPI.h>
-#include <can.h>
-#include <can_defines.h>
+#include "can.h"
+#include "can_defines.h"
+#include "can_defines_main.h"
 #include <stdint.h>
-#include <Thrusters.h>
+#include "Thrusters.h"
 #include <math.h>
 
 static uint32_t loopTime;

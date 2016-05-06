@@ -7,13 +7,12 @@
 class Thrusters
 {
  public:
- Thrusters(int pin1, int pin2);
- void mov(int input1,int input2);
+  Thrusters(int pin1, int pin2);
+ void mov(int input1, int input2);
  void movThruster1(int input1);
  void movThruster2(int input2);
 
-
- private: 
+ private:  
  void acc(int input1, int input2 ,int input3, int input4);
  int thrusterForward1(int input);
  int thrusterReverse1(int input);

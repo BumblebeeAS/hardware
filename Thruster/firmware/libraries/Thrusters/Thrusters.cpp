@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <Servo.h>
-#include <Thrusters.h>
+#include "Thrusters.h"
 #include <Math.h>
 
 #define RATE 0.05  /// MUST BE LESS THAN 1
@@ -56,8 +56,10 @@ void Thrusters::acc(int throttleOld1, int throttle1, int throttleOld2, int throt
 
 }
 
-void Thrusters::mov(int input1, int input2)
+void Thrusters::mov(int input1,int input2)
 {
+  //int input2;
+  
 esc1.attach(motor1);
 esc2.attach(motor2);
 int throttle1, throttleOld1;

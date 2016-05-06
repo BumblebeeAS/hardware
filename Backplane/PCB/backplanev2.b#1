@@ -16008,8 +16008,8 @@ design rules under a new name.</description>
 <contactref element="R76" pad="1"/>
 <contactref element="U6" pad="23"/>
 <via x="197.2564" y="5.2578" extent="1-16" drill="0.3302"/>
-<wire x1="197.2564" y1="5.2578" x2="197.104" y2="10.8712" width="0.2032" layer="16"/>
-<wire x1="197.104" y1="10.8712" x2="197.0024" y2="12.9794" width="0.2032" layer="16"/>
+<wire x1="197.2564" y1="5.2578" x2="197.2564" y2="12.7" width="0.2032" layer="16"/>
+<wire x1="197.2564" y1="12.7" x2="197.0024" y2="12.9794" width="0.2032" layer="16"/>
 <wire x1="197.0024" y1="12.9794" x2="195.961" y2="12.9794" width="0.2032" layer="16"/>
 <wire x1="195.961" y1="12.9794" x2="195.6816" y2="13.2588" width="0.2032" layer="16"/>
 <via x="195.6816" y="13.2588" extent="1-16" drill="0.3302"/>
