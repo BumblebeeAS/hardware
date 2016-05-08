@@ -5,7 +5,7 @@
 //maximum battery capacity
 #define BATTERY_CAPACITY 		10000
 
-#define PMB_no				3
+#define PMB_no				5
 
 #if PMB_no == 1
 	//cubic approximation coefficients
@@ -35,10 +35,10 @@
 
 #elif PMB_no == 2
 	//cubic approximation coefficients
-	#define coef_a              7.5665
-	#define coef_b              -4.8897
-	#define coef_c              1.07299
-	#define coef_d              -7996.28471
+	#define coef_a              -0.000000003
+	#define coef_b              0.0002
+	#define coef_c              -4.5181
+	#define coef_d              33946
 
 	//current measurement caliberation
 	#define CURRENT_RATIO       1.5173 
@@ -61,10 +61,10 @@
 
 #elif PMB_no == 3
 	//cubic approximation coefficients
-	#define coef_a              7.5665
-	#define coef_b              -4.8897
-	#define coef_c              1.07299
-	#define coef_d              -7996.28471
+	#define coef_a              -0.000000002
+	#define coef_b              0.00001
+	#define coef_c              -2.7809
+	#define coef_d              20103
 
 	//current measurement caliberation
 	#define CURRENT_RATIO       1.4851
