@@ -45,14 +45,14 @@
 	#define CURRENT_OFFSET      77.834
 
 	//voltage readings caliberation
-	#define cell6_adc_ratio     29.353
+	#define cell6_adc_ratio     31.95
 	#define cell5_adc_ratio     0.197181814  
 	#define cell4_adc_ratio     0.244377275  
 	#define cell3_adc_ratio     0.325966493  
 	#define cell2_adc_ratio     0.497397968  
 	#define cell1_adc_ratio     0.993694855  
 
-	#define cell6_adc_offset    975.91 
+	#define cell6_adc_offset    171.27 
 	#define cell5_adc_offset    0.05269355 
 	#define cell4_adc_offset    -0.1076     
 	#define cell3_adc_offset    -0.1076     
@@ -71,14 +71,14 @@
 	#define CURRENT_OFFSET      104.61
 
 	//voltage readings caliberation
-	#define cell6_adc_ratio     30.6277
+	#define cell6_adc_ratio     32.23
 	#define cell5_adc_ratio     0.197181814  
 	#define cell4_adc_ratio     0.244377275  
 	#define cell3_adc_ratio     0.325966493  
 	#define cell2_adc_ratio     0.497397968  
 	#define cell1_adc_ratio     0.993694855  
 
-	#define cell6_adc_offset    896.64
+	#define cell6_adc_offset    171.44
 	#define cell5_adc_offset    0.05269355 
 	#define cell4_adc_offset    -0.1076     
 	#define cell3_adc_offset    -0.1076     
@@ -97,14 +97,14 @@
 	#define CURRENT_OFFSET      0.03
 
 	//voltage readings caliberation
-	#define cell6_adc_ratio     37.7 
+	#define cell6_adc_ratio     34.25 
 	#define cell5_adc_ratio     0.197181814  
 	#define cell4_adc_ratio     0.244377275  
 	#define cell3_adc_ratio     0.325966493  
 	#define cell2_adc_ratio     0.497397968  
 	#define cell1_adc_ratio     0.993694855  
 
-	#define cell6_adc_offset    146.6 
+	#define cell6_adc_offset    -592.62 
 	#define cell5_adc_offset    0.05269355 
 	#define cell4_adc_offset    -0.1076     
 	#define cell3_adc_offset    -0.1076     
@@ -119,18 +119,18 @@
 	#define coef_d              -7996.28471
 
 	//current measurement caliberation 
-	#define CURRENT_RATIO       1.5477 
-	#define CURRENT_OFFSET      50.578
+	#define CURRENT_RATIO       1.5452
+	#define CURRENT_OFFSET      49.307
 
 	//voltage readings caliberation
-	#define cell6_adc_ratio     28.501 
+	#define cell6_adc_ratio     35.869
 	#define cell5_adc_ratio     0.197181814  
 	#define cell4_adc_ratio     0.244377275  
 	#define cell3_adc_ratio     0.325966493  
 	#define cell2_adc_ratio     0.497397968  
 	#define cell1_adc_ratio     0.993694855  
 
-	#define cell6_adc_offset    200.68  
+	#define cell6_adc_offset    -2174.3  
 	#define cell5_adc_offset    0.05269355 
 	#define cell4_adc_offset    -0.1076     
 	#define cell3_adc_offset    -0.1076     

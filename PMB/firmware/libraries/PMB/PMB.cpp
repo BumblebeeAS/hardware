@@ -77,10 +77,10 @@ void PMB::getCapFromVolt(){
 	Serial.println("getting from volt!");
 	uint16_t tempBattVoltage = 0;
 	for (uint8_t i = 0; i < 10; ++i){
-		tempBattVoltage += uint16_t((analogRead(7) * cell6_adc_ratio) + cell6_adc_offset);
+		tempBattVoltage += uint16_t((analogRead(PIN_CELL6) * cell6_adc_ratio) + cell6_adc_offset);
 	}
 
-	tempBattVoltage = float(tempBattVoltage/20.0);  
+	tempBattVoltage = float(tempBattVoltage/10.0);  
 	percentage_left = pow(tempBattVoltage,3)*coef_a + pow(tempBattVoltage,2)*coef_b + tempBattVoltage*coef_c + coef_d;
 	// limiting range of percentage
 	if(percentage_left <=0){
