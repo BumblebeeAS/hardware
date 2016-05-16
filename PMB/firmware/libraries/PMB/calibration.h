@@ -149,14 +149,14 @@
 	#define CURRENT_OFFSET      303.9
 
 	//voltage readings caliberation
-	#define cell6_adc_ratio     32.531 
+	#define cell6_adc_ratio     32.481
 	#define cell5_adc_ratio     0.197181814  
 	#define cell4_adc_ratio     0.244377275  
 	#define cell3_adc_ratio     0.325966493  
 	#define cell2_adc_ratio     0.497397968  
 	#define cell1_adc_ratio     0.993694855  
 
-	#define cell6_adc_offset    -85.304  
+	#define cell6_adc_offset    -138.87
 	#define cell5_adc_offset    0.05269355 
 	#define cell4_adc_offset    -0.1076     
 	#define cell3_adc_offset    -0.1076     
