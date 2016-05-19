@@ -61,7 +61,7 @@ private:
 	uint16_t mean(uint16_t *buffer);
 	uint16_t extractMin(uint16_t *source, uint8_t size);
 	void checkForPMB1();
-	void displayTextOLED(char* text, uint8_t size);
+	void displayTextOLED(char* text, uint8_t size, uint8_t pos);
 	void getCapFromVolt();
 	void getCapFromStorage();
 public:
@@ -82,6 +82,7 @@ public:
 	void shutDownPMB();
 	void shutDownVehicle();
 	void powerUpVehicle();
+	void displayLowWarning();
 };
 
 #endif

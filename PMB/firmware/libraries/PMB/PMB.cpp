@@ -75,22 +75,28 @@ void PMB::init(){
 
 void PMB::getCapFromVolt(){
 	Serial.println("getting from volt!");
-	uint16_t tempBattVoltage = 0;
+	float tempBattVoltage = 0;
 	for (uint8_t i = 0; i < 10; ++i){
-		tempBattVoltage += uint16_t((analogRead(PIN_CELL6) * cell6_adc_ratio) + cell6_adc_offset);
+		tempBattVoltage += (analogRead(PIN_CELL6) * cell6_adc_ratio) + cell6_adc_offset;
 	}
 
-	tempBattVoltage = float(tempBattVoltage/10.0);  
-	percentage_left = pow(tempBattVoltage,3)*coef_a + pow(tempBattVoltage,2)*coef_b + tempBattVoltage*coef_c + coef_d;
+	tempBattVoltage = tempBattVoltage/10.0/1000.0;
+	// Serial.println(tempBattVoltage);
+	float tempPercent = pow(tempBattVoltage,4)*coef_a + pow(tempBattVoltage,3)*coef_b + pow(tempBattVoltage,2)*coef_c + tempBattVoltage*coef_d + coef_e;
+	// Serial.println(tempPercent);
 	// limiting range of percentage
-	if(percentage_left <=0){
+	if(tempPercent <=0){
 		percentage_left =0.0;
-	}
-	if(percentage_left >= 100){
+	}else if(tempPercent >= 100){
 		percentage_left = 100.0;
+	}else{
+		percentage_left = int(tempPercent);
 	}
+	Serial.println(percentage_left);
 
 	capacity_left = percentage_left/100.0 * BATTERY_CAPACITY;
+	capacity_used = BATTERY_CAPACITY-capacity_left;
+	Serial.println(capacity_left);
 }
 
 void PMB::getCapFromStorage(){
@@ -118,6 +124,17 @@ void PMB::readCellVoltages(){
     cell_voltage[2] = ((analogRead(PIN_CELL3) * cell3_adc_ratio) + cell3_adc_offset);
     cell_voltage[1] = ((analogRead(PIN_CELL2) * cell2_adc_ratio) + cell2_adc_offset);
     cell_voltage[0] = ((analogRead(PIN_CELL1) * cell1_adc_ratio) + cell1_adc_offset);
+
+    // autoshutdown
+    // if (cell_voltage[5]<22200){
+    // 	int i = 10;
+    // 	while(i>0){
+    // 		displayLowWarning();
+    // 		delay(1000);
+    // 		i--;
+    // 	}
+    // 	shutDownPMB();
+    // }
 }
 
 void PMB::getShuntCurrent(){
@@ -192,7 +209,7 @@ uint16_t PMB::extractMin(uint16_t *source, uint8_t size){
 void PMB::calculateCapacity(){
 	capacity_used += shunt_current*MAIN_LOOP_INTERVAL/1000/3600;
     capacity_left = BATTERY_CAPACITY - capacity_used;
-    percentage_left = capacity_left/100.0;
+    percentage_left = capacity_left/10000.0 * 100.0;
 }
 
 void PMB::readPressure(){
@@ -352,9 +369,9 @@ void PMB::logEEPROM(){
 	// EEPROM.dumbMultiWrite(10, buf);
 }
 
-void PMB::displayTextOLED(char* text, uint8_t size){
+void PMB::displayTextOLED(char* text, uint8_t size, uint8_t pos){
 	display.clear();
-	display.setCursor(2, 10);
+	display.setCursor(pos, 10);
     display.setTextSize(size, 1);
     display.write(text);
 }
@@ -374,29 +391,39 @@ void PMB::updateDisplay(){
 	display.setCursor(3, 0);
     display.write("Current drawn: ");
     display.print(shunt_current);
-	display.setCursor(4, 0);
+    display.setCursor(4, 0);
+    display.write("Battery MAh: ");
+    display.print(capacity_left);
+	display.setCursor(5, 0);
     display.write("Pod Temp: ");
     display.print(board_temperature);
-	display.setCursor(5, 0);
+	display.setCursor(6, 0);
     display.write("Pod Pres: ");
     display.print(board_pressure);
 }
 
 void PMB::shutDownPMB(){
-	displayTextOLED("PMB SHUTDOWN", 1);
+	displayTextOLED("PMB SHUTDOWN", 1, 2);
 	delay(2000);
 	digitalWrite(PIN_PMB_POWER, HIGH);
 }
 
 void PMB::shutDownVehicle(){	
-	displayTextOLED("VEHICLE SHUTDOWN", 1);
+	displayTextOLED("VEHICLE SHUTDOWN", 1, 2);
 	delay(2000);
 	digitalWrite(PIN_VEHICLE_POWER, LOW);
 }
 
 void PMB::powerUpVehicle(){
-	displayTextOLED("VEHICLE POWERUP", 1);
+	displayTextOLED("VEHICLE POWERUP", 1, 2);
 	delay(1000);
 	digitalWrite(PIN_VEHICLE_POWER, HIGH);
     display.clear();
+}
+
+void PMB::displayLowWarning(){
+	display.clear();
+	displayTextOLED("BATTERY LOW!!", 2, 2);
+	displayTextOLED("SHUTTING DOWN", 2, 4);
+	delay(1000);
 }

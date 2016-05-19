@@ -5,7 +5,7 @@
 //maximum battery capacity
 #define BATTERY_CAPACITY 		10000
 
-#define PMB_no				6
+#define PMB_no					5
 
 #if PMB_no == 1
 	//cubic approximation coefficients
@@ -13,6 +13,7 @@
 	#define coef_b              -4.8897
 	#define coef_c              1.07299
 	#define coef_d              -7996.28471
+	#define coef_e				1399267.88
 
 	//current measurement caliberation
 	#define CURRENT_RATIO       1.7123 
@@ -35,10 +36,11 @@
 
 #elif PMB_no == 2
 	//cubic approximation coefficients
-	#define coef_a              -0.000000003
-	#define coef_b              0.0002
-	#define coef_c              -4.5181
-	#define coef_d              33946
+	#define coef_a              4.69753
+	#define coef_b              -446.67745
+	#define coef_c              15910.16368
+	#define coef_d              -251561.5118
+	#define coef_e				1489641.436
 
 	//current measurement caliberation
 	#define CURRENT_RATIO       1.5173 
@@ -61,10 +63,11 @@
 
 #elif PMB_no == 3
 	//cubic approximation coefficients
-	#define coef_a              -0.000000002
-	#define coef_b              0.00001
-	#define coef_c              -2.7809
-	#define coef_d              20103
+	#define coef_a              4.425
+	#define coef_b              -420.46
+	#define coef_c              14966.73
+	#define coef_d              -236478.77
+	#define coef_e				1399267.88
 
 	//current measurement caliberation
 	#define CURRENT_RATIO       1.4851
@@ -91,6 +94,7 @@
 	#define coef_b              -4.8897
 	#define coef_c              1.07299
 	#define coef_d              -7996.28471
+	#define coef_e				1399267.88
 
 	//current measurement caliberation
 	#define CURRENT_RATIO       0.7216811031  
@@ -113,10 +117,11 @@
 
 #elif PMB_no == 5
 	//cubic approximation coefficients
-	#define coef_a              7.5665
-	#define coef_b              -4.8897
-	#define coef_c              1.07299
-	#define coef_d              -7996.28471
+	#define coef_a              4.69753
+	#define coef_b              -446.67745
+	#define coef_c              15910.16368
+	#define coef_d              -251561.5118
+	#define coef_e				1489641.436
 
 	//current measurement caliberation 
 	#define CURRENT_RATIO       1.5452
@@ -143,6 +148,7 @@
 	#define coef_b              -4.8897
 	#define coef_c              1.07299
 	#define coef_d              -7996.28471
+	#define coef_e				1399267.88
 
 	//current measurement caliberation 
 	#define CURRENT_RATIO       1.7759  
