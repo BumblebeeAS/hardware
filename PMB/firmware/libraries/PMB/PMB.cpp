@@ -81,9 +81,9 @@ void PMB::getCapFromVolt(){
 	}
 
 	tempBattVoltage = tempBattVoltage/10.0/1000.0;
-	// Serial.println(tempBattVoltage);
+	Serial.println(tempBattVoltage);
 	float tempPercent = pow(tempBattVoltage,4)*coef_a + pow(tempBattVoltage,3)*coef_b + pow(tempBattVoltage,2)*coef_c + tempBattVoltage*coef_d + coef_e;
-	// Serial.println(tempPercent);
+	Serial.println(tempPercent);
 	// limiting range of percentage
 	if(tempPercent <=0){
 		percentage_left =0.0;
