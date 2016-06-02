@@ -54,6 +54,7 @@
     -----------------------------------------------------------------------*/
     #define ADS1015_REG_CONFIG_OS_MASK      (0x8000)
     #define ADS1015_REG_CONFIG_OS_SINGLE    (0x8000)  // Write: Set to start a single-conversion
+	#define ADS1015_REG_CONFIG_OS_CONTINUOUS (0xFEFF)  // Write: Clear a bit for continuous conversion mode
     #define ADS1015_REG_CONFIG_OS_BUSY      (0x0000)  // Read: Bit = 0 when conversion is in progress
     #define ADS1015_REG_CONFIG_OS_NOTBUSY   (0x8000)  // Read: Bit = 1 when device is not performing a conversion
 
@@ -118,13 +119,16 @@ protected:
  public:
   Adafruit_ADS1015(uint8_t i2cAddress = ADS1015_ADDRESS);
   void begin(void);
+  uint16_t  set_continuous_conv(uint8_t channel);
   uint16_t readADC_SingleEnded(uint8_t channel);
   int16_t  readADC_Differential_0_1(void);
   int16_t  readADC_Differential_2_3(void);
   void     startComparator_SingleEnded(uint8_t channel, int16_t threshold);
+  uint16_t readADC_Continuous();
   int16_t  getLastConversionResults();
 
  private:
+	 uint16_t perm_config;
 };
 
 // Derive from ADS1105 & override construction to set properties

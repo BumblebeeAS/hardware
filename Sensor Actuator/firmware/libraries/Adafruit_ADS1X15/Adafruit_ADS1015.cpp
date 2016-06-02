@@ -116,6 +116,53 @@ void Adafruit_ADS1015::begin() {
 
 /**************************************************************************/
 /*!
+@brief  Setups the config register for continuous conversion mode and the 
+channel for continuous conversion
+*/
+/**************************************************************************/
+
+uint16_t Adafruit_ADS1015::set_continuous_conv(uint8_t channel) {
+	if (channel > 3)
+	{
+		return 0;
+	}
+
+	// Start with default values
+	perm_config = ADS1015_REG_CONFIG_CQUE_NONE | // Disable the comparator (default val)
+		ADS1015_REG_CONFIG_CLAT_NONLAT | // Non-latching (default val)
+		ADS1015_REG_CONFIG_CPOL_ACTVLOW | // Alert/Rdy active low   (default val)
+		ADS1015_REG_CONFIG_CMODE_TRAD | // Traditional comparator (default val)
+		ADS1015_REG_CONFIG_DR_3300SPS; // 1600 samples per second (default)
+
+
+	// Set single-ended input channel
+	switch (channel)
+	{
+	case (0) :
+		perm_config |= ADS1015_REG_CONFIG_MUX_SINGLE_0;
+		break;
+	case (1) :
+		perm_config |= ADS1015_REG_CONFIG_MUX_SINGLE_1;
+		break;
+	case (2) :
+		perm_config |= ADS1015_REG_CONFIG_MUX_SINGLE_2;
+		break;
+	case (3) :
+		perm_config |= ADS1015_REG_CONFIG_MUX_SINGLE_3;
+		break;
+	}
+
+	//continuous mode, clear bit
+	perm_config &= ADS1015_REG_CONFIG_OS_CONTINUOUS;
+	// Set PGA/voltage range
+	perm_config |= ADS1015_REG_CONFIG_PGA_6_144V;            // +/- 6.144V range (limited to VDD +0.3V max!)
+	// Write config register to the ADC
+	writeRegister(m_i2cAddress, ADS1015_REG_POINTER_CONFIG, perm_config);
+	return perm_config;
+}
+
+/**************************************************************************/
+/*!
     @brief  Gets a single-ended ADC reading from the specified channel
 */
 /**************************************************************************/
@@ -165,6 +212,17 @@ uint16_t Adafruit_ADS1015::readADC_SingleEnded(uint8_t channel) {
   // Read the conversion results
   // Shift 12-bit results right 4 bits for the ADS1015
   return readRegister(m_i2cAddress, ADS1015_REG_POINTER_CONVERT) >> m_bitShift;  
+}
+
+/**************************************************************************/
+/*!
+@brief  Gets a continuous ADC reading from the specified channel
+*/
+/**************************************************************************/
+uint16_t Adafruit_ADS1015::readADC_Continuous() {
+	// Read the conversion results
+	// Shift 12-bit results right 4 bits for the ADS1015
+	return readRegister(m_i2cAddress, ADS1015_REG_POINTER_CONVERT) >> m_bitShift;
 }
 
 /**************************************************************************/
