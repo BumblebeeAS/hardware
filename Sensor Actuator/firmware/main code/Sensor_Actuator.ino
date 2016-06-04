@@ -18,7 +18,6 @@
 //###################################################
 //###################################################
 
-#include "sensors_actuators.h"
 #include "define.h"
 #include "can_defines.h"
 
@@ -53,8 +52,8 @@ static uint32_t LEDArray_loop_500;//500ms loop LED array
 
 //ADC definitions
 //Swap between ADS_ADD and ADS_ADD_BACKUP
-Adafruit_ADS1115 ads1115_ext(ADS_ADD_EXT); // ADS_ADD for external pressure         
-Adafruit_ADS1115 ads1115_int(ADS_ADD_INT); // ADS_ADD for internal pressure
+Adafruit_ADS1015 ads1115_ext(ADS_ADD_EXT); // ADS_ADD for external pressure         
+Adafruit_ADS1015 ads1115_int(ADS_ADD_INT); // ADS_ADD for internal pressure
 HIH613x humid(0x27);                 //Humidity Address 0x27 TempHumAddr
 LEDS led(LED_Red_1,LED_Blue_1,LED_Green_1); //LED constructor  9 , 7 , 11
 LEDS led2(LED_Red_2,LED_Blue_2,LED_Green_2);//LED constructor  10, 4 , 12
@@ -208,6 +207,7 @@ void loop()
     currentTime=millis();       
 	if (currentTime > Mani_loop_100 + 100)
 	{
+    
 		//DROPPER counter sequence
 		if (mani_ctr[DROPPER] == MANI_DROPPER_DELAY)
 		{
@@ -334,6 +334,7 @@ void pressure_init()
 void manipulators_init()
 {
 	//Initialize Manipulators
+  //
 	pinMode(MANI_1,OUTPUT);
 	pinMode(MANI_2,OUTPUT);
 	pinMode(MANI_3,OUTPUT);
@@ -366,6 +367,7 @@ int16_t readInternalPressure()
 	delay(5);
 	//Serial.print("ip:");
 	//Serial.println(InternalPress);
+  //BANKAI
 	InternalPress = ((float)InternalPress*0.0001875) / (INTPRES_REF*0.0040) + 10;
  return InternalPress;
 }
@@ -378,6 +380,8 @@ int16_t readInternalPressure()
    {
 	   pressure = pressure + LPF_CONSTANT*(float)(temp - pressure);
    }
+   //one day we shall all die
+   //but on all other days we shall not
 }
 
 void checkCANmsg()
@@ -395,11 +399,18 @@ void checkCANmsg()
 			manipulator_buf = manipulator_buf + buf[0];
 			for (uint8_t i = 0; i < NUM_MANI; i++)
 			{
-				if (i == LINEAR)
-				{
+				if (i == GRABBER){
 					if (manipulator_buf & (1 << i)) digitalWrite(MANI_9, HIGH);
 					else digitalWrite(MANI_9, LOW);
 				}
+       //DESTROY
+       
+        if (i == ROTARY){
+          if (manipulator_buf & (1 << i)) digitalWrite(MANI_2, HIGH);
+          else digitalWrite(MANI_2, LOW);
+          //attack now
+        }
+        
 				if (manipulator_buf & (1 << i))	mani_ctr[i] = mani_delay[i];
 			}
 
@@ -414,6 +425,8 @@ void checkCANmsg()
 			LED1_buf = buf[0];
 			LED2_buf = buf[1];
 			break;
+      //not for riches, nor for ruin
+      //but the red dawn
 		}
 		default:{
 			//TODO=>throw an error 

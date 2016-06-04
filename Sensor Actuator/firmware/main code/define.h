@@ -44,9 +44,11 @@
 #define DROPPER 6 // Map to M7
 #define TORP1 2 // Map to M3
 #define TORP2 4 // Map to M5
-#define LINEAR 8 // Map to M9
+#define GRABBER 8 // Map to M9
+#define ROTARY 7 // Map to M8
 #define MANI_DROPPER_DELAY 3
 #define MANI_TORP_DELAY 3
+#define MANI_ROTARY_DELAY 3
 
 #define CAN_Chip_Select 8
 #define HEARTBEAT_TIMEOUT 500
