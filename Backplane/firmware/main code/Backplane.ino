@@ -162,7 +162,6 @@ void checkSmartKill(){
 		PORTF &= ~(B00000001);	//kill thruster
 	else
 		PORTF |= B00000001;	//enable thruster
-	
 
 	if(((smartkill_buf >> 1) & 0x01) == 1)	//bit 1 = SA
 		digitalWrite(SA_EN, LOW);	//kill SA
@@ -173,7 +172,22 @@ void checkSmartKill(){
 		PORTD &= ~(B01000000);	//kill telemetery
 	else
 		PORTD |= B01000000;	//enable telemetery
-	
+
+   if(((smartkill_buf >> 3) & 0x01) == 1) //bit 3 = navigation POE
+    digitalWrite(POE_NAV, LOW);  //kill nav
+  else
+    digitalWrite(POE_NAV, HIGH); //enable nav
+
+  if(((smartkill_buf >> 4) & 0x01) == 1)  //bit 4 = sonar POE
+    digitalWrite(POE_SONAR, LOW);  //kill sonar
+  else
+    digitalWrite(POE_SONAR, HIGH); //enable sonar
+
+  if(((smartkill_buf >> 5) & 0x01) == 1)  //bit 5 = acoustics POE
+    digitalWrite(POE_ACOU, LOW);  //kill acoustics
+  else
+    digitalWrite(POE_ACOU, HIGH); //enable acoustics
+  
 }
 
 
