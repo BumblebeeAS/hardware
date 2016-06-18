@@ -52,8 +52,8 @@ static uint32_t LEDArray_loop_500;//500ms loop LED array
 
 //ADC definitions
 //Swap between ADS_ADD and ADS_ADD_BACKUP
-Adafruit_ADS1015 ads1115_ext(ADS_ADD_EXT); // ADS_ADD for external pressure         
-Adafruit_ADS1015 ads1115_int(ADS_ADD_INT); // ADS_ADD for internal pressure
+Adafruit_ADS1115 ads1115_ext(ADS_ADD_EXT); // ADS_ADD for external pressure         
+Adafruit_ADS1115 ads1115_int(ADS_ADD_INT); // ADS_ADD for internal pressure
 HIH613x humid(0x27);                 //Humidity Address 0x27 TempHumAddr
 LEDS led(LED_Red_1,LED_Blue_1,LED_Green_1); //LED constructor  9 , 7 , 11
 LEDS led2(LED_Red_2,LED_Blue_2,LED_Green_2);//LED constructor  10, 4 , 12
@@ -71,7 +71,7 @@ uint8_t buf[8];  //Buffer for CAN message
 uint8_t heartbeat_buf[2];
 uint16_t manipulator_buf;
 uint8_t mani_ctr[NUM_MANI];
-uint8_t mani_delay[NUM_MANI] = { 0, 0, MANI_TORP_DELAY, 0, MANI_TORP_DELAY, 0, MANI_DROPPER_DELAY, 0, 0 };
+uint8_t mani_delay[NUM_MANI] = { MANI_ROTARY_DELAY, MANI_ROTARY_DELAY, MANI_TORP_DELAY, 0, MANI_TORP_DELAY, 0, MANI_DROPPER_DELAY, 0, 0 };
 uint8_t StatuesBuf[3];//Temp humidity and internal pressure buffer
 uint8_t PressureBuf[2];//external pressure buffer
 int16_t pressure;//Pressure Sensor Definitions
@@ -207,6 +207,33 @@ void loop()
     currentTime=millis();       
 	if (currentTime > Mani_loop_100 + 100)
 	{
+
+    //ROTARY1 counter sequence
+    if (mani_ctr[ROTARY1] == MANI_ROTARY_DELAY)
+    {
+      digitalWrite(MANI_1, HIGH);
+      mani_ctr[ROTARY1] --;
+    }
+    else if (mani_ctr[ROTARY1] > 1) mani_ctr[ROTARY1] --;
+    else if (mani_ctr[ROTARY1] == 1)
+    {
+      digitalWrite(MANI_1, LOW);
+      mani_ctr[ROTARY1]--;
+    }
+
+    //ROTARY2 counter sequence
+    if (mani_ctr[ROTARY2] == MANI_ROTARY_DELAY)
+    {
+      digitalWrite(MANI_2, HIGH);
+      mani_ctr[ROTARY2] --;
+    }
+    else if (mani_ctr[ROTARY2] > 1) mani_ctr[ROTARY2] --;
+    else if (mani_ctr[ROTARY2] == 1)
+    {
+      digitalWrite(MANI_2, LOW);
+      mani_ctr[ROTARY2]--;
+    }
+
     
 		//DROPPER counter sequence
 		if (mani_ctr[DROPPER] == MANI_DROPPER_DELAY)
@@ -365,11 +392,10 @@ int16_t readInternalPressure()
 	InternalPress = ads1115_int.readADC_Continuous();
 	ads1115_int.set_continuous_conv(0);
 	delay(5);
-	//Serial.print("ip:");
-	//Serial.println(InternalPress);
-  //BANKAI
 	InternalPress = ((float)InternalPress*0.0001875) / (INTPRES_REF*0.0040) + 10;
- return InternalPress;
+  Serial.print("Int press:");
+  Serial.println(InternalPress);
+  return InternalPress;
 }
 
 /* Discrete Low Pass Filter to reduce noise in signal */
@@ -379,9 +405,9 @@ int16_t readInternalPressure()
    if(temp != 0)
    {
 	   pressure = pressure + LPF_CONSTANT*(float)(temp - pressure);
+//     Serial.print("Ext press: ");
+//     Serial.println(pressure);
    }
-   //one day we shall all die
-   //but on all other days we shall not
 }
 
 void checkCANmsg()
@@ -403,13 +429,6 @@ void checkCANmsg()
 					if (manipulator_buf & (1 << i)) digitalWrite(MANI_9, HIGH);
 					else digitalWrite(MANI_9, LOW);
 				}
-       //DESTROY
-       
-        if (i == ROTARY){
-          if (manipulator_buf & (1 << i)) digitalWrite(MANI_2, HIGH);
-          else digitalWrite(MANI_2, LOW);
-          //attack now
-        }
         
 				if (manipulator_buf & (1 << i))	mani_ctr[i] = mani_delay[i];
 			}
@@ -425,8 +444,6 @@ void checkCANmsg()
 			LED1_buf = buf[0];
 			LED2_buf = buf[1];
 			break;
-      //not for riches, nor for ruin
-      //but the red dawn
 		}
 		default:{
 			//TODO=>throw an error 
