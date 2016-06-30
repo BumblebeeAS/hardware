@@ -45,7 +45,8 @@
 #define TORP1 2 // Map to M3
 #define TORP2 4 // Map to M5
 #define GRABBER 8 // Map to M9
-#define ROTARY 7 // Map to M8
+#define ROTARY1 0 // Map to M1
+#define ROTARY2 1 //Map to M2
 #define MANI_DROPPER_DELAY 3
 #define MANI_TORP_DELAY 3
 #define MANI_ROTARY_DELAY 3
