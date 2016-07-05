@@ -93,9 +93,9 @@ void PMB::getCapFromVolt(){
 		percentage_left = int(tempPercent);
 	}
 	// Serial.println(percentage_left);
-
+	//capacity_left = BATTERY_CAPACITY;
 	capacity_left = percentage_left/100.0 * BATTERY_CAPACITY;
-	capacity_used = BATTERY_CAPACITY-capacity_left;
+	//capacity_used = BATTERY_CAPACITY-capacity_left;
 	// Serial.println(capacity_left);
 }
 
@@ -208,9 +208,13 @@ uint16_t PMB::extractMin(uint16_t *source, uint8_t size){
 }	
 
 void PMB::calculateCapacity(){
-	capacity_used += shunt_current*MAIN_LOOP_INTERVAL/1000/3600;
-    capacity_left = BATTERY_CAPACITY - capacity_used;
-    percentage_left = capacity_left/10000.0 * 100.0;
+	//capacity_used += shunt_current*(MAIN_LOOP_INTERVAL/1000);
+    //capacity_left = capacity_left - capacity_used;
+	new_time = millis()*1.0;
+    //capacity_left = capacity_left - (shunt_current*(MAIN_LOOP_INTERVAL/1000.0)*1.6);
+    capacity_left = capacity_left - (shunt_current*(new_time-old_time)/1000.0);
+    left = capacity_left/(360000.0);
+    old_time = new_time;
 }
 
 void PMB::readPressure(){
@@ -247,7 +251,7 @@ void PMB::publishSerial(){
 		Serial.println(shunt_current);
 		//capacity    x1 (0-100)
 		Serial.print("Percentage left:");
-		Serial.println(percentage_left);
+		Serial.println(left);
 		//used mAh    x2 (0-65536)
 		Serial.print("Capacity left: ");
 		Serial.println(capacity_left);
@@ -275,7 +279,7 @@ void PMB::publishPMBStats(){
 
 	//Frame 3: PMB_stats3
 	CAN.setupCANFrame(PMB_stats3, 0, 2, uint16_t(capacity_used));
-	CAN.setupCANFrame(PMB_stats3, 2, 1, percentage_left);
+	CAN.setupCANFrame(PMB_stats3, 2, 1, uint16_t(left));
 	CAN.setupCANFrame(PMB_stats3, 3, 1, board_temperature);
 	CAN.setupCANFrame(PMB_stats3, 4, 1, board_pressure);
 
@@ -286,7 +290,7 @@ void PMB::publishPMBStats(){
 
 	uint8_t status = CAN.checkError();
 
-	Serial.println(status, BIN);
+//	Serial.println(status, BIN);
 }
 
 void PMB::publishCANStats(){		
@@ -389,7 +393,7 @@ void PMB::updateDisplay(){
     display.print(PMB_no);
 	display.setCursor(1, 0);
     display.write("Batt %: ");
-    display.print(percentage_left);
+    display.print(left);
 	display.setCursor(2, 0);
     display.write("Batt Volt: ");
     display.print(cell_voltage[5]);
@@ -397,7 +401,7 @@ void PMB::updateDisplay(){
     display.write("Current drawn: ");
     display.print(shunt_current);
     display.setCursor(4, 0);
-    display.write("Battery MAh: ");
+    display.write("C: ");
     display.print(capacity_left);
 	display.setCursor(5, 0);
     display.write("Pod Temp: ");

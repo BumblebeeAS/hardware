@@ -1,3 +1,4 @@
+
 #include <ADS1115_min.h>
 //#include <Adafruit_ADS1015.h>
 #define vehiclePower 6

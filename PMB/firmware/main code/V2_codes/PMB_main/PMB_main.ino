@@ -19,7 +19,7 @@ void loop(){
 
 	//See if need to shutdown
 	if(digitalRead(PIN_POWEROFF_SIGNAL)){
-    Serial.println(digitalRead(PIN_POWEROFF_SIGNAL));
+//    Serial.println(digitalRead(PIN_POWEROFF_SIGNAL));
 	    thisPMB.shutDownPMB();
 	}
 

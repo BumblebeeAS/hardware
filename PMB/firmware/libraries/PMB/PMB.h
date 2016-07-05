@@ -26,7 +26,11 @@ private:
 							
 	uint8_t percentage_initial 								= 100;
 	uint8_t percentage_left 								= 100;
-				
+	float left 								                = 0.0;
+
+	float old_time	= 0.0;
+	float new_time = 0.0;
+
 	uint16_t cell_voltage[CELLS]   							= {0};
 	//for filtering cell 6
 	// uint16_t cell6_raw_array[MEDIAN_FILTER_SIZE] 			= {0};
