@@ -13,11 +13,15 @@
 //Firmware Version :             v2.0
 //
 // Written by Louis Goh
+//Change Log for v1.3:
+//- Added rotary and grabber actuators
+//- Added leak alert
 // Change Log for v1.2:
 //###################################################
 //###################################################
 //###################################################
 
+#include "sensors_actuators.h"
 #include "define.h"
 #include "can_defines.h"
 
@@ -72,11 +76,11 @@ uint8_t heartbeat_buf[2];
 uint16_t manipulator_buf;
 uint8_t mani_ctr[NUM_MANI];
 uint8_t mani_delay[NUM_MANI] = { MANI_ROTARY_DELAY, MANI_ROTARY_DELAY, MANI_TORP_DELAY, 0, MANI_TORP_DELAY, 0, MANI_DROPPER_DELAY, 0, 0 };
-uint8_t StatuesBuf[3];//Temp humidity and internal pressure buffer
+uint8_t StatuesBuf[5];//Temp humidity and internal pressure buffer
 uint8_t PressureBuf[2];//external pressure buffer
 int16_t pressure;//Pressure Sensor Definitions
 uint32_t heartbeat_loop;
-
+int16_t pres_start;
 void setup()
 {
 	//Debug Mode: to be removed by the compiler if not in debug mode.
@@ -93,7 +97,7 @@ void setup()
 	Serial.println("Manipulators: OK");
     pressure_init();
 	Serial.println("Pressure: OK");
-
+	
 	Serial.println("ALL OK");
   //Initialize MainLoop Timing variables
 	currentTime = loopTime = heartbeat_loop = PressureFilterLoop_10 = ExterPress_loop_50 = 
@@ -131,16 +135,12 @@ void loop()
        //publish pressure data
 	   CAN.setupCANFrame(PressureBuf,0,2,pressure);
 	   CAN.sendMsgBuf(CAN_pressure, 0, 2, PressureBuf);
-       //Serial.print(PressureBuf[0]);
-       //Serial.print("  ");
-       //Serial.println(PressureBuf[1]);
-       
+
        #if DEBUG_MODE == DEBUG_INFO
 		  Serial.print("p:");
           Serial.println(millis() - currentTime);//change the debug mode
         #endif
         ExterPress_loop_50 = currentTime;
-
      }
     
     currentTime=millis();  
@@ -162,11 +162,26 @@ void loop()
                case 2:
                  //InternalPressure Reading
                  StatuesBuf[2] = (byte)readInternalPressure();
+				 StatuesBuf[4] = pres_start;
+				 
+				 if ((pres_start - StatuesBuf[2]) > 10)
+				 {
+					 //Leak!!!
+					 Serial.print("leak");
+					 StatuesBuf[3] = 1;
+					 leak_alert();
+				 }
+				 else
+				 {
+					 //No leak
+					 StatuesBuf[3] = 0;
+				 }
+				
                  Pub_Press = true;
                 break;                 
                case 3:
                  //Publish message onto the CAN bus
-				 CAN.sendMsgBuf(CAN_SA_stats, 0, 3, StatuesBuf);
+				 CAN.sendMsgBuf(CAN_SA_stats, 0, 5, StatuesBuf);
                  //Serial.println(StatuesBuf[0]);
                  //Serial.println(StatuesBuf[1]);
                  //Serial.println(StatuesBuf[2]);
@@ -207,34 +222,32 @@ void loop()
     currentTime=millis();       
 	if (currentTime > Mani_loop_100 + 100)
 	{
+		//ROTARY1 counter sequence
+		if (mani_ctr[ROTARY1] == MANI_ROTARY_DELAY)
+		{
+			digitalWrite(MANI_1, HIGH);
+			mani_ctr[ROTARY1] --;
+		}
+		else if (mani_ctr[ROTARY1] > 1) mani_ctr[ROTARY1] --;
+		else if (mani_ctr[ROTARY1] == 1)
+		{
+			digitalWrite(MANI_1, LOW);
+			mani_ctr[ROTARY1]--;
+		}
 
-    //ROTARY1 counter sequence
-    if (mani_ctr[ROTARY1] == MANI_ROTARY_DELAY)
-    {
-      digitalWrite(MANI_1, HIGH);
-      mani_ctr[ROTARY1] --;
-    }
-    else if (mani_ctr[ROTARY1] > 1) mani_ctr[ROTARY1] --;
-    else if (mani_ctr[ROTARY1] == 1)
-    {
-      digitalWrite(MANI_1, LOW);
-      mani_ctr[ROTARY1]--;
-    }
+		//ROTARY2 counter sequence
+		if (mani_ctr[ROTARY2] == MANI_ROTARY_DELAY)
+		{
+			digitalWrite(MANI_2, HIGH);
+			mani_ctr[ROTARY2] --;
+		}
+		else if (mani_ctr[ROTARY2] > 1) mani_ctr[ROTARY2] --;
+		else if (mani_ctr[ROTARY2] == 1)
+		{
+			digitalWrite(MANI_2, LOW);
+			mani_ctr[ROTARY2]--;
+		}
 
-    //ROTARY2 counter sequence
-    if (mani_ctr[ROTARY2] == MANI_ROTARY_DELAY)
-    {
-      digitalWrite(MANI_2, HIGH);
-      mani_ctr[ROTARY2] --;
-    }
-    else if (mani_ctr[ROTARY2] > 1) mani_ctr[ROTARY2] --;
-    else if (mani_ctr[ROTARY2] == 1)
-    {
-      digitalWrite(MANI_2, LOW);
-      mani_ctr[ROTARY2]--;
-    }
-
-    
 		//DROPPER counter sequence
 		if (mani_ctr[DROPPER] == MANI_DROPPER_DELAY)
 		{
@@ -282,11 +295,10 @@ void loop()
        Mani_loop_100 = currentTime;
      }
 
-
      currentTime=millis();  
      if(currentTime > LEDArray_loop_500 + 500){
             led.colour(LED1_buf);
-	    led2.colour(LED2_buf);
+			led2.colour(LED2_buf);
               #if DEBUG_MODE == DEBUG_INFO
 				Serial.print("le:");
 				Serial.println(millis() - currentTime);//change the debug mode
@@ -319,8 +331,7 @@ START_INIT:
 	CAN.init_Filt(1, 0, CAN_manipulator);//Manipulator
 	CAN.init_Filt(2, 0, CAN_LED);//LED Array
 	CAN.init_Filt(3, 0, CAN_SA_stats);//Sensor & Actuator Statistics 
-	CAN.init_Filt(4, 0, CAN_SA_BUS_stats);//Sensor & Actuator CAN Stats
-
+	
     //Interrupt not working yet 0 for Pin D2, Interrupt service routine ,Falling edge 
 }
 
@@ -355,13 +366,13 @@ void pressure_init()
 	{
 		Serial.println("PRES NOT OK");
 	}
+	pres_start = readInternalPressure();
 	delay(100);
 }
 
 void manipulators_init()
 {
 	//Initialize Manipulators
-  //
 	pinMode(MANI_1,OUTPUT);
 	pinMode(MANI_2,OUTPUT);
 	pinMode(MANI_3,OUTPUT);
@@ -392,24 +403,31 @@ int16_t readInternalPressure()
 	InternalPress = ads1115_int.readADC_Continuous();
 	ads1115_int.set_continuous_conv(0);
 	delay(5);
+	//Serial.print("ip:");
+	//Serial.println(InternalPress);
 	InternalPress = ((float)InternalPress*0.0001875) / (INTPRES_REF*0.0040) + 10;
-  Serial.print("Int press:");
-  Serial.println(InternalPress);
-  return InternalPress;
+ return InternalPress;
 }
 
 /* Discrete Low Pass Filter to reduce noise in signal */
-	void readPressureFilter()
-	{
+void readPressureFilter()
+{
    int16_t temp = readPressure();
    if(temp != 0)
    {
 	   pressure = pressure + LPF_CONSTANT*(float)(temp - pressure);
-//     Serial.print("Ext press: ");
-//     Serial.println(pressure);
    }
 }
 
+void leak_alert()
+{
+	led.colour(4);
+	led2.colour(4);
+	delay(500);
+	led.colour(8);
+	led2.colour(8);
+	delay(500);
+}
 void checkCANmsg()
 {
 	//if there is stuff in buffer
@@ -425,11 +443,11 @@ void checkCANmsg()
 			manipulator_buf = manipulator_buf + buf[0];
 			for (uint8_t i = 0; i < NUM_MANI; i++)
 			{
-				if (i == GRABBER){
+				if (i == GRABBER)
+				{
 					if (manipulator_buf & (1 << i)) digitalWrite(MANI_9, HIGH);
 					else digitalWrite(MANI_9, LOW);
 				}
-        
 				if (manipulator_buf & (1 << i))	mani_ctr[i] = mani_delay[i];
 			}
 
@@ -439,12 +457,17 @@ void checkCANmsg()
 			break;
 		}
 
-		case CAN_LED:{//ID = 9 (number)
+		case CAN_LED:{
 			//put in the LED buffer
+			Serial.println("l_rx");
 			LED1_buf = buf[0];
 			LED2_buf = buf[1];
 			break;
 		}
+		case CAN_thruster_1:
+			//put in the LED buffer
+			Serial.println("thruster");
+			break;
 		default:{
 			//TODO=>throw an error 
 		}

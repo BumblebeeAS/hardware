@@ -1,14 +1,13 @@
 #include "can_defines.h"
 #include "define.h"
-#include "smcDriver_v2.h"
+#include <smcDriver_v2.h>
 #include <Arduino.h>
 #include <Servo.h>
 #include <SPI.h>
-#include "can.h"
-#include "can_defines.h"
-#include "can_defines_main.h"
+#include <can.h>
+#include <can_defines.h>
 #include <stdint.h>
-#include "Thrusters.h"
+#include <Thrusters.h>
 #include <math.h>
 
 static uint32_t loopTime;
@@ -151,6 +150,7 @@ START_INIT:
 	CAN.init_Filt(0, 0, CAN_thruster_1);	//1st Thruster Message
 	CAN.init_Filt(1, 0, CAN_thruster_2);	//2nd Thruster Message
 	CAN.init_Filt(2, 0, CAN_heartbeat);	//Heartbeat Message
+	CAN.init_Filt(3, 0, CAN_SA_stats);	//Heartbeat Message
 }
 
 void checkCANmsg()
@@ -186,6 +186,23 @@ void checkCANmsg()
 				hb_sync_timer = millis();
 			}
 			break;
+		case CAN_SA_stats:
+			CAN.readMsgBuf(&len, buf);
+			Serial.print("le");
+			Serial.println(buf[3]);
+			if (buf[3] == 1)
+			{
+				while (1)
+				{
+					videoray.mov(0, 0);
+					mDriver.setMotorSpeed(THRUSTER_3, 1000);
+					mDriver.setMotorSpeed(THRUSTER_4, 1000);
+					mDriver.setMotorSpeed(THRUSTER_5, 1000);
+					mDriver.setMotorSpeed(THRUSTER_6, 1000);
+					mDriver.setMotorSpeed(THRUSTER_7, 0);
+					mDriver.setMotorSpeed(THRUSTER_8, 0);
+				}
+			}
 		default:{
 			//TODO=>throw an error 
 		};
