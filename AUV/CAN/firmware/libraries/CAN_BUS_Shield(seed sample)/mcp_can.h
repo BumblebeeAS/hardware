@@ -20,7 +20,7 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-
   1301  USA
 */
-#ifndef _MCP2515_H_
+#ifndef _MCP2515_H_ 
 #define _MCP2515_H_
 
 #include "mcp_can_dfs.h"
