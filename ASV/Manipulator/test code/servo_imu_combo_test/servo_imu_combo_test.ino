@@ -31,23 +31,6 @@ public:                           // ********THIS IS POSITION************
   }
 };
 
-//class Imu {
-//  const int MPU_addr=0x68;  // I2C address of the MPU-6050
-//  int16_t AcX,AcY,AcZ,Tmp,GyX,GyY,GyZ;
-//  unsigned long previousMillis;
-//  double x,y,z;
-//  long int caliAx=0, caliAy=0, caliAz=0, caliGx=0, caliGy=0, caliGz=0;
-//  double pitch;
-//  double zero_pt;
-//  double current_angle;
-//
-//public:
-//  Imu() {
-//  }
-//  
-//
-//};
-
 const int MPU_addr=0x68;  // I2C address of the MPU-6050
 int16_t AcX,AcY,AcZ,Tmp,GyX,GyY,GyZ;
 double x,y,z;
@@ -57,8 +40,6 @@ int i=0;
 
 double pitch;
 double zero_pt;
-double current_angle;
-
 
 //          servo reaction speed 6V no load 0.21s/60degree
 //          servo 0-180 degree 550-2500
@@ -92,9 +73,7 @@ void loop(){
 //  
 //  
   sweep1.Update(diff);
-
-  
-  
+ 
 //  correction();
 
 //  CalibrateAcc();
@@ -110,18 +89,6 @@ void correction(   ) {
   zero_pt=pitch;
   Serial.println(pitch);
 }
-
-//bool motion() {
-//  int angle, new_angle;
-//  bool flag=false;
-//  
-//  angle=(atan2(x,z))*180/M_PI;
-//  readAccTempGyro();
-//  new_angle=(atan2(x,z))*180/M_PI;
-//
-//  (new_angle-angle)>10 ? flag=true : ( (angle-new_angle)>10 ? flag=true : flag=false );
-//  return flag;
-//}
 
 void readAccTempGyro() {
   Wire.beginTransmission(MPU_addr);
@@ -155,8 +122,6 @@ void setting() {
   Serial.print(accel_config,BIN);                    //accel= 2 4 8 16              0x1C
   Serial.println("0=2, 01=4, 10=8, 11=16 g");
 }
-
-
 
 void printAccTempGyro() {
   

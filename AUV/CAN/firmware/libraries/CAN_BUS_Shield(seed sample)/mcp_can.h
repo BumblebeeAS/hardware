@@ -36,7 +36,7 @@ class MCP_CAN
                                                                         /* or standard (the 11 LSB)     */
     INT32U  m_nID;                                                      /* can id                       */
     INT8U   m_nDlc;                                                     /* data length:                 */
-    INT8U   m_nDta[MAX_CHAR_IN_MESSAGE];                            	/* data                         */
+    INT8U   m_nDta[MAX_CHAR_IN_MESSAGE];                               	/* data                         */
     INT8U   m_nRtr;                                                     /* rtr                          */
     INT8U   m_nfilhit;
     INT8U   SPICS;
