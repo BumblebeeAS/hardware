@@ -1,7 +1,7 @@
 #include<Wire.h>
 #include <math.h>
 #include <Servo.h>
-
+    
 class Sweeper {
   Servo servo;
 //  int pos;                        // current position  
