@@ -1,5 +1,9 @@
-#include <MANIPULATOR.h>
-
+#include "MANIPULATOR.h"
+//----------------------------------------------------------------------//															
+//																		//
+//								Servo class								//
+//																		//
+//----------------------------------------------------------------------//
 SWEEPER::SWEEPER(int interval) {
     updateInterval=interval;
  }
@@ -18,12 +22,21 @@ void SWEEPER::Update(int target_us,int error) {
 		servo.writeMicroseconds(target_us-error);  
 	}                               
 }  
-
+//------------------------------------------------------------------------//
+//																		  //
+//								IMU class								  //
+//																		  //
+//------------------------------------------------------------------------//
 IMU::IMU(int addr) {
    caliAx=0, caliAy=0, caliAz=0, caliGx=0, caliGy=0, caliGz=0;
    MPU_addr=addr;
    error=0;
  }
+
+void IMU::Pitch() {
+	readAccTempGyro();
+	pitch=atan2(AcX,AcZ);
+}
 
 void IMU::setting() {
     int gyro_config=readReg(0x1B);                    // check gyro and accel config setting
@@ -62,9 +75,11 @@ void IMU::readAccTempGyro() {
 void IMU::correctToZero() {
     readAccTempGyro();
     pitch=atan2(x,z);
-    pitch= pitch*180/3.14159265;  
+    pitch= pitch*180/3.1415926535;  
     zero_pt=pitch;
+    #if DEBUG==1
     Serial.println(pitch);
+    #endif
 }
 
 double IMU::Error() {
@@ -131,7 +146,7 @@ void IMU::CalibrateAcc() {
 //http://www.analog.com/media/en/technical-documentation/application-notes/AN-1057.pdf
 }
 
-void IMU::IMU_Init () {
+void IMU::Init () {
     Wire.begin();
     Wire.beginTransmission(MPU_addr);
     Wire.write(0x6B);  // PWR_MGMT_1 register

@@ -78,8 +78,7 @@ void loop(){
 
 //  CalibrateAcc();
 //  setting();
-
-//  delay(1000);    
+   
 }
 
 void correction(   ) {
