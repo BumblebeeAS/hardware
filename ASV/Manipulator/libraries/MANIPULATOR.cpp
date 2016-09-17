@@ -1,8 +1,8 @@
 #include "MANIPULATOR.h"
 //----------------------------------------------------------------------//															
-//																		//
-//								Servo class								//
-//																		//
+//																	                                   	//
+//								Servo class							                            	//
+//																	                                   	//
 //----------------------------------------------------------------------//
 SWEEPER::SWEEPER(int interval) {
     updateInterval=interval;
@@ -19,24 +19,19 @@ void SWEEPER::Detach() {
 void SWEEPER::Update(int target_us,int error) {
 	if ((millis() - lastUpdate) > updateInterval) {
 		lastUpdate = millis();      
-		servo.writeMicroseconds(target_us-error);  
+		servo.writeMicroseconds(target_us+error);  
 	}                               
 }  
 //------------------------------------------------------------------------//
-//																		  //
-//								IMU class								  //
-//																		  //
+//																	                                   	  //
+//								IMU class								                                //
+//																		                                    //
 //------------------------------------------------------------------------//
 IMU::IMU(int addr) {
    caliAx=0, caliAy=0, caliAz=0, caliGx=0, caliGy=0, caliGz=0;
    MPU_addr=addr;
    error=0;
  }
-
-void IMU::Pitch() {
-	readAccTempGyro();
-	pitch=atan2(AcX,AcZ);
-}
 
 void IMU::setting() {
     int gyro_config=readReg(0x1B);                    // check gyro and accel config setting
@@ -64,7 +59,6 @@ void IMU::readAccTempGyro() {
     GyX=Wire.read()<<8|Wire.read();  // 0x43 (GYRO_XOUT_H) & 0x44 (GYRO_XOUT_L)
     GyY=Wire.read()<<8|Wire.read();  // 0x45 (GYRO_YOUT_H) & 0x46 (GYRO_YOUT_L)
     GyZ=Wire.read()<<8|Wire.read();  // 0x47 (GYRO_ZOUT_H) & 0x48 (GYRO_ZOUT_L)
-    x=AcX; y=AcY; z=AcZ;
 //
 //
                   AcX-=1826;  AcY+=440; AcZ-=390; GyX+=221; GyY-=51;  GyZ=GyZ;
@@ -74,7 +68,7 @@ void IMU::readAccTempGyro() {
 
 void IMU::correctToZero() {
     readAccTempGyro();
-    pitch=atan2(x,z);
+    pitch=atan2(AcX,AcZ);
     pitch= pitch*180/3.1415926535;  
     zero_pt=pitch;
     #if DEBUG==1
@@ -83,12 +77,13 @@ void IMU::correctToZero() {
 }
 
 double IMU::Error() {
-    error=pitch-zero_pt;
-    return error;
+    error = atan2(AcX,AcZ);
+    error = error *180/3.1415926535;
+
 }
 
 void IMU::printAccTempGyro() {
-    #if DEBUG==1
+    
     Serial.print("AcX = "); Serial.print(AcX);
     Serial.print(" | AcY = "); Serial.print(AcY);
     Serial.print(" | AcZ = "); Serial.print(AcZ);
@@ -96,7 +91,7 @@ void IMU::printAccTempGyro() {
     Serial.print(" | GyX = "); Serial.print(GyX);
     Serial.print(" | GyY = "); Serial.print(GyY);
     Serial.print(" | GyZ = "); Serial.println(GyZ);
-    #endif
+    
 }
 
 void IMU::writeReg(int reg, int data) {
