@@ -1,6 +1,7 @@
 #include<Wire.h>
 #include <math.h>
 #include <Servo.h>
+
     
 class Sweeper {
   Servo servo;
@@ -55,7 +56,7 @@ void setup(){
   Serial.begin(9600);
   correction();
   
-  sweep1.Attach(7);                 // pin servo is attached
+  sweep1.Attach(9);                 // pin servo is attached
 
 }
 void loop(){
@@ -86,7 +87,7 @@ void correction(   ) {
   pitch=atan2(x,z);
   pitch= pitch*180/3.14159265;  
   zero_pt=pitch;
-  Serial.println(pitch);
+//  Serial.println(pitch);
 }
 
 void readAccTempGyro() {
