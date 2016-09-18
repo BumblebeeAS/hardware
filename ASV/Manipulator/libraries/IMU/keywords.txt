@@ -1,0 +1,24 @@
+#######################################
+# Syntax Coloring Map IMU
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+IMU	KEYWORD1	IMU
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+init	KEYWORD2
+setting	KEYWORD2
+readAccTempGyro	KEYWORD2
+printAccTempGyro	KEYWORD2
+correctToZero	KEYWORD2
+correctError	KEYWORD2
+calibrateAcc	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
