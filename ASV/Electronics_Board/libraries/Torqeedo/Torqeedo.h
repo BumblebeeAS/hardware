@@ -7,10 +7,12 @@
 #define MAX_PACKET_SIZE 40 //in bytes
 #define END_MARKER 0xF6
 
-#define TORQEEDO1_RXEN 2
-#define TORQEEDO1_DXEN 3
-#define TORQEEDO2_RXEN 4
-#define TORQEEDO2_DXEN 5
+#define TORQEEDO1_RXEN 22
+#define TORQEEDO1_DXEN 24
+#define TORQEEDO2_RXEN 26
+#define TORQEEDO2_DXEN 28
+#define TORQEEDO1_ON 40
+#define TORQEEDO2_ON 38
 
 #define BAUDRATE 19200
 
@@ -72,6 +74,7 @@ class Torqeedo
 private:
 	int RX_ENABLE;
 	int DX_ENABLE;
+	int ON_PIN;
 	int thrusterNum;
 	unsigned long time;
 
@@ -86,9 +89,7 @@ private:
 	byte data[MAX_PACKET_SIZE];
 	int len = 0; //length of packet body including header
 	int _checksum;
-	bool kill = false;
 	int16_t hardcodespeed = 0;
-	int startUpCount = 0;
 	bool speedZero = true;
 	
 	typedef void(*WriteCallback)  (const byte what);    // send a byte to serial port
@@ -96,7 +97,10 @@ private:
 	typedef byte(*ReadCallback)  ();    // read a byte from serial port
 
 public:
-	Torqeedo(int RXEN, int DXEN, int thruster_num);
+	int startUpCount = 0;
+	bool kill = false;
+
+	Torqeedo(int RXEN, int DXEN, int ON, int thruster_num);
 	~Torqeedo();
 	void init();
 
@@ -111,13 +115,14 @@ public:
 	DisplayState getDisplayState();
 
 private:
-	//bool readPlainMessage(AvailableCallback fAvailable, ReadCallback fRead, char message[maxMsgLen+3+1]);
 	void sendEmptyReply();
 	void EncodeMessage(byte data[]);
 	bool decodeMessage();
 	
 	void decodeDisplay();
 	void decodeDisplayState();
+
+	int16_t mapSpeed(int speed);
 
 	int8_t crc8(int8_t crc, int8_t crc_data);
 };

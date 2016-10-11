@@ -1,0 +1,15 @@
+#ifndef _DEFINES_H_
+#define _DEFINES_H_
+
+#define START_BYTE 254
+#define HEARTBEAT_TIMEOUT 250
+
+#define LIGHTTOWER_RED	0
+#define LIGHTTOWER_YELLOW 1
+#define LIGHTTOWER_GREEN 2
+
+#define MANUAL_OPERATION 0x01
+
+#define XBEE_BAUDRATE 115200
+
+#endif

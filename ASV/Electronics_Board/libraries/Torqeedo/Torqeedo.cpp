@@ -1,14 +1,14 @@
 #include "Torqeedo.h"
 #include <Arduino.h>
 
-Torqeedo::Torqeedo(int RXEN, int DXEN, int thruster_num)
+Torqeedo::Torqeedo(int RXEN, int DXEN, int ON, int thruster_num)
 {
 	RX_ENABLE = RXEN;
 	DX_ENABLE = DXEN;
+	ON_PIN = ON;
 	thrusterNum = thruster_num;
 	len = 0;
 }
-
 
 Torqeedo::~Torqeedo(void)
 {
@@ -27,8 +27,10 @@ void Torqeedo::init()
 
 	pinMode(RX_ENABLE, OUTPUT);
 	pinMode(DX_ENABLE, OUTPUT);
+	pinMode(ON_PIN, OUTPUT);
 	digitalWrite(DX_ENABLE, LOW);  // disable sending
 	digitalWrite(RX_ENABLE, LOW);  // enable receiving
+	digitalWrite(ON_PIN, LOW);  // enable receiving
 	return;
 }
 
@@ -58,7 +60,7 @@ uint8_t* Torqeedo::getRangestats()
 //=====================================
 bool Torqeedo::setMotorDrive(int speed)
 {
-	_motorDrive.motor_speed = (int16_t)speed;
+	_motorDrive.motor_speed = mapSpeed(speed);
 #ifdef DEBUG
 	_motorDrive.motor_speed = (int16_t)hardcodespeed;
 #endif
@@ -78,7 +80,6 @@ bool Torqeedo::setMotorDrive(int speed)
 		_motorDrive.body[1] = 0x00;
 		_motorDrive.body[2] = 0x00;
 		_motorDrive.body[3] = 0x00;
-		speedZero = false;
 	}
 	else
 	{
@@ -140,17 +141,18 @@ int16_t speedarr[speedarrsize] =
 bool Torqeedo::decodeMessage()
 {
 	byte address = data[0];
-	int i = 0;
-	/*/
+
+	/*
 	int8_t crc = 0x00;
 	for (int i = 0; data[i] != 0xFF; i++)
 	{
-	crc = crc8(crc, data[i]);
+		crc = crc8(crc, data[i]);
 	}
 
 	if (_checksum != crc)
-	return false;
-	*/
+		return false;
+		*/
+
 	switch (address)
 	{
 	case DeviceId_Display:
@@ -166,7 +168,19 @@ bool Torqeedo::decodeMessage()
 				speedZero = true;
 				startUpCount++;
 			}
-			sendMessage(_motorDrive.body, write1);
+			else
+			{
+				speedZero = false;
+			}
+			/*
+			for (int i = 0; i < 4; i++)
+			{
+				Serial.print(_motorDrive.body[i], HEX);
+				Serial.print(" ");
+			}
+			Serial.print("\n");*/
+			sendMessage(_motorDrive.body, write2);
+			
 
 #ifdef DEBUG			
 			//Use speedarr to determine speed
@@ -193,32 +207,64 @@ void Torqeedo::decodeDisplay()
 	switch (messageID)
 	{
 	case DISPLAY_SystemState:
+		/*
+		Serial.print("\nRAW ::: ");
+		for (int i = 0; i < 26; i++)
+		{
+			Serial.print(data[i], HEX);
+			Serial.print(" ");
+		}
+		Serial.print("\n");
+		*/
 		decodeDisplayState();
-		
+		/*
 		Serial.println("\nDISPLAY");
+		for (int i = 0; i < 8; i++)
+		{
+			Serial.print(motorstats[i], HEX);
+			Serial.print(" ");
+		}
+		Serial.print("\n");
+		for (int i = 0; i < 6; i++)
+		{
+			Serial.print(batterystats[i], HEX);
+			Serial.print(" ");
+		}
+		Serial.print("\n");
+		for (int i = 0; i < 6; i++)
+		{
+			Serial.print(rangestats[i], HEX);
+			Serial.print(" ");
+		}
+		Serial.print("\n");
 		Serial.print("Motor: (V) ");
-		Serial.print((int)(motorstats[1] << 8 || motorstats[0]));
+		Serial.print((int)(uint16_t)(motorstats[1] << 8 | motorstats[0]));
 		Serial.print(" (A) ");
-		Serial.print((int)(motorstats[3] << 8 || motorstats[2]));
+		Serial.print((int)(uint16_t)(motorstats[3] << 8 | motorstats[2]));
 		Serial.print(" (S) ");
-		Serial.println((int)(motorstats[5] << 8 || motorstats[4]));
-		Serial.print("Temp: (PCB) ");
-		Serial.println((int)(motorstats[7]));
+		Serial.println((int16_t)(motorstats[5] << 8 | motorstats[4]));
+		Serial.print("Temp: (Motor) ");
+		Serial.println((int)(uint8_t)(motorstats[7]));
+		Serial.print(" (Master) ");
+		Serial.println((int)(uint8_t)(batterystats[5]));
 		Serial.print("Batt: (%) ");
-		Serial.print((int)(batterystats[1] << 8 || batterystats[0]));
+		Serial.print((int)(uint16_t)(batterystats[0]));
 		Serial.print(" (V) ");
-		Serial.print((int)(batterystats[3] << 8 || batterystats[2]));
+		Serial.print((int)(uint16_t)(batterystats[2] << 8 | batterystats[1]));
 		Serial.print(" (A) ");
-		Serial.println((int)(batterystats[5] << 8 || batterystats[4]));
+		Serial.println((int)(uint16_t)(batterystats[4] << 8 | batterystats[3]));
 		Serial.print("Range: (GPS) ");
-		Serial.print((int)(rangestats[1] << 8 || rangestats[0]));
+		Serial.print((int)(uint16_t)(rangestats[1] << 8 | rangestats[0]));
 		Serial.print(" (Miles) ");
-		Serial.print((int)(rangestats[3] << 8 || rangestats[2]));
+		Serial.print((int)(uint16_t)(rangestats[3] << 8 | rangestats[2]));
 		Serial.print(" (Min) ");
-		Serial.println((int)(rangestats[5] << 8 || rangestats[4]));
+		Serial.println((int)(uint16_t)(rangestats[5] << 8 | rangestats[4]));
+		*/
 		Serial.print("Speed: ");
-		Serial.println((int)_motorDrive.motor_speed);
-		
+		Serial.print(_motorDrive.motor_speed, HEX);
+		Serial.print(" ");
+		Serial.println(_motorDrive.motor_speed);
+
 		break;
 	case DISPLAY_SystemSetup:
 		break;
@@ -233,40 +279,42 @@ void Torqeedo::decodeDisplay()
 
 void Torqeedo::decodeDisplayState()
 {
-	//byte *ptr = data + 2;
+	byte *ptr = data + 2;
 
 	// Motor voltage - uint16
-	motorstats[0] = data[4];
-	motorstats[1] = data[5];
+	motorstats[0] = ptr[5];
+	motorstats[1] = ptr[4];
 	// Motor current - uint16
-	motorstats[2] = data[6];
-	motorstats[3] = data[7];
+	motorstats[2] = ptr[7];
+	motorstats[3] = ptr[6];
 	// Motor speed - sint16
-	motorstats[4] = data[10];
-	motorstats[5] = data[11];
+	motorstats[4] = ptr[11];
+	motorstats[5] = ptr[10];
 	// PCB Temp - unit8
-	motorstats[6] = data[12];
+	motorstats[6] = ptr[12];
 	// Motor Flags
-	motorstats[7] = data[1];
+	motorstats[7] = ptr[1];
 
 	// Battery Charge - unit8
-	batterystats[0] = data[14];
+	batterystats[0] = ptr[14];
 	// Battery Voltage - unit16
-	batterystats[1] = data[15];
-	batterystats[2] = data[16];
+	batterystats[1] = ptr[16];
+	batterystats[2] = ptr[15];
 	// Battery Current - unit16
-	batterystats[3] = data[17];
-	batterystats[4] = data[18];
+	batterystats[3] = ptr[18];
+	batterystats[4] = ptr[17];
+	// Master PCB Temp SW - uint8
+	batterystats[5] = ptr[25];
 
 	// GPS Speed - unit16
-	rangestats[0] = data[19];
-	rangestats[1] = data[20];
+	rangestats[0] = ptr[20];
+	rangestats[1] = ptr[19];
 	// Range miles - unit16
-	rangestats[2] = data[21];
-	rangestats[3] = data[22];
+	rangestats[2] = ptr[22];
+	rangestats[3] = ptr[21];
 	// Range Minutes - unit16
-	rangestats[4] = data[23];
-	rangestats[5] = data[24];
+	rangestats[4] = ptr[24];
+	rangestats[5] = ptr[23];
 	/*
 	_displayState.motor_voltage = (uint16_t)*(ptr + 4);
 	_displayState.motor_current = (uint16_t)*(ptr + 6);
@@ -316,8 +364,7 @@ void Torqeedo::EncodeMessage(byte body[])
 
 bool Torqeedo::sendMessage(byte body[], WriteCallback fWrite)
 {
-
-	Serial1.flush();
+	Serial2.flush();
 
 	digitalWrite(RX_ENABLE, HIGH);  // disable receiving
 	digitalWrite(DX_ENABLE, HIGH);  // enable sending
@@ -334,8 +381,8 @@ bool Torqeedo::sendMessage(byte body[], WriteCallback fWrite)
 		counter++;
 	}
 	fWrite(0xFF);
-	Serial1.flush();
-	delay(1); // Delay abit or else the RS485 will switch off before the last byte has been sent.
+	Serial2.flush();
+	//delay(1); // Delay abit or else the RS485 will switch off before the last byte has been sent.
 
 	digitalWrite(DX_ENABLE, LOW);  // disable sending
 	digitalWrite(RX_ENABLE, LOW);  // enable receiving
@@ -389,6 +436,19 @@ bool Torqeedo::readMessage(AvailableCallback fAvailable, ReadCallback fRead)
 //=========================================
 //            UTILITIES
 //=========================================
+
+
+int16_t Torqeedo::mapSpeed(int speed)
+{
+	int16_t mapped;
+	if (speed == 0)
+		mapped = 0;
+	else if (speed > 0)
+		mapped = map(speed, 0, 1000, 55, 1000);
+	else
+		mapped = map(speed, -1000, -1, -1000, -55);
+	return mapped;
+}
 
 //TODO: Check if CRC is correct
 #define CRC8INIT 0x00
