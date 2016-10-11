@@ -50,6 +50,13 @@ IMU::IMU(const int addr) {
 	error = 0;
 }
 
+IMU::IMU(void) {
+	caliAx = 0, caliAy = 0, caliAz = 0, caliGx = 0, caliGy = 0, caliGz = 0;
+	MPU_addr = 0x68;
+	error = 0;
+}
+
+
 void IMU::setting() {
 	int gyro_config = readReg(0x1B);                    // check gyro and accel config setting
 	int accel_config = readReg(0x1C);                   //  bit4 bit3,
@@ -75,8 +82,8 @@ void IMU::readAccTempGyro() {
 	GyY = Wire.read() << 8 | Wire.read();  // 0x45 (GYRO_YOUT_H) & 0x46 (GYRO_YOUT_L)
 	GyZ = Wire.read() << 8 | Wire.read();  // 0x47 (GYRO_ZOUT_H) & 0x48 (GYRO_ZOUT_L)
 
-	AcX -= 1826;  AcY += 440; AcZ -= 390; GyX += 221; GyY -= 51;  GyZ = GyZ;
-}
+	AcX -= 1276;  AcY -= 146; AcZ -= 259; GyX += 221; GyY -= 51;  GyZ = GyZ;
+}  // before putting onto board was  -1826	+440	-390	+221	-51   0 
 
 void IMU::correctToZero() {
 	readAccTempGyro();

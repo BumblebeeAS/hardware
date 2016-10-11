@@ -19,6 +19,7 @@ private:
 
 public:
 	IMU(int addr);
+	IMU(void);
 
 	void init();				// wake up IMU
 	void setting();				// show current acc gyro range setting
