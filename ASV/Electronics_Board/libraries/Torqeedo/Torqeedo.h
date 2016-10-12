@@ -93,7 +93,6 @@ private:
 	int _checksum;
 	int16_t hardcodespeed = 0;
 	bool speedZero = true;
-	bool kill = false;
 	
 	typedef void(*WriteCallback)  (const byte what);    // send a byte to serial port
 	typedef int(*AvailableCallback)  ();    // return number of bytes available
@@ -107,6 +106,7 @@ private:
 
 public:
 	int startUpCount = 0;
+	bool kill = false;
 
 	Torqeedo(int RXEN, int DXEN, int ON, int thruster_num);
 	~Torqeedo();

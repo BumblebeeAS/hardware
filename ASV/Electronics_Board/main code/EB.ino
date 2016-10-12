@@ -34,7 +34,7 @@
 #include "defines.h"
 #include "Arduino.h"
 
-//#define _TEST_
+#define _TEST_
 
 MCP_CAN CAN(8);
 uint8_t buf[8];
@@ -271,9 +271,11 @@ void loop()
 		if (speed == 5555)
 		{
 			speed = 0;
+			Thruster1.setMotorDrive(0);
 			Thruster2.setMotorDrive(0);
 			digitalWrite(TORQEEDO2_ON, LOW);
 			delay(3500);
+			Thruster1.startUpCount = 0;
 			Thruster2.startUpCount = 0;
 			digitalWrite(TORQEEDO2_ON, HIGH);
 		}
@@ -293,6 +295,7 @@ void loop()
 	}
 	if (!manualOperationMode)
 	{
+		Thruster1.setMotorDrive(speed);
 		Thruster2.setMotorDrive(speed);
 	}
 #endif
