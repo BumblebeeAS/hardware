@@ -49,9 +49,11 @@
 	void write1(byte content);
 	byte read1();
 	int available1();
+	void flush1();
 	void write2(byte content);
 	byte read2();
 	int available2();
+	void flush2();
 	
 	typedef struct {
 		int16_t motor_speed;
@@ -91,14 +93,20 @@ private:
 	int _checksum;
 	int16_t hardcodespeed = 0;
 	bool speedZero = true;
+	bool kill = false;
 	
 	typedef void(*WriteCallback)  (const byte what);    // send a byte to serial port
 	typedef int(*AvailableCallback)  ();    // return number of bytes available
 	typedef byte(*ReadCallback)  ();    // read a byte from serial port
+	typedef void(*FlushCallback)  ();    // read a byte from serial port
+
+	WriteCallback _write;
+	AvailableCallback _available;
+	ReadCallback _read;
+	FlushCallback _flush;
 
 public:
 	int startUpCount = 0;
-	bool kill = false;
 
 	Torqeedo(int RXEN, int DXEN, int ON, int thruster_num);
 	~Torqeedo();
@@ -108,9 +116,10 @@ public:
 	uint8_t* getMotorstats();
 	uint8_t* getBatterystats();
 	uint8_t* getRangestats();
+	void setKill(bool kill_status);
 	
-	bool readMessage(AvailableCallback fAvailable, ReadCallback fRead); //Includes CRC Checksum
-	bool sendMessage(byte body[], WriteCallback fWrite);
+	bool readMessage();//(AvailableCallback fAvailable, ReadCallback fRead); //Includes CRC Checksum
+	bool sendMessage(byte body[]);// (byte body[], WriteCallback fWrite, FlushCallback fflush);
 
 	DisplayState getDisplayState();
 

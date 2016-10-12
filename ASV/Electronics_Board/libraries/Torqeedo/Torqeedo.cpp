@@ -19,10 +19,18 @@ void Torqeedo::init()
 	if (thrusterNum == 1)
 	{
 		Serial1.begin(BAUDRATE);
+		_write = write1;
+		_available = available1;
+		_read = read1;
+		_flush = flush1;
 	}
 	else
 	{
 		Serial2.begin(BAUDRATE);
+		_write = write2;
+		_available = available2;
+		_read = read2;
+		_flush = flush2;
 	}
 
 	pinMode(RX_ENABLE, OUTPUT);
@@ -91,6 +99,12 @@ bool Torqeedo::setMotorDrive(int speed)
 	_motorDrive.body[4] = END_MARKER;
 
 	return true;
+}
+
+void Torqeedo::setKill(bool kill_status)
+{
+	kill = kill_status;
+	return;
 }
 
 #ifdef DEBUG
@@ -179,7 +193,7 @@ bool Torqeedo::decodeMessage()
 				Serial.print(" ");
 			}
 			Serial.print("\n");*/
-			sendMessage(_motorDrive.body, write2);
+			sendMessage(_motorDrive.body);// , write2, flush2);
 			
 
 #ifdef DEBUG			
@@ -335,7 +349,7 @@ void Torqeedo::decodeDisplayState()
 void Torqeedo::sendEmptyReply()
 {
 	byte emptyData[1] = { 0xFF };
-	sendMessage(emptyData, write1);
+	sendMessage(emptyData);// , _write);
 }
 
 void Torqeedo::EncodeMessage(byte body[])
@@ -362,9 +376,9 @@ void Torqeedo::EncodeMessage(byte body[])
 	return;
 }
 
-bool Torqeedo::sendMessage(byte body[], WriteCallback fWrite)
+bool Torqeedo::sendMessage(byte body[])//, WriteCallback fWrite, FlushCallback fflush)
 {
-	Serial2.flush();
+	_flush();
 
 	digitalWrite(RX_ENABLE, HIGH);  // disable receiving
 	digitalWrite(DX_ENABLE, HIGH);  // enable sending
@@ -372,16 +386,16 @@ bool Torqeedo::sendMessage(byte body[], WriteCallback fWrite)
 
 	int counter = 0;
 	time = millis();
-	fWrite(0xFF);
+	_write(0xFF);
 	while (data[counter] != END_MARKER)
 	{
 		// for DEBUG
 		//Serial.println(data[counter], HEX);
-		fWrite(data[counter]);
+		_write(data[counter]);
 		counter++;
 	}
-	fWrite(0xFF);
-	Serial2.flush();
+	_write(0xFF);
+	_flush();
 	//delay(1); // Delay abit or else the RS485 will switch off before the last byte has been sent.
 
 	digitalWrite(DX_ENABLE, LOW);  // disable sending
@@ -389,13 +403,13 @@ bool Torqeedo::sendMessage(byte body[], WriteCallback fWrite)
 	return true;
 }
 
-bool Torqeedo::readMessage(AvailableCallback fAvailable, ReadCallback fRead)
+bool Torqeedo::readMessage()//AvailableCallback fAvailable, ReadCallback fRead)
 {
-	if (fAvailable())
-		while (fAvailable())
+	if (_available())
+		while (_available())
 		{
 			byte input = 0x00;
-			input = fRead();
+			input = _read();
 
 			switch (input)
 			{
@@ -498,6 +512,11 @@ int available1()
 {
 	return Serial1.available();
 }
+void flush1()
+{
+	Serial1.flush();
+	return;
+}
 
 void write2(byte content)
 {
@@ -518,4 +537,9 @@ byte read2()
 int available2()
 {
 	return Serial2.available();
+}
+void flush2()
+{
+	Serial2.flush();
+	return;
 }
