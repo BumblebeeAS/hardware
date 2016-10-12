@@ -19,7 +19,7 @@ void Sweeper::detach(void) {
 	servo.detach();
 }
 
-void Sweeper::update(int target_us, int error) {
+void Sweeper::update(int target_us, int error) { 
 	int target = map(target_us,0,38,1980,2456);		//angle recevied from 0-38 re-map to µs
 	int move=target+error;							//2456 is max backward-------176 deg-------38
 	if (move>2456) {								//2250 is flat---------------157 deg-------19
