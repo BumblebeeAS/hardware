@@ -1,0 +1,27 @@
+#######################################
+# Syntax Coloring Map Actuator
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+Actuator KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+init			KEYWORD2
+deployAcoustic	KEYWORD2
+retrieveAcoutic	KEYWORD2
+actuateShooter	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+ROTATED			LITERAL1
+ROTATE_EXTENDED	LITERAL1
+REST			LITERAL1
+ROTARY			LITERAL1
+LINEAR			LITERAL1
+SHOOT 			LITERAL1
