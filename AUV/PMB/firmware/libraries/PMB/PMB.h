@@ -1,3 +1,4 @@
+
 // PMB.h
 // contains the class definition of the PMB
 #ifndef PMB_H
@@ -19,18 +20,17 @@ private:
 	uint16_t shunt_voltage_raw_array[MEDIAN_FILTER_SIZE] 	= {0};
 	uint8_t shunt_voltage_raw_index 						= 0;
 	uint16_t shunt_voltage_filtered 						= 0;
-	float shunt_current 									= 0.0;
+	float shunt_current  									= 0.0;
+	float old_time                                          = 0.0;
+	float new_time                                          = 0.0;
+	float left                                              = 0.0;
 							
 	float capacity_used 									= 0.0;
 	float capacity_left 									= 0.0;
 							
 	uint8_t percentage_initial 								= 100;
 	uint8_t percentage_left 								= 100;
-	float left 								                = 0.0;
-
-	float old_time	= 0.0;
-	float new_time = 0.0;
-
+				
 	uint16_t cell_voltage[CELLS]   							= {0};
 	//for filtering cell 6
 	// uint16_t cell6_raw_array[MEDIAN_FILTER_SIZE] 			= {0};
@@ -88,5 +88,6 @@ public:
 	void powerUpVehicle();
 	void displayLowWarning();
 };
+
 
 #endif

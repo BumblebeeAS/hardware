@@ -1,3 +1,4 @@
+
 // implementation for the PMB class
 
 #include <PMB.h>
@@ -81,9 +82,9 @@ void PMB::getCapFromVolt(){
 	}
 
 	tempBattVoltage = tempBattVoltage/10.0/1000.0;
-	// Serial.println(tempBattVoltage);
+	Serial.println(tempBattVoltage);
 	float tempPercent = pow(tempBattVoltage,4)*coef_a + pow(tempBattVoltage,3)*coef_b + pow(tempBattVoltage,2)*coef_c + tempBattVoltage*coef_d + coef_e;
-	// Serial.println(tempPercent);
+	Serial.println(tempPercent);
 	// limiting range of percentage
 	if(tempPercent <=0){
 		percentage_left =0.0;
@@ -92,11 +93,12 @@ void PMB::getCapFromVolt(){
 	}else{
 		percentage_left = int(tempPercent);
 	}
-	// Serial.println(percentage_left);
-	//capacity_left = BATTERY_CAPACITY;
-	capacity_left = percentage_left/100.0 * BATTERY_CAPACITY;
+	//Serial.println(percentage_left);
+
+	//capacity_left = percentage_left/100.0 * BATTERY_CAPACITY;
 	//capacity_used = BATTERY_CAPACITY-capacity_left;
-	// Serial.println(capacity_left);
+	//Serial.println(capacity_left);
+	capacity_left = percentage_left / 100.0 * BATTERY_CAPACITY;
 }
 
 void PMB::getCapFromStorage(){
@@ -160,8 +162,7 @@ void PMB::getShuntCurrent(){
 	// Serial.print("Filtered ADC: ");
 	// Serial.println(shunt_voltage_filtered);
 	
-	shunt_current = float((shunt_voltage_filtered*CURRENT_RATIO*1.5)+CURRENT_OFFSET-100.0);
-	// shunt_current = float((ads_raw*CURRENT_RATIO)+CURRENT_OFFSET);
+	shunt_current = float((shunt_voltage_filtered*CURRENT_RATIO * 1.5)+CURRENT_OFFSET-100.0);
 
 	shunt_voltage_raw_index++;
 	shunt_voltage_raw_index = shunt_voltage_raw_index%MEDIAN_FILTER_SIZE;
@@ -208,13 +209,14 @@ uint16_t PMB::extractMin(uint16_t *source, uint8_t size){
 }	
 
 void PMB::calculateCapacity(){
-	//capacity_used += shunt_current*(MAIN_LOOP_INTERVAL/1000);
-    //capacity_left = capacity_left - capacity_used;
-	new_time = millis()*1.0;
-    //capacity_left = capacity_left - (shunt_current*(MAIN_LOOP_INTERVAL/1000.0)*1.6);
-    capacity_left = capacity_left - (shunt_current*(new_time-old_time)/1000.0);
-    left = capacity_left/(360000.0);
+	//capacity_used += shunt_current*MAIN_LOOP_INTERVAL/1000/3600;
+    //capacity_left = BATTERY_CAPACITY - capacity_used;
+    //percentage_left = capacity_left/10000.0 * 100.0;
+    new_time = millis()*1.0;
+    capacity_left = capacity_left - (shunt_current * (new_time - old_time)/1000.0);
+    left = capacity_left / 360000.0 ;
     old_time = new_time;
+
 }
 
 void PMB::readPressure(){
@@ -279,7 +281,7 @@ void PMB::publishPMBStats(){
 
 	//Frame 3: PMB_stats3
 	CAN.setupCANFrame(PMB_stats3, 0, 2, uint16_t(capacity_used));
-	CAN.setupCANFrame(PMB_stats3, 2, 1, uint16_t(left));
+	CAN.setupCANFrame(PMB_stats3, 2, 1, percentage_left);
 	CAN.setupCANFrame(PMB_stats3, 3, 1, board_temperature);
 	CAN.setupCANFrame(PMB_stats3, 4, 1, board_pressure);
 
@@ -287,10 +289,6 @@ void PMB::publishPMBStats(){
 	CAN.sendMsgBuf(ID_CAN_PMB_stats[0], 0, 8, PMB_stats1);
 	CAN.sendMsgBuf(ID_CAN_PMB_stats[1], 0, 8, PMB_stats2);
 	CAN.sendMsgBuf(ID_CAN_PMB_stats[2], 0, 5, PMB_stats3);
-
-	uint8_t status = CAN.checkError();
-
-//	Serial.println(status, BIN);
 }
 
 void PMB::publishCANStats(){		

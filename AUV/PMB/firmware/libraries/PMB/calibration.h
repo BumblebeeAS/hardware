@@ -1,3 +1,4 @@
+
 // Calibration values for all the different boards
 #ifndef CALIBRATION_H
 #define CALIBRATION_H
@@ -5,7 +6,7 @@
 //maximum battery capacity
 #define BATTERY_CAPACITY 		36000000
 
-#define PMB_no					8
+#define PMB_no					9
 
 #if PMB_no == 1
 	//cubic approximation coefficients
@@ -16,18 +17,18 @@
 	#define coef_e				1489641.436
 
 	//current measurement caliberation
-	#define CURRENT_RATIO       3.09072 
-	#define CURRENT_OFFSET      -28.95197
+	#define CURRENT_RATIO       1.7123 
+	#define CURRENT_OFFSET      21.202
 
 	//voltage readings caliberation
-	#define cell6_adc_ratio     32.612
+	#define cell6_adc_ratio     37.793
 	#define cell5_adc_ratio     0.197181814  
 	#define cell4_adc_ratio     0.244377275  
 	#define cell3_adc_ratio     0.325966493  
 	#define cell2_adc_ratio     0.497397968  
 	#define cell1_adc_ratio     0.993694855  
 
-	#define cell6_adc_offset    -14.341 
+	#define cell6_adc_offset    102.67 
 	#define cell5_adc_offset    0.05269355 
 	#define cell4_adc_offset    -0.1076     
 	#define cell3_adc_offset    -0.1076     
@@ -70,8 +71,8 @@
 	#define coef_e				1399267.88461
 
 	//current measurement caliberation
-	#define CURRENT_RATIO       1.5252
-	#define CURRENT_OFFSET      150.678
+	#define CURRENT_RATIO       1.4851
+	#define CURRENT_OFFSET      104.61
 
 	//voltage readings caliberation
 	#define cell6_adc_ratio     32.289
@@ -151,8 +152,8 @@
 	#define coef_e				1489641.436
 
 	//current measurement caliberation 
-	#define CURRENT_RATIO       1.85168  
-	#define CURRENT_OFFSET      130.15117
+	#define CURRENT_RATIO       1.7759  
+	#define CURRENT_OFFSET      303.9
 
 	//voltage readings caliberation
 	#define cell6_adc_ratio     32.481
@@ -169,7 +170,7 @@
 	#define cell2_adc_offset    0.0078684   
 	#define cell1_adc_offset    0.00739624  
 
-#elif PMB_no == 7
+#elif PMB_no == 9
 	//cubic approximation coefficients
 	#define coef_a              4.69753
 	#define coef_b              -446.67745
@@ -177,26 +178,26 @@
 	#define coef_d              -251561.5118
 	#define coef_e				1489641.436
 
-	//current measurement caliberation
-	#define CURRENT_RATIO       0.7216811031  
-	#define CURRENT_OFFSET      0.03
+	//current measurement caliberation 
+	#define CURRENT_RATIO       1.4157 
+	#define CURRENT_OFFSET      -121.05
 
 	//voltage readings caliberation
-	#define cell6_adc_ratio     31.556 
+	#define cell6_adc_ratio     32.105
 	#define cell5_adc_ratio     0.197181814  
 	#define cell4_adc_ratio     0.244377275  
 	#define cell3_adc_ratio     0.325966493  
 	#define cell2_adc_ratio     0.497397968  
 	#define cell1_adc_ratio     0.993694855  
 
-	#define cell6_adc_offset    427.047 
+	#define cell6_adc_offset    -121.05
 	#define cell5_adc_offset    0.05269355 
 	#define cell4_adc_offset    -0.1076     
 	#define cell3_adc_offset    -0.1076     
 	#define cell2_adc_offset    0.0078684   
-	#define cell1_adc_offset    0.00739624
+	#define cell1_adc_offset    0.00739624  
 
-#elif PMB_no == 8
+#elif PMB_no == 10
 	//cubic approximation coefficients
 	#define coef_a              4.69753
 	#define coef_b              -446.67745
@@ -204,24 +205,24 @@
 	#define coef_d              -251561.5118
 	#define coef_e				1489641.436
 
-	//current measurement caliberation
-	#define CURRENT_RATIO       2.2493  
-	#define CURRENT_OFFSET      103.39216
+	//current measurement caliberation 
+	#define CURRENT_RATIO       1.8842
+	#define CURRENT_OFFSET      -53.25
 
 	//voltage readings caliberation
-	#define cell6_adc_ratio     32.0795 
+	#define cell6_adc_ratio     32.843
 	#define cell5_adc_ratio     0.197181814  
 	#define cell4_adc_ratio     0.244377275  
 	#define cell3_adc_ratio     0.325966493  
 	#define cell2_adc_ratio     0.497397968  
 	#define cell1_adc_ratio     0.993694855  
 
-	#define cell6_adc_offset    115.546 
+	#define cell6_adc_offset    -286.22
 	#define cell5_adc_offset    0.05269355 
 	#define cell4_adc_offset    -0.1076     
 	#define cell3_adc_offset    -0.1076     
 	#define cell2_adc_offset    0.0078684   
-	#define cell1_adc_offset    0.00739624
+	#define cell1_adc_offset    0.00739624  
 
 #endif
 
