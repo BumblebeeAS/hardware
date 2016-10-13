@@ -72,6 +72,10 @@ bool Torqeedo::setMotorDrive(int speed)
 #ifdef DEBUG
 	_motorDrive.motor_speed = (int16_t)hardcodespeed;
 #endif
+	if ((_motorDrive.motor_speed > 1000) || (_motorDrive.motor_speed < -1000))
+	{
+		_motorDrive.motor_speed = 0;
+	}
 
 	if (kill)
 	{
@@ -274,10 +278,12 @@ void Torqeedo::decodeDisplay()
 		Serial.print(" (Min) ");
 		Serial.println((int)(uint16_t)(rangestats[5] << 8 | rangestats[4]));
 		*/
-		Serial.print("Speed: ");
-		Serial.print(_motorDrive.motor_speed, HEX);
-		Serial.print(" ");
+#ifdef _TEST_
+		Serial.print("Speed");
+		Serial.print(thrusterNum);
+		Serial.print(": ");
 		Serial.println(_motorDrive.motor_speed);
+#endif
 
 		break;
 	case DISPLAY_SystemSetup:
@@ -302,8 +308,10 @@ void Torqeedo::decodeDisplayState()
 	motorstats[2] = ptr[7];
 	motorstats[3] = ptr[6];
 	// Motor speed - sint16
-	motorstats[4] = ptr[11];
-	motorstats[5] = ptr[10];
+	uint16_t speedstat = ptr[11] << 8 | ptr[10];
+	speedstat += 32767;
+	motorstats[4] = speedstat >> 8;
+	motorstats[5] = speedstat;
 	// PCB Temp - unit8
 	motorstats[6] = ptr[12];
 	// Motor Flags
