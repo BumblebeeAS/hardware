@@ -50,14 +50,7 @@ void loop() {
 					  // and move data out from buffer
 
 	ENABLE();		  // actuate stuff
-
-	CAN.setupCANFrame(buf,4,1,checksum);
-	CAN.sendMsgBuf(CAN_manipulator,0,0,5,buf);	
-	         
-    for (int x=0; x<5;x++) {		// clear buffer
-      buf[x] = 0;
-    }
-
+	        
 } 
 
 void CAN_init(){
@@ -82,7 +75,7 @@ void checkCANmsg(){
 	//if there is stuff in buffer
 	if (CAN_MSGAVAIL == CAN.checkReceive()){
 		//read where is it from
-		for (int x=0; x<5;x++) {
+		for (int x=0; x<5;x++) {		// clear buffer
      		buf[x] = 0;
     	}
 
@@ -95,6 +88,9 @@ void checkCANmsg(){
 
 		checksum = buf[0]^buf[1]^buf[2]^buf[3];
 		buf[4] = checksum;
+
+		CAN.setupCANFrame(buf,4,1,checksum);
+		CAN.sendMsgBuf(CAN_manipulator,0,0,5,buf);
 	}
 }
 
