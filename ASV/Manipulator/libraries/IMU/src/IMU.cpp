@@ -82,8 +82,8 @@ void IMU::readAccTempGyro() {
 	GyY = Wire.read() << 8 | Wire.read();  // 0x45 (GYRO_YOUT_H) & 0x46 (GYRO_YOUT_L)
 	GyZ = Wire.read() << 8 | Wire.read();  // 0x47 (GYRO_ZOUT_H) & 0x48 (GYRO_ZOUT_L)
 
-	AcX -= 1276;  AcY -= 146; AcZ -= 259; GyX += 221; GyY -= 51;  GyZ = GyZ;
-}  // before putting onto board was  -1826	+440	-390	+221	-51   0 
+	AcX -= 1726;  AcY -= 146; AcZ -= 930; GyX += 221; GyY -= 51;  GyZ = GyZ;
+}  
 
 void IMU::correctToZero() {
 	readAccTempGyro();
