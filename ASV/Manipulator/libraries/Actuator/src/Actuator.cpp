@@ -1,5 +1,5 @@
 #include <Actuator.h>
-#include <TimerOne.h>
+#include "TimerOne\TimerOne.h"
 
 Actuator* actPtr = nullptr;
 
@@ -138,7 +138,7 @@ void Actuator::deployAcoustic(ActuationType actuationType) {
 
 }
 
-void Actuator::retrieveAcoutic(ActuationType actuationType) {
+void Actuator::retrieveAcoustic(ActuationType actuationType) {
 	if (actuationStatus == ROTATE_EXTENDED) {
 		if (actuationType == LINEAR) {
 			mcp23s17.writeGPIO(linear.pin, LOW);

@@ -50,7 +50,7 @@ class Actuator
 	 void init(void);
 
 	 void deployAcoustic(ActuationType actuationType);
-	 void retrieveAcoutic(ActuationType actuationType);
+	 void retrieveAcoustic(ActuationType actuationType);
 	 
 	 void actuateShooter(uint8_t num);
 

@@ -12,9 +12,9 @@ Actuator KEYWORD1
 # Methods and Functions (KEYWORD2)
 #######################################
 init			KEYWORD2
-deployAcoustic	KEYWORD2
-retrieveAcoutic	KEYWORD2
-actuateShooter	KEYWORD2
+deployAcoustic		KEYWORD2
+retrieveAcoustic	KEYWORD2
+actuateShooter		KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
