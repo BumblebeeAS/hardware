@@ -38,7 +38,9 @@ void Torqeedo::init()
 	pinMode(ON_PIN, OUTPUT);
 	digitalWrite(DX_ENABLE, LOW);  // disable sending
 	digitalWrite(RX_ENABLE, LOW);  // enable receiving
-	digitalWrite(ON_PIN, LOW);  // enable receiving
+	digitalWrite(ON_PIN, LOW);  // on thruster
+	delay(1000);
+	digitalWrite(ON_PIN, HIGH);  // on thruster
 	return;
 }
 
@@ -413,18 +415,22 @@ bool Torqeedo::sendMessage(byte body[])//, WriteCallback fWrite, FlushCallback f
 
 bool Torqeedo::readMessage()//AvailableCallback fAvailable, ReadCallback fRead)
 {
+	//Serial.write(0xAA);
 	if (_available())
-		while (_available())
-		{
-			byte input = 0x00;
-			input = _read();
-
+	{
+		//Serial.write(0xBB);
+		//while (_available())
+		//{
+			byte input = _read();
+			//Serial.write(0x11);
+			//Serial.write(input);
 			switch (input)
 			{
 				//If not PACKET_START, skip message
 			case PACKET_START:
 				msgStart = true;
 				len = 0;
+				//Serial.write(0x22);
 				break;
 
 			case PACKET_END:
@@ -433,24 +439,36 @@ bool Torqeedo::readMessage()//AvailableCallback fAvailable, ReadCallback fRead)
 				_checksum = data[len];
 				data[len] = 0xFF;
 				len = 0;
+				//Serial.write(0x33);
 				decodeMessage(); //Need to check CRC
+				//Serial.write(0x44);
 				break;
 
 			default:
 				if (!msgStart)
+				{
+
+					//Serial.write(0x55);
 					break;
+				}
 				else
 				{
+						//Serial.write(0x66);
+						//Serial.write(len);
 					data[len] = input;
 					len++;
 					if (len >= MAX_PACKET_SIZE) //TODO: Change timeout to 25ms
 					{
+						len = 0;
 						// Receive timeout
 						return false;
 					}
 				}
-			}
+			//}
 		}
+		//Serial.write(0xCC);
+	}
+	//Serial.write(0xDD);
 	return false;
 }
 

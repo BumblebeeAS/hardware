@@ -84,7 +84,7 @@ void setup()
 	sbc_bus_loop = millis();
 	heartbeat_loop = millis();
 	Temp_Humid_readloop250 = millis();
-	Temp_Humid_requestloop250 = millis() + 250;
+	Temp_Humid_requestloop250 = millis() + HUMIDREQUEST_TIMEOUT + HUMIDREAD_TIMEOUT;
 	thrusterStatsLoop200 = millis();
 START_INIT:
 #ifndef _TEST_
@@ -230,14 +230,17 @@ void loop()
 								setLightTower(read_buffer[0]);
 							break;
 						case CAN_thruster:
-							if (!manualOperationMode)
-							{
+							//if (!manualOperationMode)
+							//{
 								//parse speed
-								int16_t speed1 = (read_buffer[1] << 8) | (read_buffer[0]);
-								int16_t speed2 = (read_buffer[3] << 8) | (read_buffer[2]);
+								speed1 = (int16_t)((read_buffer[1] << 8) | (read_buffer[0])) -1000;
+								speed2 = (int16_t)((read_buffer[3] << 8) | (read_buffer[2])) -1000;
+								id = 55;
+								len = 4;
+								forwardCANtoSerial(read_buffer);
 								Thruster1.setMotorDrive(speed1);
 								Thruster2.setMotorDrive(speed2);
-							}
+							//}
 							break;
 						default:
 							CAN.sendMsgBuf(read_id, 0, read_size, read_buffer);
@@ -317,19 +320,22 @@ void loop()
 	if (CAN_MSGAVAIL == CAN.checkReceive())
 	{
 		CAN.readMsgBufID(&id, &len, buf);// read data,  len: data length, buf: data buf
+		//Serial.write(0xFF);
 		forwardCANtoSerial(buf);
+		//Serial.write(0xBB);
 	}
 
 	/**********************************************/
 	/*        Read humidity and temp sensor       */
 	/**********************************************/
+	
 	if (millis() - Temp_Humid_requestloop250 > HUMIDREQUEST_TIMEOUT)
 	{
 		humidTempSensor.measurementRequest();
 		Temp_Humid_requestloop250 = millis();
 		Temp_Humid_readloop250 = millis();
 	}
-	if (millis() - Temp_Humid_readloop250 > HUMIDREAD_TIMEOUT)
+	else if (millis() - Temp_Humid_requestloop250 > HUMIDREAD_TIMEOUT)
 	{
 		//Get I2C Data
 		//push into send state buf
@@ -340,8 +346,9 @@ void loop()
 		id = CAN_EB_stats;
 		len = 3;
 		forwardCANtoSerial(eb_stat_buf);
-		Temp_Humid_readloop250 = millis() + 250;
+		//Temp_Humid_readloop250 = millis() + HUMIDREQUEST_TIMEOUT;
 	}
+	
 #endif
 
 	/**********************************************/
@@ -388,6 +395,8 @@ void loop()
 							manualOperationMode = false;
 						speed1 = (int8_t)(manualOCScontrolBuffer[1] - 127);
 						speed2 = (int8_t)(manualOCScontrolBuffer[2] - 127);
+						speed1 = map(speed1, -127, 127, -1000, 1000);
+						speed2 = map(speed2, -127, 127, -1000, 1000);
 						//for(int i = 0; i < 3; i++)
 						//	Serial.print(manualOCScontrolBuffer[i], HEX); Serial.print(" ");
 						/*
@@ -413,7 +422,7 @@ void loop()
 			break;
 		}
 	}
-
+	//Serial.write(0xCC);
 	/**********************************************/
 	/*     Transmit / Receive Thruster commands   */
 	/**********************************************/
@@ -429,12 +438,14 @@ void loop()
 		Thruster1.setMotorDrive(speed1);
 		Thruster2.setMotorDrive(speed2);
 	}
-
+	//Serial.write(0xDD);
 	Thruster1.readMessage();
 	Thruster2.readMessage();
+	//Serial.write(0xEE);
 	if (millis() - thrusterStatsLoop200 > 100)
 	{
 #ifdef _TEST_
+		
 		Serial.print("Mode: ");
 		Serial.print(manualOperationMode);
 		Serial.print(" Speed1: ");
@@ -442,6 +453,7 @@ void loop()
 		Serial.print(" Speed2: ");
 		Serial.print(speed2);
 		Serial.println();
+		
 #endif
 		
 #ifndef _TEST_
@@ -484,7 +496,7 @@ void loop()
 #endif
 		thrusterStatsLoop200 = millis();
 	}
-
+	//Serial.write(0xFF);
 	/**********************************************/
 	/*           Check Hardware E-Stop            */
 	/**********************************************/
