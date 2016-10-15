@@ -12,7 +12,7 @@
 #define CS_IO		5
 #define MCP_ADDR	0x00
 
-#define ROTARY_DEFAULT		200
+#define ROTARY_DEFAULT		150
 #define LINEAR_DEFAULT		50
 #define SHOOTER_DEFAULT		500
 
@@ -50,7 +50,7 @@ class Actuator
 	 void init(void);
 
 	 void deployAcoustic(ActuationType actuationType);
-	 void retrieveAcoutic(ActuationType actuationType);
+	 void retrieveAcoustic(ActuationType actuationType);
 	 
 	 void actuateShooter(uint8_t num);
 
