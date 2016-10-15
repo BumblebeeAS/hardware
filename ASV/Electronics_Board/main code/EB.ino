@@ -34,7 +34,6 @@
 #include "defines.h"
 #include "Arduino.h"
 
-#define _TEST_
 
 MCP_CAN CAN(8);
 uint8_t buf[8];
@@ -85,7 +84,7 @@ void setup()
 	sbc_bus_loop = millis();
 	heartbeat_loop = millis();
 	Temp_Humid_readloop250 = millis();
-	Temp_Humid_requestloop250 = millis() + 250;
+	Temp_Humid_requestloop250 = millis() + HUMIDREQUEST_TIMEOUT + HUMIDREAD_TIMEOUT;
 	thrusterStatsLoop200 = millis();
 START_INIT:
 #ifndef _TEST_
@@ -227,18 +226,21 @@ void loop()
 							}
 							break;
 						case CAN_LED:
-							if(!kill_status)
+							if (!kill_status)
 								setLightTower(read_buffer[0]);
 							break;
 						case CAN_thruster:
-							if (!manualOperationMode)
-							{
+							//if (!manualOperationMode)
+							//{
 								//parse speed
-								int16_t speed1 = (read_buffer[1] << 8) | (read_buffer[0]);
-								int16_t speed2 = (read_buffer[3] << 8) | (read_buffer[2]);
+								speed1 = (int16_t)((read_buffer[1] << 8) | (read_buffer[0])) -1000;
+								speed2 = (int16_t)((read_buffer[3] << 8) | (read_buffer[2])) -1000;
+								id = 55;
+								len = 4;
+								forwardCANtoSerial(read_buffer);
 								Thruster1.setMotorDrive(speed1);
 								Thruster2.setMotorDrive(speed2);
-							}
+							//}
 							break;
 						default:
 							CAN.sendMsgBuf(read_id, 0, read_size, read_buffer);
@@ -257,41 +259,50 @@ void loop()
 	}
 #else
 // Manually type in speed through Serial monitor for testing
-	serialidx = 0;
-	while (Serial.available()) {
+	if (Serial.available()) {
 		byte input = Serial.read();
 		inputstr[serialidx] = input;
-		serialidx++;
-		delay(1);
-	}
-	if (serialidx > 0)
-	{
-		inputstr[serialidx] = '\0';
-		speed = atoi(inputstr);
-		if (speed == 5555)
+		Serial.println();
+		for (int i = 0; i <= serialidx; i++)
 		{
-			speed = 0;
-			Thruster1.setMotorDrive(0);
-			Thruster2.setMotorDrive(0);
-			digitalWrite(TORQEEDO2_ON, LOW);
-			delay(3500);
-			Thruster1.startUpCount = 0;
-			Thruster2.startUpCount = 0;
-			digitalWrite(TORQEEDO2_ON, HIGH);
+			Serial.print(inputstr[i]);
+			Serial.println(i);
 		}
-		if (speed == 4444)
+		Serial.println();
+		if (input == '\n' || input == '\r')
 		{
-			if (!Thruster2.kill)
-			{
-				Thruster2.kill = true;
-			}
-			else
+			inputstr[serialidx] = '\0';
+			speed = atoi(inputstr);
+			if (speed == 5555)
 			{
 				speed = 0;
+				Thruster1.setMotorDrive(0);
 				Thruster2.setMotorDrive(0);
-				Thruster2.kill = false;
+				digitalWrite(TORQEEDO1_ON, LOW);
+				digitalWrite(TORQEEDO2_ON, LOW);
+				delay(3500);
+				Thruster1.startUpCount = 0;
+				Thruster2.startUpCount = 0;
+				digitalWrite(TORQEEDO1_ON, HIGH);
+				digitalWrite(TORQEEDO2_ON, HIGH);
 			}
+			if (speed == 4444)
+			{
+				if (!Thruster2.kill)
+				{
+					speed = 0;
+					Thruster2.kill = true;
+				}
+				else
+				{
+					speed = 0;
+					Thruster2.setMotorDrive(0);
+					Thruster2.kill = false;
+				}
+			}
+			serialidx = -1;
 		}
+		serialidx++;
 	}
 	if (!manualOperationMode)
 	{
@@ -309,31 +320,35 @@ void loop()
 	if (CAN_MSGAVAIL == CAN.checkReceive())
 	{
 		CAN.readMsgBufID(&id, &len, buf);// read data,  len: data length, buf: data buf
-		forwardCANmsg();
+		//Serial.write(0xFF);
+		forwardCANtoSerial(buf);
+		//Serial.write(0xBB);
 	}
 
 	/**********************************************/
 	/*        Read humidity and temp sensor       */
 	/**********************************************/
+	
 	if (millis() - Temp_Humid_requestloop250 > HUMIDREQUEST_TIMEOUT)
 	{
 		humidTempSensor.measurementRequest();
 		Temp_Humid_requestloop250 = millis();
 		Temp_Humid_readloop250 = millis();
 	}
-	if (millis() - Temp_Humid_readloop250 > HUMIDREAD_TIMEOUT)
+	else if (millis() - Temp_Humid_requestloop250 > HUMIDREAD_TIMEOUT)
 	{
 		//Get I2C Data
 		//push into send state buf
 		humidTempSensor.dataFetch();
-		buf[0] = humidTempSensor.getTemperature();
-		buf[1] = humidTempSensor.getHumidity();
-		buf[2] = readKillBattVoltage();
+		eb_stat_buf[0] = humidTempSensor.getTemperature();
+		eb_stat_buf[1] = humidTempSensor.getHumidity();
+		eb_stat_buf[2] = readKillBattVoltage();
 		id = CAN_EB_stats;
 		len = 3;
-		forwardCANmsg();
-		Temp_Humid_readloop250 = millis() + 250;
+		forwardCANtoSerial(eb_stat_buf);
+		//Temp_Humid_readloop250 = millis() + HUMIDREQUEST_TIMEOUT;
 	}
+	
 #endif
 
 	/**********************************************/
@@ -380,17 +395,19 @@ void loop()
 							manualOperationMode = false;
 						speed1 = (int8_t)(manualOCScontrolBuffer[1] - 127);
 						speed2 = (int8_t)(manualOCScontrolBuffer[2] - 127);
+						speed1 = map(speed1, -127, 127, -1000, 1000);
+						speed2 = map(speed2, -127, 127, -1000, 1000);
 						//for(int i = 0; i < 3; i++)
 						//	Serial.print(manualOCScontrolBuffer[i], HEX); Serial.print(" ");
-
+						/*
 						Serial.print("Mode: ");
 						Serial.print(manualOCScontrolBuffer[0], HEX);
 						Serial.print(" Speed1: ");
 						Serial.print(speed1);
 						Serial.print(" Speed2: ");
 						Serial.print(speed2);
-						Serial.print("\n");
-
+						Serial.println();
+						*/
 					}
 				}
 			break;
@@ -405,7 +422,7 @@ void loop()
 			break;
 		}
 	}
-
+	//Serial.write(0xCC);
 	/**********************************************/
 	/*     Transmit / Receive Thruster commands   */
 	/**********************************************/
@@ -421,44 +438,65 @@ void loop()
 		Thruster1.setMotorDrive(speed1);
 		Thruster2.setMotorDrive(speed2);
 	}
-
-	Thruster1.readMessage();//available1, read1);
-	Thruster2.readMessage();//available2, read2);
-	if (millis() - thrusterStatsLoop200 > 100)
+	//Serial.write(0xDD);
+	Thruster1.readMessage();
+	Thruster2.readMessage();
+	//Serial.write(0xEE);
+	if (millis() - thrusterStatsLoop200 > 500)
 	{
-
+#ifdef _TEST_
+		
 		Serial.print("Mode: ");
 		Serial.print(manualOperationMode);
 		Serial.print(" Speed1: ");
 		Serial.print(speed1);
 		Serial.print(" Speed2: ");
 		Serial.print(speed2);
-		Serial.print("\n");
+		Serial.println();
+		
+#endif
+		
+#ifndef _TEST_
+		uint8_t *thrusterbuf;
 		switch (statsState)
-
 		{
 		case 0:
-			//Thruster1.getMotorstats();
+			id = CAN_thruster1_motor_stats;
+			len = 8;
+			thrusterbuf = Thruster1.getMotorstats();
 			break;
 		case 1:
-			//Thruster2.getMotorstats();
+			id = CAN_thruster2_motor_stats;
+			len = 8;
+			thrusterbuf = Thruster2.getMotorstats();
 			break;
 		case 2:
-			//Thruster1.getBatterystats();
+			id = CAN_thruster1_battery_stats;
+			len = 6;
+			thrusterbuf = Thruster1.getBatterystats();
 			break;
 		case 3:
-			//Thruster1.getBatterystats();
+			id = CAN_thruster2_battery_stats;
+			len = 6;
+			thrusterbuf = Thruster2.getBatterystats();
 			break;
 		case 4:
-			//Thruster1.getRangestats();
-			//Thruster1.getRangesStats();
+			id = CAN_thruster1_range_stats;
+			len = 6;
+			thrusterbuf = Thruster1.getRangestats();
+			forwardCANtoSerial(thrusterbuf);
+			id = CAN_thruster2_range_stats;
+			len = 6;
+			thrusterbuf = Thruster2.getRangestats();
 			statsState = 0;
+			break;
 		}
 		id = CAN_thruster1_battery_stats;
-		//forwardCANmsg();
+		forwardCANtoSerial(thrusterbuf);
+#endif
 		thrusterStatsLoop200 = millis();
 	}
-
+	//Serial.write(0xFF);
 	/**********************************************/
 	/*           Check Hardware E-Stop            */
 	/**********************************************/
@@ -473,15 +511,14 @@ void loop()
 //          CAN FUNCTIONS
 //==========================================
 
-void forwardCANmsg()
+void forwardCANtoSerial(uint8_t *body)
 {
 	Serial.write(START_BYTE);
 	Serial.write(START_BYTE);
 	Serial.write(id);
 	Serial.write(len);
-	for (int i = 0; i < len; i++)	Serial.write(buf[i]);
+	for (int i = 0; i < len; i++)	Serial.write(body[i]);
 }
-
 
 //==========================================
 //          KILL FUNCTIONS
@@ -495,7 +532,7 @@ void initKill()
 byte readKillBattVoltage()
 {
 	int input = analogRead(KILL_BATT);
-	float voltage = input * (12.0 * (27/120) / 1023.0);
+	float voltage = input * (12.0 * (27 / 120) / 1023.0);
 	uint8_t millivolt = (int)(voltage * 1000);
 	return  millivolt;
 }

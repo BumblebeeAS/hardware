@@ -38,7 +38,9 @@ void Torqeedo::init()
 	pinMode(ON_PIN, OUTPUT);
 	digitalWrite(DX_ENABLE, LOW);  // disable sending
 	digitalWrite(RX_ENABLE, LOW);  // enable receiving
-	digitalWrite(ON_PIN, LOW);  // enable receiving
+	digitalWrite(ON_PIN, LOW);  // on thruster
+	delay(1000);
+	digitalWrite(ON_PIN, HIGH);  // on thruster
 	return;
 }
 
@@ -72,6 +74,10 @@ bool Torqeedo::setMotorDrive(int speed)
 #ifdef DEBUG
 	_motorDrive.motor_speed = (int16_t)hardcodespeed;
 #endif
+	if ((_motorDrive.motor_speed > 1000) || (_motorDrive.motor_speed < -1000))
+	{
+		_motorDrive.motor_speed = 0;
+	}
 
 	if (kill)
 	{
@@ -274,10 +280,16 @@ void Torqeedo::decodeDisplay()
 		Serial.print(" (Min) ");
 		Serial.println((int)(uint16_t)(rangestats[5] << 8 | rangestats[4]));
 		*/
-		Serial.print("Speed: ");
-		Serial.print(_motorDrive.motor_speed, HEX);
-		Serial.print(" ");
+#ifdef _TEST_
+		Serial.print("Batt");
+		Serial.print(thrusterNum);
+		Serial.print("(%): ");
+		Serial.print((int)(uint16_t)(batterystats[0]));
+		Serial.print(" Speed");
+		Serial.print(thrusterNum);
+		Serial.print(": ");
 		Serial.println(_motorDrive.motor_speed);
+#endif
 
 		break;
 	case DISPLAY_SystemSetup:
@@ -302,8 +314,10 @@ void Torqeedo::decodeDisplayState()
 	motorstats[2] = ptr[7];
 	motorstats[3] = ptr[6];
 	// Motor speed - sint16
-	motorstats[4] = ptr[11];
-	motorstats[5] = ptr[10];
+	uint16_t speedstat = ptr[11] << 8 | ptr[10];
+	speedstat += 32767;
+	motorstats[4] = speedstat >> 8;
+	motorstats[5] = speedstat;
 	// PCB Temp - unit8
 	motorstats[6] = ptr[12];
 	// Motor Flags
@@ -405,18 +419,22 @@ bool Torqeedo::sendMessage(byte body[])//, WriteCallback fWrite, FlushCallback f
 
 bool Torqeedo::readMessage()//AvailableCallback fAvailable, ReadCallback fRead)
 {
+	//Serial.write(0xAA);
 	if (_available())
-		while (_available())
-		{
-			byte input = 0x00;
-			input = _read();
-
+	{
+		//Serial.write(0xBB);
+		//while (_available())
+		//{
+			byte input = _read();
+			//Serial.write(0x11);
+			//Serial.write(input);
 			switch (input)
 			{
 				//If not PACKET_START, skip message
 			case PACKET_START:
 				msgStart = true;
 				len = 0;
+				//Serial.write(0x22);
 				break;
 
 			case PACKET_END:
@@ -425,24 +443,36 @@ bool Torqeedo::readMessage()//AvailableCallback fAvailable, ReadCallback fRead)
 				_checksum = data[len];
 				data[len] = 0xFF;
 				len = 0;
+				//Serial.write(0x33);
 				decodeMessage(); //Need to check CRC
+				//Serial.write(0x44);
 				break;
 
 			default:
 				if (!msgStart)
+				{
+
+					//Serial.write(0x55);
 					break;
+				}
 				else
 				{
+						//Serial.write(0x66);
+						//Serial.write(len);
 					data[len] = input;
 					len++;
 					if (len >= MAX_PACKET_SIZE) //TODO: Change timeout to 25ms
 					{
+						len = 0;
 						// Receive timeout
 						return false;
 					}
 				}
-			}
+			//}
 		}
+		//Serial.write(0xCC);
+	}
+	//Serial.write(0xDD);
 	return false;
 }
 
