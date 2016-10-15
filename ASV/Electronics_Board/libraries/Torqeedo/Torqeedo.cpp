@@ -281,7 +281,11 @@ void Torqeedo::decodeDisplay()
 		Serial.println((int)(uint16_t)(rangestats[5] << 8 | rangestats[4]));
 		*/
 #ifdef _TEST_
-		Serial.print("Speed");
+		Serial.print("Batt");
+		Serial.print(thrusterNum);
+		Serial.print("(%): ");
+		Serial.print((int)(uint16_t)(batterystats[0]));
+		Serial.print(" Speed");
 		Serial.print(thrusterNum);
 		Serial.print(": ");
 		Serial.println(_motorDrive.motor_speed);

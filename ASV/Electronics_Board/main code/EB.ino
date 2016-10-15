@@ -442,7 +442,7 @@ void loop()
 	Thruster1.readMessage();
 	Thruster2.readMessage();
 	//Serial.write(0xEE);
-	if (millis() - thrusterStatsLoop200 > 100)
+	if (millis() - thrusterStatsLoop200 > 500)
 	{
 #ifdef _TEST_
 		
