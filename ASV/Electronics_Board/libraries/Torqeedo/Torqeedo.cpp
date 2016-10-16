@@ -316,7 +316,7 @@ void Torqeedo::decodeDisplayState()
 	motorstats[3] = ptr[6];
 	// Motor speed - sint16
 	uint16_t speedstat = ptr[11] << 8 | ptr[10];
-	speedstat += 32767;
+	speedstat += 0x80;
 	motorstats[4] = speedstat >> 8;
 	motorstats[5] = speedstat;
 	// PCB Temp - unit8

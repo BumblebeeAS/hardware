@@ -232,8 +232,12 @@ void loop()
 							//if (!manualOperationMode)
 							//{
 								//parse speed
-								speed1 = (int16_t)((read_buffer[1] << 8) | (read_buffer[0])) -1000;
-								speed2 = (int16_t)((read_buffer[3] << 8) | (read_buffer[2])) -1000;
+								speed1 = (uint16_t)CAN.parseCANFrame(read_buffer, 0, 2)-1000;
+								speed2 = (uint16_t)CAN.parseCANFrame(read_buffer, 2, 2)-1000;
+								//if (speed1 == 0 || speed2 == 0)
+								//{
+									setLightTower(0x02);
+								//}
 								id = 55;
 								len = 4;
 								forwardCANtoSerial(read_buffer);
@@ -246,6 +250,8 @@ void loop()
 							read_flag = 0;
 							read_ctr = 0;
 						}
+						read_flag = 0;
+						read_ctr = 0;
 					}
 					else {
 						read_buffer[read_ctr - 3] = incoming_data;
@@ -336,9 +342,11 @@ void loop()
 		//Get I2C Data
 		//push into send state buf
 		humidTempSensor.dataFetch();
-		eb_stat_buf[0] = humidTempSensor.getTemperature();
-		eb_stat_buf[1] = humidTempSensor.getHumidity();
+		eb_stat_buf[0] = humidTempSensor.getTemperature()+0.5;
+		eb_stat_buf[1] = humidTempSensor.getHumidity()+0.5;
 		eb_stat_buf[2] = readKillBattVoltage();
+		//Serial.println(eb_stat_buf[0]);
+		//Serial.println(eb_stat_buf[0]);
 		id = CAN_EB_stats;
 		len = 3;
 		forwardCANtoSerial(eb_stat_buf);
@@ -440,7 +448,7 @@ void loop()
 
 	if (millis() - thrusterStatsLoop200 > 200)
 	{
-#ifdef _TEST_
+//#ifdef _TEST_
 		
 		Serial.print("Mode: ");
 		Serial.print(manualOperationMode);
@@ -450,7 +458,7 @@ void loop()
 		Serial.print(speed2);
 		Serial.println();
 		
-#endif
+//#endif
 		
 #ifndef _TEST_
 		uint8_t *thrusterbuf;
