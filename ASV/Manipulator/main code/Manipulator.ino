@@ -34,8 +34,8 @@ void setup () {
 	Serial.begin(115200);
 	CAN_init();
 	imu.init();
-  imu.correctToZero();          // run only when fitting to new position
-  sweep.attach(9);              // pin connection
+  	imu.correctToZero();          // run only when fitting to new position
+  	sweep.attach(9);              // pin connection
 	actuator.init();
 
 	heartbeat_loop = millis();
