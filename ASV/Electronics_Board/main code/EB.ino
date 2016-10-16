@@ -56,7 +56,7 @@ static uint32_t Temp_Humid_requestloop250; //250ms loop request temp and humidit
 static uint32_t thrusterStatsLoop200;
 uint8_t eb_stat_buf[3];
 
-char manualOCScontrolBuffer[12];
+static char manualOCScontrolBuffer[12];
 bool manualOperationMode = false;
 int ocsIdx = 0;
 byte ocsStart = 0xFF;
@@ -73,7 +73,6 @@ int statsState = 0;
 int16_t speed1 = 0;
 int16_t speed2 = 0;
 
-
 void setup()
 {
 	/* add setup code here */
@@ -84,7 +83,7 @@ void setup()
 	sbc_bus_loop = millis();
 	heartbeat_loop = millis();
 	Temp_Humid_readloop250 = millis();
-	Temp_Humid_requestloop250 = millis() + HUMIDREQUEST_TIMEOUT + HUMIDREAD_TIMEOUT;
+	Temp_Humid_requestloop250 = millis() + HUMIDREAD_TIMEOUT;
 	thrusterStatsLoop200 = millis();
 START_INIT:
 #ifndef _TEST_
@@ -320,22 +319,19 @@ void loop()
 	if (CAN_MSGAVAIL == CAN.checkReceive())
 	{
 		CAN.readMsgBufID(&id, &len, buf);// read data,  len: data length, buf: data buf
-		//Serial.write(0xFF);
 		forwardCANtoSerial(buf);
-		//Serial.write(0xBB);
 	}
 
 	/**********************************************/
 	/*        Read humidity and temp sensor       */
 	/**********************************************/
 	
-	if (millis() - Temp_Humid_requestloop250 > HUMIDREQUEST_TIMEOUT)
+	if (millis() - Temp_Humid_requestloop250 > HUMID_TIMEOUT)
 	{
 		humidTempSensor.measurementRequest();
 		Temp_Humid_requestloop250 = millis();
-		Temp_Humid_readloop250 = millis();
 	}
-	else if (millis() - Temp_Humid_requestloop250 > HUMIDREAD_TIMEOUT)
+	if (millis() - Temp_Humid_readloop250 > HUMID_TIMEOUT)
 	{
 		//Get I2C Data
 		//push into send state buf
@@ -346,7 +342,7 @@ void loop()
 		id = CAN_EB_stats;
 		len = 3;
 		forwardCANtoSerial(eb_stat_buf);
-		//Temp_Humid_readloop250 = millis() + HUMIDREQUEST_TIMEOUT;
+		Temp_Humid_readloop250 = Temp_Humid_requestloop250 + HUMIDREAD_TIMEOUT;
 	}
 	
 #endif
@@ -438,11 +434,11 @@ void loop()
 		Thruster1.setMotorDrive(speed1);
 		Thruster2.setMotorDrive(speed2);
 	}
-	//Serial.write(0xDD);
+
 	Thruster1.readMessage();
 	Thruster2.readMessage();
-	//Serial.write(0xEE);
-	if (millis() - thrusterStatsLoop200 > 500)
+
+	if (millis() - thrusterStatsLoop200 > 200)
 	{
 #ifdef _TEST_
 		
@@ -488,12 +484,12 @@ void loop()
 			id = CAN_thruster2_range_stats;
 			len = 6;
 			thrusterbuf = Thruster2.getRangestats();
-			statsState = 0;
+			statsState = -1;
 			break;
 		}
-		id = CAN_thruster1_battery_stats;
 		forwardCANtoSerial(thrusterbuf);
 #endif
+		statsState++;
 		thrusterStatsLoop200 = millis();
 	}
 	//Serial.write(0xFF);

@@ -8,6 +8,7 @@ Torqeedo::Torqeedo(int RXEN, int DXEN, int ON, int thruster_num)
 	ON_PIN = ON;
 	thrusterNum = thruster_num;
 	len = 0;
+	setMotorDrive(0);
 }
 
 Torqeedo::~Torqeedo(void)
@@ -399,7 +400,9 @@ bool Torqeedo::sendMessage(byte body[])//, WriteCallback fWrite, FlushCallback f
 	EncodeMessage(body);
 
 	int counter = 0;
-	time = millis();
+	//time = millis();
+	//data[0] = 0x01;
+	//data[1] = END_MARKER;
 	_write(0xFF);
 	while (data[counter] != END_MARKER)
 	{
@@ -419,14 +422,15 @@ bool Torqeedo::sendMessage(byte body[])//, WriteCallback fWrite, FlushCallback f
 
 bool Torqeedo::readMessage()//AvailableCallback fAvailable, ReadCallback fRead)
 {
-	//Serial.write(0xAA);
+	//Serial.write(1);
 	if (_available())
 	{
-		//Serial.write(0xBB);
+		//Serial.write(2);
 		//while (_available())
 		//{
 			byte input = _read();
-			//Serial.write(0x11);
+			//Serial.write(0xAA);
+			//Serial.write(0xAA);
 			//Serial.write(input);
 			switch (input)
 			{
@@ -434,7 +438,7 @@ bool Torqeedo::readMessage()//AvailableCallback fAvailable, ReadCallback fRead)
 			case PACKET_START:
 				msgStart = true;
 				len = 0;
-				//Serial.write(0x22);
+				//Serial.write(3);
 				break;
 
 			case PACKET_END:
@@ -443,36 +447,37 @@ bool Torqeedo::readMessage()//AvailableCallback fAvailable, ReadCallback fRead)
 				_checksum = data[len];
 				data[len] = 0xFF;
 				len = 0;
-				//Serial.write(0x33);
+				//Serial.write(4);
 				decodeMessage(); //Need to check CRC
-				//Serial.write(0x44);
+				//Serial.write(5);
 				break;
 
 			default:
 				if (!msgStart)
 				{
 
-					//Serial.write(0x55);
+					//Serial.write(6);
 					break;
 				}
 				else
 				{
-						//Serial.write(0x66);
+						//Serial.write(7);
 						//Serial.write(len);
 					data[len] = input;
 					len++;
 					if (len >= MAX_PACKET_SIZE) //TODO: Change timeout to 25ms
 					{
 						len = 0;
+						msgStart = false;
 						// Receive timeout
 						return false;
 					}
 				}
 			//}
 		}
-		//Serial.write(0xCC);
+		//Serial.write(8);
 	}
-	//Serial.write(0xDD);
+	//Serial.write(9);
 	return false;
 }
 
