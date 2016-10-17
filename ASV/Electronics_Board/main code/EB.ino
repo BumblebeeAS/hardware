@@ -34,6 +34,7 @@
 #include "defines.h"
 #include "Arduino.h"
 
+//#define _TEST_
 
 MCP_CAN CAN(8);
 uint8_t buf[8];
@@ -54,7 +55,9 @@ HIH613x humidTempSensor(0x27);
 static uint32_t Temp_Humid_readloop250; //250ms loop Publish temp and humidity
 static uint32_t Temp_Humid_requestloop250; //250ms loop request temp and humidity
 static uint32_t thrusterStatsLoop200;
+static uint32_t lightStatsLoop500;
 uint8_t eb_stat_buf[3];
+uint8_t light_num;
 
 static char manualOCScontrolBuffer[12];
 bool manualOperationMode = false;
@@ -229,26 +232,25 @@ void loop()
 								setLightTower(read_buffer[0]);
 							break;
 						case CAN_thruster:
-							//if (!manualOperationMode)
-							//{
+							/*if (!manualOperationMode)
+							{*/
 								//parse speed
-								speed1 = (uint16_t)CAN.parseCANFrame(read_buffer, 0, 2)-1000;
-								speed2 = (uint16_t)CAN.parseCANFrame(read_buffer, 2, 2)-1000;
-								//if (speed1 == 0 || speed2 == 0)
-								//{
-									setLightTower(0x02);
-								//}
+								speed1 = int16_t(CAN.parseCANFrame(read_buffer, 0, 2)) -1000;
+								speed2 = int16_t(CAN.parseCANFrame(read_buffer, 2, 2)) -1000;
+		
 								id = 55;
 								len = 4;
 								forwardCANtoSerial(read_buffer);
 								Thruster1.setMotorDrive(speed1);
 								Thruster2.setMotorDrive(speed2);
+								/*Serial.print("s1:");
+								Serial.print(speed1);
+								Serial.print("s2:");
+								Serial.print(speed2);*/
 							//}
 							break;
 						default:
 							CAN.sendMsgBuf(read_id, 0, read_size, read_buffer);
-							read_flag = 0;
-							read_ctr = 0;
 						}
 						read_flag = 0;
 						read_ctr = 0;
@@ -258,7 +260,6 @@ void loop()
 						read_ctr++;
 					}
 				}
-
 			}
 		}
 	}
@@ -448,7 +449,7 @@ void loop()
 
 	if (millis() - thrusterStatsLoop200 > 200)
 	{
-//#ifdef _TEST_
+#ifdef _TEST_
 		
 		Serial.print("Mode: ");
 		Serial.print(manualOperationMode);
@@ -458,7 +459,7 @@ void loop()
 		Serial.print(speed2);
 		Serial.println();
 		
-//#endif
+#endif
 		
 #ifndef _TEST_
 		uint8_t *thrusterbuf;
@@ -500,20 +501,45 @@ void loop()
 		statsState++;
 		thrusterStatsLoop200 = millis();
 	}
-	//Serial.write(0xFF);
+	
 	/**********************************************/
-	/*           Check Hardware E-Stop            */
+	/*           Operation Mode light status      */
 	/**********************************************/
-
-	if (digitalRead(KILL_STATUS) == HIGH)
+	if (millis() - lightStatsLoop500 > LIGHTTOWER_TIMEOUT)
 	{
-		//send CAN estop
+		/**********************************************/
+		/*           Check Hardware E-Stop            */
+		/**********************************************/
+
+		if (digitalRead(KILL_STATUS) == LOW)
+		{
+			digitalWrite(LIGHTTOWER_RED, HIGH);
+		}
+		else
+		{
+			digitalWrite(LIGHTTOWER_RED, LOW);
+		}
+		if (manualOperationMode)
+		{
+			//setLightTower(2);
+			digitalWrite(LIGHTTOWER_YELLOW, HIGH);
+			//digitalWrite(LIGHTTOWER_RED, LOW);
+			digitalWrite(LIGHTTOWER_GREEN, LOW);
+		}
+		else
+		{
+			digitalWrite(LIGHTTOWER_GREEN, HIGH);
+			digitalWrite(LIGHTTOWER_YELLOW, LOW);
+			//digitalWrite(LIGHTTOWER_RED, LOW);
+		}
+		lightStatsLoop500 = millis();
 	}
 }
 
 //==========================================
 //          CAN FUNCTIONS
 //==========================================
+
 
 void forwardCANtoSerial(uint8_t *body)
 {
