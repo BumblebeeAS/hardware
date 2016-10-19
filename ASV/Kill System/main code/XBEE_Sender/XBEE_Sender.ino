@@ -20,8 +20,8 @@ else{
   sentByte = 0x44;
 }
   mySerial.write(sentByte);
-//  Serial.print("Sending Kill Status: ");
-//  Serial.println(sentByte, BIN);
+  Serial.print("Sending Kill Status: ");
+  Serial.println(sentByte, BIN);
 
   delay(300);
 }
