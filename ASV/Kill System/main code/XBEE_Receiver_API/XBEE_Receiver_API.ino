@@ -72,7 +72,17 @@ void loop() {
         // get data
         incomingByte = rx.getData(0);
         Serial.print("Incoming Byte: ");
-        Serial.println(incomingByte, HEX); 
+        Serial.println(incomingByte, HEX);
+
+        if(incomingByte == 0x15){
+          software_kill = 1;
+          no_data = 0;
+        }
+    
+        else if(incomingByte == 0x44){
+          software_kill = 0;
+          no_data = 0;
+        }
       } 
       else if (xbee.getResponse().getApiId() == MODEM_STATUS_RESPONSE)
       {
@@ -98,25 +108,18 @@ void loop() {
         }
       }
     }
-      else
-      {
-      no_data++;
-      Serial.println(no_data);
+      else {
+        no_data++;
+        Serial.print("Count: ");
+        Serial.println(no_data);
+        
         if(no_data == 20){
           software_kill = 0;
           no_data = 0;
         }
-      Serial.println("Nothing Available");
+        Serial.println("Nothing Available");
     }
-
-    if(incomingByte == 0x15){
-      software_kill = 1;
-      no_data = 0;
-    }
-    else if(incomingByte == 0x44){
-      software_kill = 0;
-      no_data = 0;
-    } 
+ 
 //    Serial.print("   Data: ");
 //    Serial.println(incomingByte, BIN);
 //  Serial.print("    softkill status: ");
