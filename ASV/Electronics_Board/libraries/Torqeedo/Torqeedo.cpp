@@ -201,7 +201,7 @@ bool Torqeedo::decodeMessage()
 			}
 			Serial.print("\n");*/
 			sendMessage(_motorDrive.body);// , write2, flush2);
-			
+
 
 #ifdef DEBUG			
 			//Use speedarr to determine speed
@@ -425,59 +425,40 @@ bool Torqeedo::readMessage()//AvailableCallback fAvailable, ReadCallback fRead)
 	//Serial.write(1);
 	if (_available())
 	{
-		//Serial.write(2);
-		//while (_available())
-		//{
-			byte input = _read();
-			//Serial.write(0xAA);
-			//Serial.write(0xAA);
-			//Serial.write(input);
-			switch (input)
+		byte input = _read();
+		switch (input)
+		{
+			//If not PACKET_START, skip message
+		case PACKET_START:
+			msgStart = true;
+			len = 0;
+			break;
+
+		case PACKET_END:
+			msgStart = false;
+			len--;
+			_checksum = data[len];
+			data[len] = 0xFF;
+			len = 0;
+			decodeMessage(); //Need to check CRC
+			break;
+
+		default:
+			if (!msgStart)
+				break;
+			else
 			{
-				//If not PACKET_START, skip message
-			case PACKET_START:
-				msgStart = true;
-				len = 0;
-				//Serial.write(3);
-				break;
-
-			case PACKET_END:
-				msgStart = false;
-				len--;
-				_checksum = data[len];
-				data[len] = 0xFF;
-				len = 0;
-				//Serial.write(4);
-				decodeMessage(); //Need to check CRC
-				//Serial.write(5);
-				break;
-
-			default:
-				if (!msgStart)
+				data[len] = input;
+				len++;
+				if (len >= MAX_PACKET_SIZE)
 				{
-
-					//Serial.write(6);
-					break;
+					len = 0;
+					msgStart = false;
+					return false;
 				}
-				else
-				{
-						//Serial.write(7);
-						//Serial.write(len);
-					data[len] = input;
-					len++;
-					if (len >= MAX_PACKET_SIZE) //TODO: Change timeout to 25ms
-					{
-						len = 0;
-						msgStart = false;
-						// Receive timeout
-						return false;
-					}
-				}
-			//}
+			}
 		}
-		//Serial.write(8);
 	}
-	//Serial.write(9);
 	return false;
 }
 

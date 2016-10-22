@@ -56,6 +56,7 @@ static uint32_t Temp_Humid_readloop250; //250ms loop Publish temp and humidity
 static uint32_t Temp_Humid_requestloop250; //250ms loop request temp and humidity
 static uint32_t thrusterStatsLoop200;
 static uint32_t lightStatsLoop500;
+static uint32_t thrusterHeartbeatLoop200;
 uint8_t eb_stat_buf[3];
 uint8_t light_num;
 
@@ -72,9 +73,15 @@ bool ocs_stop2 = false;
 
 Torqeedo Thruster1(TORQEEDO1_RXEN, TORQEEDO1_DXEN, TORQEEDO1_ON, 1);
 Torqeedo Thruster2(TORQEEDO2_RXEN, TORQEEDO2_DXEN, TORQEEDO2_ON, 2);
+uint8_t thruster_heartbeat = 0x00;
+bool thruster1_batt_heartbeat = false;
+bool thruster2_batt_heartbeat = false;
+bool thruster1_motor_heartbeat = false;
+bool thruster2_motor_heartbeat = false;
 int statsState = 0;
 int16_t speed1 = 0;
 int16_t speed2 = 0;
+uint8_t emptybuf[8] = { 0 };
 
 void setup()
 {
@@ -145,7 +152,29 @@ void loop()
 	if ((millis() - heartbeat_loop) > HEARTBEAT_TIMEOUT)
 	{
 		CAN.setupCANFrame(buf, 0, 0, HEARTBEAT_EB);
+
+		//TODO: Needs refactoring
+		uint8_t *motorbuf = Thruster1.getMotorstats();
+		if (motorbuf[0] == 0x00 && motorbuf[1] == 0x00)
+			thruster1_motor_heartbeat = false;
+		else
+			thruster1_motor_heartbeat = true;
+		motorbuf = Thruster2.getMotorstats();
+		if (motorbuf[0] == 0x00 && motorbuf[1] == 0x00)
+			thruster2_motor_heartbeat = false;
+		else
+			thruster2_motor_heartbeat = true;
+
+		thruster_heartbeat = thruster1_batt_heartbeat
+			+ thruster2_batt_heartbeat << 1
+			+ thruster1_motor_heartbeat << 2
+			+ thruster2_motor_heartbeat << 3;
+
+		thruster1_batt_heartbeat = false;
+		thruster2_batt_heartbeat = false;
+
 		buf[0] = HEARTBEAT_EB;
+		buf[1] = thruster_heartbeat;
 		CAN.sendMsgBuf(CAN_heartbeat, 0, 1, buf);
 		heartbeat_loop = millis();
 	}
@@ -234,19 +263,19 @@ void loop()
 						case CAN_thruster:
 							/*if (!manualOperationMode)
 							{*/
-								//parse speed
-								speed1 = int16_t(CAN.parseCANFrame(read_buffer, 0, 2)) -1000;
-								speed2 = int16_t(CAN.parseCANFrame(read_buffer, 2, 2)) -1000;
-		
-								id = 55;
-								len = 4;
-								forwardCANtoSerial(read_buffer);
-								Thruster1.setMotorDrive(speed1);
-								Thruster2.setMotorDrive(speed2);
-								/*Serial.print("s1:");
-								Serial.print(speed1);
-								Serial.print("s2:");
-								Serial.print(speed2);*/
+							//parse speed
+							speed1 = int16_t(CAN.parseCANFrame(read_buffer, 0, 2)) - 1000;
+							speed2 = int16_t(CAN.parseCANFrame(read_buffer, 2, 2)) - 1000;
+
+							id = 55;
+							len = 4;
+							forwardCANtoSerial(read_buffer);
+							Thruster1.setMotorDrive(speed1);
+							Thruster2.setMotorDrive(speed2);
+							/*Serial.print("s1:");
+							Serial.print(speed1);
+							Serial.print("s2:");
+							Serial.print(speed2);*/
 							//}
 							break;
 						default:
@@ -332,7 +361,7 @@ void loop()
 	/**********************************************/
 	/*        Read humidity and temp sensor       */
 	/**********************************************/
-	
+
 	if (millis() - Temp_Humid_requestloop250 > HUMID_TIMEOUT)
 	{
 		humidTempSensor.measurementRequest();
@@ -343,8 +372,8 @@ void loop()
 		//Get I2C Data
 		//push into send state buf
 		humidTempSensor.dataFetch();
-		eb_stat_buf[0] = humidTempSensor.getTemperature()+0.5;
-		eb_stat_buf[1] = humidTempSensor.getHumidity()+0.5;
+		eb_stat_buf[0] = humidTempSensor.getTemperature() + 0.5;
+		eb_stat_buf[1] = humidTempSensor.getHumidity() + 0.5;
 		eb_stat_buf[2] = readKillBattVoltage();
 		//Serial.println(eb_stat_buf[0]);
 		//Serial.println(eb_stat_buf[0]);
@@ -353,7 +382,7 @@ void loop()
 		forwardCANtoSerial(eb_stat_buf);
 		Temp_Humid_readloop250 = Temp_Humid_requestloop250 + HUMIDREAD_TIMEOUT;
 	}
-	
+
 #endif
 
 	/**********************************************/
@@ -435,22 +464,19 @@ void loop()
 	// Manual Operation Override
 	if (manualOperationMode)
 	{
-		/*
-		Serial.print("Manual 1: ");
-		Serial.print(speed1);
-		Serial.print(" | 2: ");
-		Serial.println(speed2);*/
 		Thruster1.setMotorDrive(speed1);
 		Thruster2.setMotorDrive(speed2);
 	}
 
-	Thruster1.readMessage();
-	Thruster2.readMessage();
+	if (Thruster1.readMessage())
+		thruster1_batt_heartbeat = true;
+	if (Thruster2.readMessage())
+		thruster2_batt_heartbeat = true;
 
 	if (millis() - thrusterStatsLoop200 > 200)
 	{
 #ifdef _TEST_
-		
+
 		Serial.print("Mode: ");
 		Serial.print(manualOperationMode);
 		Serial.print(" Speed1: ");
@@ -458,41 +484,47 @@ void loop()
 		Serial.print(" Speed2: ");
 		Serial.print(speed2);
 		Serial.println();
-		
-#endif
-		
-#ifndef _TEST_
+#else
 		uint8_t *thrusterbuf;
+		thrusterbuf = emptybuf;
 		switch (statsState)
 		{
 		case 0:
 			id = CAN_thruster1_motor_stats;
 			len = 8;
-			thrusterbuf = Thruster1.getMotorstats();
+			if (thruster1_batt_heartbeat)
+				thrusterbuf = Thruster1.getMotorstats();
 			break;
 		case 1:
 			id = CAN_thruster2_motor_stats;
 			len = 8;
-			thrusterbuf = Thruster2.getMotorstats();
+			if (thruster2_batt_heartbeat)
+				thrusterbuf = Thruster2.getMotorstats();
 			break;
 		case 2:
 			id = CAN_thruster1_battery_stats;
 			len = 6;
-			thrusterbuf = Thruster1.getBatterystats();
+			if (thruster1_batt_heartbeat)
+				thrusterbuf = Thruster1.getBatterystats();
 			break;
 		case 3:
 			id = CAN_thruster2_battery_stats;
 			len = 6;
-			thrusterbuf = Thruster2.getBatterystats();
+			if (thruster2_batt_heartbeat)
+				thrusterbuf = Thruster2.getBatterystats();
 			break;
 		case 4:
 			id = CAN_thruster1_range_stats;
 			len = 6;
-			thrusterbuf = Thruster1.getRangestats();
+			if (thruster1_batt_heartbeat)
+				thrusterbuf = Thruster1.getRangestats();
 			forwardCANtoSerial(thrusterbuf);
+
+			thrusterbuf = emptybuf;
 			id = CAN_thruster2_range_stats;
 			len = 6;
-			thrusterbuf = Thruster2.getRangestats();
+			if (thruster2_batt_heartbeat)
+				thrusterbuf = Thruster2.getRangestats();
 			statsState = -1;
 			break;
 		}
@@ -501,7 +533,7 @@ void loop()
 		statsState++;
 		thrusterStatsLoop200 = millis();
 	}
-	
+
 	/**********************************************/
 	/*           Operation Mode light status      */
 	/**********************************************/
