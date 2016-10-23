@@ -71,6 +71,7 @@ START_INIT:
     												// if filtering for multi, use CAN.getId() for checking 
     												// which part is it for 
 }
+
 void checkCANmsg(){	
 	//if there is stuff in buffer
 	if (CAN_MSGAVAIL == CAN.checkReceive()){
@@ -96,8 +97,10 @@ void checkCANmsg(){
 
 void sendHeartBeat() {
 	if ( (millis() - heartbeat_loop) > 500) {  
-		CAN.setupCANFrame(buf,0,1,2);
+		CAN.setupCANFrame(buf,0,1,0x02);
+		Serial.println("Setup");
 		CAN.sendMsgBuf(CAN_heartbeat,0,1,buf);
+		Serial.println("Sent");
 		heartbeat_loop = millis();
 		buf[0]=0;
 	}
