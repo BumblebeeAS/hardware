@@ -1,0 +1,31 @@
+#######################################
+# Syntax Coloring Map stepper
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+Step	KEYWORD1	Step
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+Init	KEYWORD2
+step1	KEYWORD2
+step2	KEYWORD2
+step3	KEYWORD2
+step4	KEYWORD2
+stopMoter	KEYWORD2
+moveLeft	KEYWORD2
+moevRight	KEYWORD2
+checkDir	KEYWORD2
+distance	KEYWORD2
+moveStepper	KEYWORD2
+checklimit	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+LEFT	LITERAL1
+RIGHT	LITERAL1
