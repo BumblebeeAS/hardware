@@ -5,7 +5,7 @@
 
 class Step {
   private:
-  public:
+  
     int inA1; // input 1 of the stepper
     int inA2; // input 2 of the stepper
     int inB1; // input 3 of the stepper
@@ -33,12 +33,12 @@ class Step {
     void distance(uint8_t cm);
     bool checkLimit(void);
 
-  
+ public:
+
     Step(void); 
 
     void Init(void);
     void moveStepper(uint8_t cm);
-
 
 };
 
