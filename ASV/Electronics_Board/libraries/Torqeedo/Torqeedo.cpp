@@ -179,6 +179,7 @@ bool Torqeedo::decodeMessage()
 	case DeviceId_Display:
 		decodeDisplay();
 		//sendEmptyReply();
+		Serial.print("display");
 		break;
 
 	case DeviceId_Remote1:
@@ -422,7 +423,7 @@ bool Torqeedo::sendMessage(byte body[])//, WriteCallback fWrite, FlushCallback f
 
 bool Torqeedo::readMessage()//AvailableCallback fAvailable, ReadCallback fRead)
 {
-	//Serial.write(1);
+	Serial.write(1);
 	if (_available())
 	{
 		byte input = _read();

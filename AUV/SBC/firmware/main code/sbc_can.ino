@@ -80,8 +80,8 @@ void loop()
 	
 	if ((millis() - heartbeat_loop) > HEARTBEAT_TIMEOUT)
 	{
-		CAN.setupCANFrame(buf, 0, 0, HEARTBEAT_SBC_CAN);
-		buf[0] = HEARTBEAT_SBC_CAN;
+		CAN.setupCANFrame(buf, 0, 0, HEARTBEAT_EB);
+		buf[0] = HEARTBEAT_EB;
 		CAN.sendMsgBuf(CAN_heartbeat, 0, 1, buf);
 		heartbeat_loop = millis();
 	}

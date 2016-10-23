@@ -52,13 +52,13 @@ bool kill_status = false;
 bool hard_kill = false;
 
 HIH613x humidTempSensor(0x27);
-static uint32_t Temp_Humid_readloop250; //250ms loop Publish temp and humidity
-static uint32_t Temp_Humid_requestloop250; //250ms loop request temp and humidity
+static uint32_t Temp_Humid_loop = 0; //250ms loop Publish temp and humidity
 static uint32_t thrusterStatsLoop200;
 static uint32_t lightStatsLoop500;
 static uint32_t thrusterHeartbeatLoop200;
 uint8_t eb_stat_buf[3];
 uint8_t light_num;
+uint8_t humid_ctr = 0;
 
 static char manualOCScontrolBuffer[12];
 bool manualOperationMode = false;
@@ -92,8 +92,7 @@ void setup()
 	Serial3.begin(XBEE_BAUDRATE);
 	sbc_bus_loop = millis();
 	heartbeat_loop = millis();
-	Temp_Humid_readloop250 = millis();
-	Temp_Humid_requestloop250 = millis() + HUMIDREAD_TIMEOUT;
+	Temp_Humid_loop = millis();
 	thrusterStatsLoop200 = millis();
 START_INIT:
 #ifndef _TEST_
@@ -362,25 +361,35 @@ void loop()
 	/*        Read humidity and temp sensor       */
 	/**********************************************/
 
-	if (millis() - Temp_Humid_requestloop250 > HUMID_TIMEOUT)
+	if (millis() - Temp_Humid_loop > HUMID_TIMEOUT)
 	{
-		humidTempSensor.measurementRequest();
-		Temp_Humid_requestloop250 = millis();
-	}
-	if (millis() - Temp_Humid_readloop250 > HUMID_TIMEOUT)
-	{
-		//Get I2C Data
-		//push into send state buf
-		humidTempSensor.dataFetch();
-		eb_stat_buf[0] = humidTempSensor.getTemperature() + 0.5;
-		eb_stat_buf[1] = humidTempSensor.getHumidity() + 0.5;
-		eb_stat_buf[2] = readKillBattVoltage();
-		//Serial.println(eb_stat_buf[0]);
-		//Serial.println(eb_stat_buf[0]);
-		id = CAN_EB_stats;
-		len = 3;
-		forwardCANtoSerial(eb_stat_buf);
-		Temp_Humid_readloop250 = Temp_Humid_requestloop250 + HUMIDREAD_TIMEOUT;
+		switch (humid_ctr)
+		{
+		case 0:
+			humidTempSensor.measurementRequest();
+			humid_ctr++;
+			break;
+		case 1:
+			//Get I2C Data
+			//push into send state buf
+			humidTempSensor.dataFetch();
+			eb_stat_buf[0] = humidTempSensor.getTemperature() + 0.5;
+			eb_stat_buf[1] = humidTempSensor.getHumidity() + 0.5;
+			eb_stat_buf[2] = readKillBattVoltage();
+			Serial.print(eb_stat_buf[0]);
+			Serial.print(" ");
+			Serial.print(eb_stat_buf[1]);
+			Serial.print(" ");
+			Serial.println(eb_stat_buf[2]);
+			id = CAN_EB_stats;
+			len = 3;
+			forwardCANtoSerial(eb_stat_buf);
+			humid_ctr = 0;
+			Temp_Humid_loop = Temp_Humid_loop + HUMID_TIMEOUT;
+			break;
+		default:
+			break;
+		}
 	}
 
 #endif
@@ -468,11 +477,14 @@ void loop()
 		Thruster2.setMotorDrive(speed2);
 	}
 
+	/*
 	if (Thruster1.readMessage())
 		thruster1_batt_heartbeat = true;
 	if (Thruster2.readMessage())
 		thruster2_batt_heartbeat = true;
-
+	*/
+	Thruster1.readMessage();
+	Thruster2.readMessage();
 	if (millis() - thrusterStatsLoop200 > 200)
 	{
 #ifdef _TEST_
@@ -492,38 +504,38 @@ void loop()
 		case 0:
 			id = CAN_thruster1_motor_stats;
 			len = 8;
-			if (thruster1_batt_heartbeat)
+			//if (thruster1_batt_heartbeat)
 				thrusterbuf = Thruster1.getMotorstats();
 			break;
 		case 1:
 			id = CAN_thruster2_motor_stats;
 			len = 8;
-			if (thruster2_batt_heartbeat)
+			//if (thruster2_batt_heartbeat)
 				thrusterbuf = Thruster2.getMotorstats();
 			break;
 		case 2:
 			id = CAN_thruster1_battery_stats;
 			len = 6;
-			if (thruster1_batt_heartbeat)
-				thrusterbuf = Thruster1.getBatterystats();
+			//if (thruster1_batt_heartbeat)
+			thrusterbuf = Thruster1.getBatterystats();
 			break;
 		case 3:
 			id = CAN_thruster2_battery_stats;
 			len = 6;
-			if (thruster2_batt_heartbeat)
-				thrusterbuf = Thruster2.getBatterystats();
+			//if (thruster2_batt_heartbeat)
+			thrusterbuf = Thruster2.getBatterystats();
 			break;
 		case 4:
 			id = CAN_thruster1_range_stats;
 			len = 6;
-			if (thruster1_batt_heartbeat)
+			//if (thruster1_batt_heartbeat)
 				thrusterbuf = Thruster1.getRangestats();
 			forwardCANtoSerial(thrusterbuf);
 
 			thrusterbuf = emptybuf;
 			id = CAN_thruster2_range_stats;
 			len = 6;
-			if (thruster2_batt_heartbeat)
+			//if (thruster2_batt_heartbeat)
 				thrusterbuf = Thruster2.getRangestats();
 			statsState = -1;
 			break;
@@ -591,12 +603,13 @@ void initKill()
 	pinMode(KILL_BATT, INPUT);
 	pinMode(KILL_STATUS, INPUT);
 }
-byte readKillBattVoltage()
+uint8_t readKillBattVoltage()
 {
 	int input = analogRead(KILL_BATT);
-	float voltage = input * (12.0 * (27 / 120) / 1023.0);
-	uint8_t millivolt = (int)(voltage * 1000);
-	return  millivolt;
+	Serial.print("A4:");
+	float voltage = ((float)input/1023)*4.9*147/27;
+
+	return  uint8_t(voltage*10);
 }
 
 //==========================================
