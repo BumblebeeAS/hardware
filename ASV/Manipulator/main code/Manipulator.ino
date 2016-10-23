@@ -6,51 +6,57 @@
 #include <Sweeper.h>
 #include "can_asv_defines.h"
 #include <Actuator.h>
+#include <step.h>
 
+//pin definition
+#define CAN_CHIP_SELECT 8
 
-#define Chip_Select 8
+#define UPDATE_INTERVAL 5				// update interval for servo
 
-MCP_CAN CAN(Chip_Select);
+//mask values for decoding CAN message
+#define ACOUSTIC 1
+#define SHOOTER  2
+#define SWEEPER  4
+#define STEPPER  8
+#define IMU_Ratio_Constant 10.83333333	// 1 step mapped to 1 deg
+
+MCP_CAN CAN(CAN_CHIP_SELECT);
 IMU imu;
-Sweeper sweep(5);
+Sweeper sweep(UPDATE_INTERVAL);
 Actuator actuator;
-
-// CAN variables
-uint8_t len = 0;
-uint8_t buf[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+Step stepper_obj; 
 
 //Time variables
 uint32_t heartbeat_loop = 0;
 
-uint8_t enable=0;
-uint8_t mani_state = 0;
-uint8_t target_angle = 0;
-uint8_t stepper_pos = 0;
-uint8_t checksum = 0;
-
-
 void setup () {
-
 	Serial.begin(115200);
+ 
 	CAN_init();
 	imu.init();
   	imu.correctToZero();          // run only when fitting to new position
   	sweep.attach(9);              // pin connection
 	actuator.init();
-
+  
 	heartbeat_loop = millis();
-	
 }
 
 void loop() {
-	
-	sendHeartBeat();
+  uint8_t checkSum = 0, len = 0;
+  uint8_t buf[8] = {0};
 
-	checkCANmsg();    // receive CAN message and compute checksum
-					  // and move data out from buffer
+  //send manipulator hearbeat every 500ms
+  if ((millis() - heartbeat_loop) >= 500){
+	  sendHeartBeat();
+    heartbeat_loop = millis();
+  }
 
-	ENABLE();		  // actuate stuff
-	        
+  //check if CAN message available and perform respective funtions
+  if (CAN_MSGAVAIL == CAN.checkReceive()){
+    CAN.readMsgBuf(&len, buf);    // read data,  len: data length, buf: data buf
+    decodeCANMsg(buf);
+    sendCheckSum(buf);
+  }
 } 
 
 void CAN_init(){
@@ -72,70 +78,62 @@ START_INIT:
     												// which part is it for 
 }
 
-void checkCANmsg(){	
-	//if there is stuff in buffer
-	if (CAN_MSGAVAIL == CAN.checkReceive()){
-		//read where is it from
-		for (int x=0; x<5;x++) {		// clear buffer
-     		buf[x] = 0;
-    	}
-
-		CAN.readMsgBuf(&len, buf);    // read data,  len: data length, buf: data buf
-		
-		enable = buf[0];
-		mani_state = buf[1];
-		target_angle = buf[2];
-		stepper_pos = buf[3];
-
-		checksum = buf[0]^buf[1]^buf[2]^buf[3];
-		buf[4] = checksum;
-
-		CAN.setupCANFrame(buf,4,1,checksum);
-		CAN.sendMsgBuf(CAN_manipulator,0,0,5,buf);
-	}
-}
-
 void sendHeartBeat() {
-	if ( (millis() - heartbeat_loop) > 500) {  
-		CAN.setupCANFrame(buf,0,1,HEARTBEAT_Manipulator);
-		CAN.sendMsgBuf(CAN_heartbeat,0,1,buf);
-		heartbeat_loop = millis();
-		buf[0]=0;
-	}
+  uint8_t buf[1];
+	CAN.setupCANFrame(buf,0,1,HEARTBEAT_Manipulator);
+	CAN.sendMsgBuf(CAN_heartbeat,0,1,buf);
 }
+  
+void decodeCANMsg(const uint8_t* buf) {
+	uint8_t mask, diff = 0, shoot;
 
-void ENABLE() {
-	uint8_t val,diff = 0, shoot;
-
-	for (val=1; val<16; val<<=1) {
-		switch (enable & val) {
-			case 1: 
+	for (mask = ACOUSTIC; mask <= STEPPER; mask<<=1) {
+		switch (buf[0] & mask) {
+			case ACOUSTIC: 
 				//acoustic
-				if ( (bitRead(mani_state,0)) == 1 ) {
+				if ((bitRead(buf[1],0)) == 1) {
 					actuator.retrieveAcoustic(LINEAR);
 					actuator.retrieveAcoustic(ROTARY);
-				} if( (bitRead(mani_state,1)) == 1) {
+				}
+				if( (bitRead(buf[1],1)) == 1) {
 					actuator.deployAcoustic(ROTARY);					
-				} if( (bitRead(mani_state,2)) == 1 ) {
+				}
+				if( (bitRead(buf[1],2)) == 1) {
 					actuator.deployAcoustic(LINEAR);
 				}
 				break;
-			case 2: 
+			case SHOOTER: 
 				//shooter
-				shoot = mani_state>>3;   // right shift mani_state such that shoot contains only bit for shooter
+				shoot = buf[2]>>3;   // right shift mani_state such that shoot contains only bit for shooter
+        //TODO finish shooter part
 				break;
-			case 4:
-				//servo
+			case SWEEPER:
+				//sweeper
+        //read current IMU values
 				imu.readAccTempGyro();
-				diff = (round)(975 / 90 * imu.correctError() + 1525);
-				sweep.update(target_angle, diff);
+        //compute difference between desire and current values
+				diff = (round)(IMU_Ratio_Constant * imu.correctError() + 1525);
+        //update sweeper position
+				sweep.update(buf[2], diff);
 				break;
-			case 8:	
+			case STEPPER:	
 				//stepper
-
-			default:
-				target_angle = 19;
-				break;
+				stepper_obj.moveStepper(buf[3]);
+        //TODO finish stepper part
+			default:;
 		}			
 	}
 }
+
+void sendCheckSum(const uint8_t* buf){
+    uint8_t checkSum;
+    uint8_t local_buf[8] = {0};
+    
+    //compute checksum
+    checkSum = buf[0]^buf[1]^buf[2]^buf[3];
+    
+    //send back checksum
+    CAN.setupCANFrame(local_buf,4,1,checkSum);
+    CAN.sendMsgBuf(CAN_manipulator,0,0,5,local_buf);
+}
+
