@@ -97,10 +97,8 @@ void checkCANmsg(){
 
 void sendHeartBeat() {
 	if ( (millis() - heartbeat_loop) > 500) {  
-		CAN.setupCANFrame(buf,0,1,0x02);
-		Serial.println("Setup");
+		CAN.setupCANFrame(buf,0,1,HEARTBEAT_Manipulator);
 		CAN.sendMsgBuf(CAN_heartbeat,0,1,buf);
-		Serial.println("Sent");
 		heartbeat_loop = millis();
 		buf[0]=0;
 	}
