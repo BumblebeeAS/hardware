@@ -11,7 +11,7 @@ void setup(void) {
 }
 
 void loop(void) {
-    int n = 0;
+
 //  for(int i=0; i<=305; i++) {
 //    a.step1();
 //    a.step2();
@@ -21,18 +21,14 @@ void loop(void) {
 //  a.stopMotor();
 //  delay(1000);
 
-//  a.moveLeft(300);
-//  a.moveRight(300);
-//  delay(2000);
+//  a.moveLeft();
+//  a.moveRight();
+//  delay(10);
 
-//    if(Serial.available() > 0) {
-//      n = Serial.read();
-//    }
-
-//    a.moveStepper(20);
-//    delay(2000);   
-
-
+//      Serial.println(a.checkLimit());
+    a.moveStepper(10);   
+//    delay(100);
+    
 }
 
 

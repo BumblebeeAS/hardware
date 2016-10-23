@@ -3,7 +3,10 @@
 
 #define LEFT 0
 #define RIGHT 1
-#define Ratio 11.595744680
+#define step_ratio 11.595744680			// 545 step loop map over 47cm
+#define step_length 0.0862385321		// 1 step loop distance in cm
+#define Stepper_looptime 6
+
 
 Step::Step(void) {
 	inA1 = 2; // input 1 of the stepper
@@ -24,9 +27,10 @@ void Step::Init() {
 	pinMode(SWA, INPUT);  
 	pinMode(SWB, INPUT);
 
-	pos = 47;		//	centimeter
+	pos = 47.0;		//	centimeter
     stepDelay = 1;	//	ms
     dist = 0;		//	cm
+    stepperTime = 0;
 
 
     // for (int i=0;i<545;i++) {
@@ -76,31 +80,31 @@ void Step::stopMotor() {
   digitalWrite(inB2, LOW);   
 }
 
-void Step::moveLeft(uint8_t dist) {
-	int i = 0;
-	for (i=0; i<=dist; i++) {
-		if (checkLimit() || pos == 0) {
-			break;
+void Step::moveLeft() {
+	// int i = 0;
+	// for (i=0; i<=dist; i++) {
+		if (checkLimit()) {
+			return;
 		}
 		step1();
 		step2();
 		step3();
 		step4();
-	}
+	// }
 	stopMotor();	
 }
 
-void Step::moveRight(uint8_t dist) {
-	int i=0;
-	for (i=0; i<=dist; i++) {
-		if (checkLimit() || pos == 47) {
-			break;
+void Step::moveRight() {
+	// int i=0;
+	// for (i=0; i<=dist; i++) {
+		if (checkLimit()) {
+			return;
 		}
 		step3();
 		step2();
 		step1();
 		step4();			
-	}
+	// }
 	stopMotor();
 }
 
@@ -109,27 +113,37 @@ void Step::checkDir(uint8_t cm) {
 	// distance measured from left,  leftmost = 0
 }
 
-void Step::distance(uint8_t cm) {
-	dist = 0;                  	   			// check distance to be moved
+void Step::distance(uint8_t cm) {         	// check distance to be moved
 	if (cm>=pos) {  
-	dist = (round)(Ratio*(cm-pos));
+	dist = (round)(step_ratio*(cm-pos));
 	} else {
-	dist = (round)(Ratio*(pos-cm));
+	dist = (round)(step_ratio*(pos-cm));
 	}
 }
 
 void Step::moveStepper(uint8_t cm) {       // left most is 0   viewed from the back
-	distance(cm);
-	checkDir(cm);
-	if (dir == LEFT) {
-		moveLeft(dist);
-		pos -=dist;
-	} else if (dir == RIGHT) {
-		moveRight(dist);
-		pos+=dist;
-	}	
-	stopMotor();
-	dist = 0;
+	if (millis() - stepperTime >= Stepper_looptime) {
+		if (cm == (round)(pos)) {
+			return;
+		}
+		distance(cm);
+		checkDir(cm);
+		if (dir == LEFT) {
+			if (pos < 0.0) {
+				return;
+			}
+			moveLeft();
+			pos-=step_length;
+		} else if (dir == RIGHT) {
+			if (pos > 47.0) {
+				return;
+			}
+			moveRight();
+			pos-=step_length;
+		}	
+		stopMotor();
+	}
+
 }
 
 bool Step::checkLimit(void) {
@@ -141,8 +155,6 @@ bool Step::checkLimit(void) {
 	}
 	return false;
 }
-
-
 		//   1234		from right to left   viewed from back
 
 		//	 3214		from left to right   viewed from bacl

@@ -14,10 +14,10 @@ class Step {
     int SWA;   // limit switch A
     int SWB;   // limit switch B
 
-    uint8_t pos;
-    uint8_t step;
+    double pos;
     uint16_t dist;
     uint8_t dir;
+    uint32_t stepperTime;
 
     int stepDelay;      // Delay between steps in milliseconds
 
@@ -28,8 +28,8 @@ class Step {
     void stopMotor(void);
     
     void checkDir(uint8_t cm);
-    void moveLeft(uint8_t cm);
-    void moveRight(uint8_t cm);
+    void moveLeft();
+    void moveRight();
     void distance(uint8_t cm);
     bool checkLimit(void);
 
