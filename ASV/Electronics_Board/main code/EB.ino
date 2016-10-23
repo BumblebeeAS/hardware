@@ -151,16 +151,8 @@ void loop()
 	if ((millis() - heartbeat_loop) > HEARTBEAT_TIMEOUT)
 	{
 		//TODO: Needs refactoring
-		uint8_t *motorbuf = Thruster1.getMotorstats();
-		if (motorbuf[0] == 0x00 && motorbuf[1] == 0x00)
-			thruster1_motor_heartbeat = false;
-		else
-			thruster1_motor_heartbeat = true;
-		motorbuf = Thruster2.getMotorstats();
-		if (motorbuf[0] == 0x00 && motorbuf[1] == 0x00)
-			thruster2_motor_heartbeat = false;
-		else
-			thruster2_motor_heartbeat = true;
+		thruster1_motor_heartbeat = Thruster1.getMotorHeartbeat() & thruster1_batt_heartbeat;
+		thruster2_motor_heartbeat = Thruster2.getMotorHeartbeat() & thruster2_batt_heartbeat;
 
 		thruster_heartbeat = thruster1_batt_heartbeat
 			+ (thruster2_batt_heartbeat << 1)
@@ -477,12 +469,12 @@ void loop()
 		Thruster2.setMotorDrive(speed2);
 	}
 
-	
+
 	if (Thruster1.readMessage())
 		thruster1_batt_heartbeat = true;
 	if (Thruster2.readMessage())
 		thruster2_batt_heartbeat = true;
-	
+
 	//Thruster1.readMessage();
 	//Thruster2.readMessage();
 	if (millis() - thrusterStatsLoop200 > 200)
@@ -517,13 +509,13 @@ void loop()
 			id = CAN_thruster1_battery_stats;
 			len = 6;
 			if (thruster1_batt_heartbeat)
-			thrusterbuf = Thruster1.getBatterystats();
+				thrusterbuf = Thruster1.getBatterystats();
 			break;
 		case 3:
 			id = CAN_thruster2_battery_stats;
 			len = 6;
 			if (thruster2_batt_heartbeat)
-			thrusterbuf = Thruster2.getBatterystats();
+				thrusterbuf = Thruster2.getBatterystats();
 			break;
 		case 4:
 			id = CAN_thruster1_range_stats;
@@ -607,9 +599,9 @@ uint8_t readKillBattVoltage()
 {
 	int input = analogRead(KILL_BATT);
 	Serial.print("A4:");
-	float voltage = ((float)input/1023)*4.9*147/27;
+	float voltage = ((float)input / 1023)*4.9 * 147 / 27;
 
-	return  uint8_t(voltage*10);
+	return  uint8_t(voltage * 10);
 }
 
 //==========================================

@@ -35,6 +35,7 @@
 	#define DeviceId_Master	0x00
 	#define DeviceId_Remote1	0x14
 	#define DeviceId_Display	0x20
+	#define DeviceId_Motor	0x30
 
 /*=======================================================
 				MESSAGE ID
@@ -96,6 +97,9 @@ private:
 	int _checksum;
 	int16_t hardcodespeed = 0;
 	bool speedZero = true;
+
+	bool motorRequest = false;
+	bool motorReply = false;
 	
 	typedef void(*WriteCallback)  (const byte what);    // send a byte to serial port
 	typedef int(*AvailableCallback)  ();    // return number of bytes available
@@ -120,6 +124,7 @@ public:
 	uint8_t* getBatterystats();
 	uint8_t* getRangestats();
 	void setKill(bool kill_status);
+	bool getMotorHeartbeat();
 	
 	bool readMessage();//(AvailableCallback fAvailable, ReadCallback fRead); //Includes CRC Checksum
 	bool sendMessage(byte body[]);// (byte body[], WriteCallback fWrite, FlushCallback fflush);

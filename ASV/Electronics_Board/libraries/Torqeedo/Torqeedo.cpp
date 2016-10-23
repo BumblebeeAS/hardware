@@ -65,6 +65,10 @@ uint8_t* Torqeedo::getRangestats()
 {
 	return rangestats;
 }
+bool Torqeedo::getMotorHeartbeat()
+{
+	return motorReply;
+}
 
 //=====================================
 //         SET PACKAGE MESSAGE
@@ -174,6 +178,13 @@ bool Torqeedo::decodeMessage()
 		return false;
 		*/
 
+	if (address != DeviceId_Master)
+	{
+		if (motorRequest)
+			motorReply = false;
+		motorRequest = false;
+	}
+
 	switch (address)
 	{
 	case DeviceId_Display:
@@ -201,9 +212,7 @@ bool Torqeedo::decodeMessage()
 				Serial.print(" ");
 			}
 			Serial.print("\n");*/
-			sendMessage(_motorDrive.body);// , write2, flush2);
-
-
+			sendMessage(_motorDrive.body);
 #ifdef DEBUG			
 			//Use speedarr to determine speed
 			if (speedcount >= speedarrsize)
@@ -215,7 +224,16 @@ bool Torqeedo::decodeMessage()
 #endif
 		}
 		break;
-
+	case DeviceId_Motor:
+		motorRequest = true;
+		break;
+	case DeviceId_Master:
+		if (motorRequest)
+		{
+			motorReply = true;
+			motorRequest = false;
+		}
+		break;
 	}
 
 	return true;
