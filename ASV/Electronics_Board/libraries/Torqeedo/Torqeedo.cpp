@@ -310,11 +310,11 @@ void Torqeedo::decodeDisplayState()
 	byte *ptr = data + 2;
 
 	// Motor voltage - uint16
-	motorstats[0] = ptr[5];
-	motorstats[1] = ptr[4];
+	motorstats[0] = ptr[4];
+	motorstats[1] = ptr[5];
 	// Motor current - uint16
-	motorstats[2] = ptr[7];
-	motorstats[3] = ptr[6];
+	motorstats[2] = ptr[6];
+	motorstats[3] = ptr[7];
 	// Motor speed - sint16
 	uint16_t speedstat = ptr[11] << 8 | ptr[10];
 	speedstat += 0x80;
@@ -328,23 +328,23 @@ void Torqeedo::decodeDisplayState()
 	// Battery Charge - unit8
 	batterystats[0] = ptr[14];
 	// Battery Voltage - unit16
-	batterystats[1] = ptr[16];
-	batterystats[2] = ptr[15];
+	batterystats[1] = ptr[15];
+	batterystats[2] = ptr[16];
 	// Battery Current - unit16
-	batterystats[3] = ptr[18];
-	batterystats[4] = ptr[17];
+	batterystats[3] = ptr[17];
+	batterystats[4] = ptr[18];
 	// Master PCB Temp SW - uint8
 	batterystats[5] = ptr[25];
 
 	// GPS Speed - unit16
-	rangestats[0] = ptr[20];
-	rangestats[1] = ptr[19];
+	rangestats[0] = ptr[19];
+	rangestats[1] = ptr[20];
 	// Range miles - unit16
-	rangestats[2] = ptr[22];
-	rangestats[3] = ptr[21];
+	rangestats[2] = ptr[21];
+	rangestats[3] = ptr[22];
 	// Range Minutes - unit16
-	rangestats[4] = ptr[24];
-	rangestats[5] = ptr[23];
+	rangestats[4] = ptr[23];
+	rangestats[5] = ptr[24];
 	/*
 	_displayState.motor_voltage = (uint16_t)*(ptr + 4);
 	_displayState.motor_current = (uint16_t)*(ptr + 6);
@@ -423,7 +423,6 @@ bool Torqeedo::sendMessage(byte body[])//, WriteCallback fWrite, FlushCallback f
 
 bool Torqeedo::readMessage()//AvailableCallback fAvailable, ReadCallback fRead)
 {
-	Serial.write(1);
 	if (_available())
 	{
 		byte input = _read();
@@ -459,8 +458,12 @@ bool Torqeedo::readMessage()//AvailableCallback fAvailable, ReadCallback fRead)
 				}
 			}
 		}
+		return true;
 	}
-	return false;
+	else
+	{
+		return false;
+	}
 }
 
 

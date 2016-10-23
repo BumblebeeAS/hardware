@@ -143,15 +143,13 @@ void loop()
 {
 	/*
 	/*****************************************/
-	/*  Heartbeat							 */
+	/*  Heartbeat - meow					 */
 	/*  Maintain comms with SBC				 */
 	/*****************************************/
 
 #ifndef _TEST_
 	if ((millis() - heartbeat_loop) > HEARTBEAT_TIMEOUT)
 	{
-		CAN.setupCANFrame(buf, 0, 0, HEARTBEAT_EB);
-
 		//TODO: Needs refactoring
 		uint8_t *motorbuf = Thruster1.getMotorstats();
 		if (motorbuf[0] == 0x00 && motorbuf[1] == 0x00)
@@ -165,16 +163,18 @@ void loop()
 			thruster2_motor_heartbeat = true;
 
 		thruster_heartbeat = thruster1_batt_heartbeat
-			+ thruster2_batt_heartbeat << 1
-			+ thruster1_motor_heartbeat << 2
-			+ thruster2_motor_heartbeat << 3;
+			+ (thruster2_batt_heartbeat << 1)
+			+ (thruster1_motor_heartbeat << 2)
+			+ (thruster2_motor_heartbeat << 3);
 
 		thruster1_batt_heartbeat = false;
 		thruster2_batt_heartbeat = false;
 
+		id = CAN_heartbeat;
+		len = 2;
 		buf[0] = HEARTBEAT_EB;
 		buf[1] = thruster_heartbeat;
-		CAN.sendMsgBuf(CAN_heartbeat, 0, 1, buf);
+		forwardCANtoSerial(buf);
 		heartbeat_loop = millis();
 	}
 #endif
@@ -477,14 +477,14 @@ void loop()
 		Thruster2.setMotorDrive(speed2);
 	}
 
-	/*
+	
 	if (Thruster1.readMessage())
 		thruster1_batt_heartbeat = true;
 	if (Thruster2.readMessage())
 		thruster2_batt_heartbeat = true;
-	*/
-	Thruster1.readMessage();
-	Thruster2.readMessage();
+	
+	//Thruster1.readMessage();
+	//Thruster2.readMessage();
 	if (millis() - thrusterStatsLoop200 > 200)
 	{
 #ifdef _TEST_
@@ -504,38 +504,38 @@ void loop()
 		case 0:
 			id = CAN_thruster1_motor_stats;
 			len = 8;
-			//if (thruster1_batt_heartbeat)
+			if (thruster1_batt_heartbeat)
 				thrusterbuf = Thruster1.getMotorstats();
 			break;
 		case 1:
 			id = CAN_thruster2_motor_stats;
 			len = 8;
-			//if (thruster2_batt_heartbeat)
+			if (thruster2_batt_heartbeat)
 				thrusterbuf = Thruster2.getMotorstats();
 			break;
 		case 2:
 			id = CAN_thruster1_battery_stats;
 			len = 6;
-			//if (thruster1_batt_heartbeat)
+			if (thruster1_batt_heartbeat)
 			thrusterbuf = Thruster1.getBatterystats();
 			break;
 		case 3:
 			id = CAN_thruster2_battery_stats;
 			len = 6;
-			//if (thruster2_batt_heartbeat)
+			if (thruster2_batt_heartbeat)
 			thrusterbuf = Thruster2.getBatterystats();
 			break;
 		case 4:
 			id = CAN_thruster1_range_stats;
 			len = 6;
-			//if (thruster1_batt_heartbeat)
+			if (thruster1_batt_heartbeat)
 				thrusterbuf = Thruster1.getRangestats();
 			forwardCANtoSerial(thrusterbuf);
 
 			thrusterbuf = emptybuf;
 			id = CAN_thruster2_range_stats;
 			len = 6;
-			//if (thruster2_batt_heartbeat)
+			if (thruster2_batt_heartbeat)
 				thrusterbuf = Thruster2.getRangestats();
 			statsState = -1;
 			break;
