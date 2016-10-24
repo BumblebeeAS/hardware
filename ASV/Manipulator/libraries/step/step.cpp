@@ -27,7 +27,7 @@ void Step::Init() {
 	pinMode(SWA, INPUT);  
 	pinMode(SWB, INPUT);
 
-	pos = 47.0;		//	centimeter
+	pos = 0.0;		//	centimeter
     stepDelay = 1;	//	ms
     dist = 0;		//	cm
     stepperTime = 0;
@@ -139,7 +139,7 @@ void Step::moveStepper(uint8_t cm) {       // left most is 0   viewed from the b
 				return;
 			}
 			moveRight();
-			pos-=step_length;
+			pos+=step_length;
 		}	
 		stopMotor();
 	}

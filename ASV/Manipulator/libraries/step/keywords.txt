@@ -18,7 +18,7 @@ step3	KEYWORD2
 step4	KEYWORD2
 stopMoter	KEYWORD2
 moveLeft	KEYWORD2
-moevRight	KEYWORD2
+moveRight	KEYWORD2
 checkDir	KEYWORD2
 distance	KEYWORD2
 moveStepper	KEYWORD2

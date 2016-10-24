@@ -7,7 +7,7 @@ int SWA = 22;
 void setup(void) {
   Serial.begin(115200);
   a.Init();
-  pinMode(SWA,INPUT);
+//  pinMode(SWA,INPUT);
 }
 
 void loop(void) {
@@ -26,7 +26,7 @@ void loop(void) {
 //  delay(10);
 
 //      Serial.println(a.checkLimit());
-    a.moveStepper(10);   
+    a.moveStepper(30);   
 //    delay(100);
     
 }
