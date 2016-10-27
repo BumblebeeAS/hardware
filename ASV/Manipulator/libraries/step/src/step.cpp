@@ -3,7 +3,7 @@
 
 #define LEFT 0
 #define RIGHT 1
-#define step_ratio 11.595744680			// 545 step loop map over 47cm
+// #define step_ratio 11.595744680			// 545 step loop mapped over 47cm
 #define step_length 0.0862385321		// 1 step loop distance in cm
 #define Stepper_looptime 6
 
@@ -33,15 +33,15 @@ void Step::Init() {
     stepperTime = 0;
 
 
-    // for (int i=0;i<545;i++) {
-    // 	if(checkLimit()) {
-    // 		break;
-    // 	}
-    // 	step1();
-    // 	step2();
-    // 	step3();
-    // 	step4();
-    // }
+    for (int i=0;i<545;i++) {		// move the stepper to the left most when start up
+    	if(checkLimit()) {
+    		break;
+    	}
+		step3();
+		step2();
+		step1();
+		step4();
+    }
 
 }
 
@@ -80,7 +80,7 @@ void Step::stopMotor() {
   digitalWrite(inB2, LOW);   
 }
 
-void Step::moveLeft() {
+void Step::moveRight() {
 	// int i = 0;
 	// for (i=0; i<=dist; i++) {
 		if (checkLimit()) {
@@ -94,7 +94,7 @@ void Step::moveLeft() {
 	stopMotor();	
 }
 
-void Step::moveRight() {
+void Step::moveLeft() {
 	// int i=0;
 	// for (i=0; i<=dist; i++) {
 		if (checkLimit()) {
@@ -113,20 +113,20 @@ void Step::checkDir(uint8_t cm) {
 	// distance measured from left,  leftmost = 0
 }
 
-void Step::distance(uint8_t cm) {         	// check distance to be moved
-	if (cm>=pos) {  
-	dist = (round)(step_ratio*(cm-pos));
-	} else {
-	dist = (round)(step_ratio*(pos-cm));
-	}
-}
+// void Step::distance(uint8_t cm) {         	// check distance to be moved
+// 	if (cm>=pos) {  
+// 	dist = (round)(step_ratio*(cm-pos));
+// 	} else {
+// 	dist = (round)(step_ratio*(pos-cm));
+// 	}
+// }
 
 void Step::moveStepper(uint8_t cm) {       // left most is 0   viewed from the back
 	if (millis() - stepperTime >= Stepper_looptime) {
 		if (cm == (round)(pos)) {
 			return;
 		}
-		distance(cm);
+		// distance(cm);
 		checkDir(cm);
 		if (dir == LEFT) {
 			if (pos < 0.0) {

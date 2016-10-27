@@ -34,8 +34,8 @@ void setup () {
  
 	CAN_init();
 	imu.init();
-  	imu.correctToZero();          // run only when fitting to new position
-  	sweep.attach(9);              // pin connection
+  imu.correctToZero();          // run only when fitting to new position
+  sweep.attach(9);              // pin connection
 	actuator.init();
   
 	heartbeat_loop = millis();
@@ -113,7 +113,7 @@ void decodeCANMsg(const uint8_t* buf) {
 				imu.readAccTempGyro();
         //compute difference between desire and current values
 				// diff = (round)(IMU_Ratio_Constant * imu.correctError() + 1525);
-        diff = buf [2] + imu.correctError();  // plus minus depends on how is the shooter platform mounted
+        diff = buf [2] - imu.correctError();  // plus minus depends on how is the shooter platform mounted
         diff = map(diff,0,38,1980,2456);
         //update sweeper position
 				sweep.update(diff);
@@ -121,7 +121,6 @@ void decodeCANMsg(const uint8_t* buf) {
 			case STEPPER:	
 				//stepper
 				stepper_obj.moveStepper(buf[3]);
-        //TODO finish stepper part
 			default:;
 		}			
 	}
