@@ -10,6 +10,9 @@
 
 // Written by Goh Eng Wei
 
+//Change Log for v1.3:
+// - Updated new heartbeat numbers
+
 //Change Log for v1.2:
 // - added in thruster power on/off
 
@@ -54,7 +57,8 @@
 //CAN Heartbeat
 #define HEARTBEAT_EB 1
 #define HEARTBEAT_Manipulator 2
-#define HEARTBEAT_PMB1 6
-#define HEARTBEAT_PMB2 7
+#define HEARTBEAT_OCS 3
+#define HEARTBEAT_PMB1 4
+#define HEARTBEAT_PMB2 5
 
 #endif
