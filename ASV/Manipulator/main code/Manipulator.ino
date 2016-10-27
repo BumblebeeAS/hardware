@@ -18,7 +18,7 @@
 #define SHOOTER  2
 #define SWEEPER  4
 #define STEPPER  8
-#define IMU_Ratio_Constant 10.83333333	// 1 step mapped to 1 deg
+// #define IMU_Ratio_Constant 10.83333333	// 1 step mapped to 1 deg
 
 MCP_CAN CAN(CAN_CHIP_SELECT);
 IMU imu;
@@ -112,9 +112,11 @@ void decodeCANMsg(const uint8_t* buf) {
         //read current IMU values
 				imu.readAccTempGyro();
         //compute difference between desire and current values
-				diff = (round)(IMU_Ratio_Constant * imu.correctError() + 1525);
+				// diff = (round)(IMU_Ratio_Constant * imu.correctError() + 1525);
+        diff = buf [2] + imu.correctError();  // plus minus depends on how is the shooter platform mounted
+        diff = map(diff,0,38,1980,2456);
         //update sweeper position
-				sweep.update(buf[2], diff);
+				sweep.update(diff);
 				break;
 			case STEPPER:	
 				//stepper
