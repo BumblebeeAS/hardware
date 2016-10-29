@@ -31,6 +31,7 @@ void Step::Init() {
     stepDelay = 1;	//	ms
     dist = 0;		//	cm
     stepperTime = 0;
+    target = 0;
 
 
     for (int i=0;i<545;i++) {		// move the stepper to the left most when start up
@@ -122,6 +123,10 @@ void Step::checkDir(uint8_t cm) {
 // }
 
 void Step::moveStepper(uint8_t cm) {       // left most is 0   viewed from the back
+	cm = target;
+	if (enable != 1) {
+		return;
+	}
 	if (millis() - stepperTime >= Stepper_looptime) {
 		if (cm == (round)(pos)) {
 			return;
@@ -155,6 +160,6 @@ bool Step::checkLimit(void) {
 	}
 	return false;
 }
-		//   1234		from right to left   viewed from back
+		//   1234		from left to right   viewed from back
 
-		//	 3214		from left to right   viewed from bacl
+		//	 3214		from right to left   viewed from bacl

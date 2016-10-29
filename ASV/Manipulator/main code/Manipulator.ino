@@ -57,6 +57,7 @@ void loop() {
     decodeCANMsg(buf);
     sendCheckSum(buf);
   }
+  MoveMotor();
 } 
 
 void CAN_init(){
@@ -71,11 +72,11 @@ START_INIT:
    	  goto START_INIT;
     }    
 
-    CAN.init_Mask(0, 0, 0x3ff);                     // there are 2 mask in mcp2515, you need to set both of them
+    CAN.init_Mask(0, 0, 0x3ff);               // there are 2 mask in mcp2515, you need to set both of them
     CAN.init_Mask(1, 0, 0x3ff);
     CAN.init_Filt(0, 0, CAN_manipulator);			// only the ones u filter you will receive(?
-    												// if filtering for multi, use CAN.getId() for checking 
-    												// which part is it for 
+    											                   	// if filtering for multi, use CAN.getId() for checking 
+    											                   	// which part is it for 
 }
 
 void sendHeartBeat() {
@@ -85,7 +86,7 @@ void sendHeartBeat() {
 }
   
 void decodeCANMsg(const uint8_t* buf) {
-	uint8_t mask, diff = 0, shoot;
+	uint8_t mask, shoot;
 
 	for (mask = ACOUSTIC; mask <= STEPPER; mask<<=1) {
 		switch (buf[0] & mask) {
@@ -107,23 +108,43 @@ void decodeCANMsg(const uint8_t* buf) {
 				shoot = buf[2]>>3;   // right shift mani_state such that shoot contains only bit for shooter
         //TODO finish shooter part
 				break;
-			case SWEEPER:
-				//sweeper
-        //read current IMU values
-				imu.readAccTempGyro();
-        //compute difference between desire and current values
-				// diff = (round)(IMU_Ratio_Constant * imu.correctError() + 1525);
-        diff = buf [2] - imu.correctError();  // plus minus depends on how is the shooter platform mounted
-        diff = map(diff,0,38,1980,2456);
-        //update sweeper position
-				sweep.update(diff);
-				break;
-			case STEPPER:	
-				//stepper
-				stepper_obj.moveStepper(buf[3]);
+      case SWEEPER:
+        //sweeper
+        sweep.enable = 1;
+        sweep.target = buf[2];
+        break;
+      case STEPPER:
+        //stepper
+        // stepper_obj.moveStepper(buf[3]);
+        stepper_obj.enable = 1;
+        stepper_obj.target = buf[3];
 			default:;
 		}			
 	}
+  // disable stepper 
+  if (buf[0] & STEPPER == 0) {   
+    stepper_obj.enable = 0;
+  }
+  // disable servo
+  if (buf[0] & SWEEPER == 0) {
+    sweeper.enable = 0;
+  }
+}
+
+void MoveMotor (void) {
+  uint8_t diff = 0;
+    //sweeper
+    //read current IMU values
+    imu.readAccTempGyro();
+    //compute difference between desire and current values
+    // diff = (round)(IMU_Ratio_Constant * imu.correctError() + 1525);
+    diff = sweeper.target - imu.correctError();  
+    // plus or minus depends on how is the shooter platform mounted
+    diff = map(diff,0,38,1980,2456);
+    //update sweeper position
+    sweep.update(diff);
+    //stepper
+    stepper_obj.moveStepper();
 }
 
 void sendCheckSum(const uint8_t* buf){

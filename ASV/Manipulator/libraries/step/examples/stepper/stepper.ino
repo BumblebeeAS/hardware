@@ -4,8 +4,8 @@ Step a;
 
 /*************************************************************************************
  * 
- * 
- *        rmb to connect limit switch if not it will always be 
+ * 		  only moveStepper is a public function
+ *      rmb to connect limit switch
  * 
  ************************************************************************************/
 int SWA = 22;
@@ -26,12 +26,13 @@ void loop(void) {
 //  }
 //  a.stopMotor();
 //  delay(1000);
-
+//-------------------------------------------
 //  a.moveLeft();
+//------------------------------------------
 //  a.moveRight();
 //  delay(10);
-
-//      Serial.println(a.checkLimit());
+//------------------------------------------
+//Serial.println(a.checkLimit());
     a.moveStepper(30);   
 //    delay(100);
     

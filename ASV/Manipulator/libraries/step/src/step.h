@@ -34,11 +34,14 @@ class Step {
     bool checkLimit(void);
 
 public:
-  
+    
+    uint8_t target;
+    uint8_t enable;
+
     Step(void); 
 
     void Init(void);
-    void moveStepper(uint8_t cm);
+    void moveStepper();
 
 
 };
