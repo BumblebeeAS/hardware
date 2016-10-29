@@ -4,6 +4,7 @@
 /********************************************
 *   THE PROGRAM USES BANK 0 FOR OPERATION   *
 *   ADDRESS POINTER WORK IN SEQUENTIAL MODE *
+*	THE SPI BUS MUST BE INITIALIZED FIRST	*
 *********************************************/
 
 /*****************************
