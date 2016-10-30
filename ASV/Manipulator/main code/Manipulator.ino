@@ -1,5 +1,5 @@
 #include <can.h>
-#include <SPI.h>
+#include <SPI.h>F
 #include <Servo.h>
 #include <Wire.h>
 #include <IMU.h>
@@ -91,18 +91,26 @@ void decodeCANMsg(const uint8_t* buf) {
 	for (mask = ACOUSTIC; mask <= STEPPER; mask<<=1) {
 		switch (buf[0] & mask) {
 			case ACOUSTIC: 
-				//acoustic
-				if ((bitRead(buf[1],0)) == 1) {
-					actuator.retrieveAcoustic(LINEAR);
-					actuator.retrieveAcoustic(ROTARY);
-				}
-				if( (bitRead(buf[1],1)) == 1) {
-					actuator.deployAcoustic(ROTARY);					
-				}
-				if( (bitRead(buf[1],2)) == 1) {
-					actuator.deployAcoustic(LINEAR);
-				}
-				break;
+        //acoustic
+        if ((bitRead(buf[1],0)) == 1) {
+          actuator.actuateAcoustic(ROTATE_UP);
+        }
+        else{
+          actuator.stopActuation(ROTATE_UP);
+        }
+        if( (bitRead(buf[1],1)) == 1) {
+          actuator.actuateAcoustic(ROTATE_DOWN);          
+        }
+        else{
+          actuator.stopActuation(ROTATE_DOWN);
+        }
+        if( (bitRead(buf[1],2)) == 1) {
+          actuator.actuateAcoustic(LINEAR);
+        }
+        else{
+          actuator.stopActuation(LINEAR);
+        }
+        break;
 			case SHOOTER: 
 				//shooter
 				shoot = buf[2]>>3;   // right shift mani_state such that shoot contains only bit for shooter
@@ -127,7 +135,7 @@ void decodeCANMsg(const uint8_t* buf) {
   }
   // disable servo
   if (buf[0] & SWEEPER == 0) {
-    sweeper.enable = 0;
+    sweep.enable = 0;
   }
 }
 
@@ -138,7 +146,7 @@ void MoveMotor (void) {
     imu.readAccTempGyro();
     //compute difference between desire and current values
     // diff = (round)(IMU_Ratio_Constant * imu.correctError() + 1525);
-    diff = sweeper.target - imu.correctError();  
+    diff = sweep.target - imu.correctError();  
     // plus or minus depends on how is the shooter platform mounted
     diff = map(diff,0,38,1980,2456);
     //update sweeper position

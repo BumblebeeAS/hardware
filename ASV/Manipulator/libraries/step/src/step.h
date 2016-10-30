@@ -27,10 +27,10 @@ class Step {
     void step4(void);
     void stopMotor(void);
     
-    void checkDir(uint8_t cm);
+    void checkDir();
     void moveLeft();
     void moveRight();
-    void distance(uint8_t cm);
+    void distance();
     bool checkLimit(void);
 
 public:

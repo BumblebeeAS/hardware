@@ -109,12 +109,12 @@ void Step::moveLeft() {
 	stopMotor();
 }
 
-void Step::checkDir(uint8_t cm) {
-	dir = (cm-pos>=0) ? RIGHT : LEFT;		
+void Step::checkDir() {
+	dir = (target-pos>=0) ? RIGHT : LEFT;		
 	// distance measured from left,  leftmost = 0
 }
 
-// void Step::distance(uint8_t cm) {         	// check distance to be moved
+// void Step::distance()) {         	// check distance to be moved
 // 	if (cm>=pos) {  
 // 	dist = (round)(step_ratio*(cm-pos));
 // 	} else {
@@ -122,17 +122,16 @@ void Step::checkDir(uint8_t cm) {
 // 	}
 // }
 
-void Step::moveStepper(uint8_t cm) {       // left most is 0   viewed from the back
-	cm = target;
+void Step::moveStepper() {       // left most is 0   viewed from the back
 	if (enable != 1) {
 		return;
 	}
 	if (millis() - stepperTime >= Stepper_looptime) {
-		if (cm == (round)(pos)) {
+		if (target == (round)(pos)) {
 			return;
 		}
 		// distance(cm);
-		checkDir(cm);
+		checkDir();
 		if (dir == LEFT) {
 			if (pos < 0.0) {
 				return;
