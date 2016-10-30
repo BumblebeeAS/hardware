@@ -1,5 +1,5 @@
 #include <can.h>
-#include <SPI.h>F
+#include <SPI.h>
 #include <Servo.h>
 #include <Wire.h>
 #include <IMU.h>

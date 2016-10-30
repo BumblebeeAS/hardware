@@ -9,10 +9,17 @@
 
 
 Step::Step(void) {
-	inA1 = 2; // input 1 of the stepper
+	inA1 = 2; // input 1 of the stepper  
     inA2 = 4; // input 2 of the stepper
     inB1 = 3; // input 3 of the stepper
     inB2 = 5; // input 4 of the stepper
+/*
+    correct mapping on manipulator board 
+    23			PC0			STPA1		
+    24			PC1			STPA2
+    25			PC2			STPA3
+    26			PC3			STPA4
+*/
 
     SWA = 22;  // limit switch A
 	SWB = 19;  // limit switch B
