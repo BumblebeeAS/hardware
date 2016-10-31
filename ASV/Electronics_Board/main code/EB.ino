@@ -9,7 +9,7 @@
 //#     ## #     ## ##     # ##     #  ##  ##
 // # ####   # ####   #######  #######   ####
 //
-//Firmware Version :             v1.0
+//Firmware Version :             v1.1
 ////EB Firmware for ASV 1.0
 //		SBC to CAN Interface
 //		Light Tower
@@ -18,7 +18,7 @@
 //
 // Written by Ren Zhi
 // Change Log:
-// NIL
+// v1.1 - changed to Xbee protocol to adapt to CAN
 //###################################################
 //###################################################
 //###################################################
@@ -306,13 +306,13 @@ void loop()
 				speed = 0;
 				Thruster1.setMotorDrive(0);
 				Thruster2.setMotorDrive(0);
-				digitalWrite(TORQEEDO1_ON, LOW);
-				digitalWrite(TORQEEDO2_ON, LOW);
+				digitalWrite(TORQEEDO1_ON, HIGH);
+				digitalWrite(TORQEEDO2_ON, HIGH);
 				delay(3500);
 				Thruster1.startUpCount = 0;
 				Thruster2.startUpCount = 0;
-				digitalWrite(TORQEEDO1_ON, HIGH);
-				digitalWrite(TORQEEDO2_ON, HIGH);
+				digitalWrite(TORQEEDO1_ON, LOW);
+				digitalWrite(TORQEEDO2_ON, LOW);
 			}
 			if (speed == 4444)
 			{
@@ -455,11 +455,10 @@ void loop()
 				}
 				else if (ocsCANid == CAN_heartbeat)
 				{
-					Serial.println("h");
+					//Serial.println("h");
 					id = CAN_heartbeat;
-					len = 2;
+					len = 1;
 					buf[0] = HEARTBEAT_OCS;
-					buf[1] = 0x00;
 					forwardCANtoSerial(buf);
 				}
 			}
