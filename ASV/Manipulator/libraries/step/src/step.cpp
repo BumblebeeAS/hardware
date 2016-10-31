@@ -4,15 +4,22 @@
 #define LEFT 0
 #define RIGHT 1
 // #define step_ratio 11.595744680			// 545 step loop mapped over 47cm
-#define step_length 0.0862385321		// 1 step loop distance in cm
+#define step_length 0.0706422018//0.0697247706//0.0862385321		// 1 step loop distance in cm
+//					38.5			38			47
 #define Stepper_looptime 6
 
 
 Step::Step(void) {
-	inA1 = 23; // input 1 of the stepper  
-    inA2 = 25; // input 2 of the stepper
-    inB1 = 24; // input 3 of the stepper
-    inB2 = 26; // input 4 of the stepper
+inA1 = 23; // input 1 of the stepper  
+inA2 = 25; // input 2 of the stepper
+inB1 = 24; // input 3 of the stepper
+inB2 = 26; // input 4 of the stepper
+    // for testing 
+    // inA1 = 2;
+    // inA2 = 4;
+    // inB1 = 3;
+    // inB2 = 5;
+
 /*
     correct mapping on manipulator board 
     23			PC0			STPA1		
@@ -117,7 +124,7 @@ void Step::moveLeft() {
 }
 
 void Step::checkDir() {
-	dir = (target-pos>=0) ? RIGHT : LEFT;		
+	dir = ((target - pos)>=0) ? RIGHT : LEFT;		
 	// distance measured from left,  leftmost = 0
 }
 
@@ -134,7 +141,7 @@ void Step::moveStepper() {       // left most is 0   viewed from the back
 		return;
 	}
 	if (millis() - stepperTime >= Stepper_looptime) {
-		if (target == (round)(pos)) {
+		if ((round)(pos) == target) {
 			return;
 		}
 		// distance(cm);
@@ -146,7 +153,7 @@ void Step::moveStepper() {       // left most is 0   viewed from the back
 			moveLeft();
 			pos-=step_length;
 		} else if (dir == RIGHT) {
-			if (pos > 47.0) {
+			if (pos > 38.0) {
 				return;
 			}
 			moveRight();
@@ -154,7 +161,6 @@ void Step::moveStepper() {       // left most is 0   viewed from the back
 		}	
 		stopMotor();
 	}
-
 }
 
 bool Step::checkLimit(void) {

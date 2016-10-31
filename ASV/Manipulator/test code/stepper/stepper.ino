@@ -14,10 +14,12 @@ void setup(void) {
   Serial.begin(115200);
   a.Init();
 //  pinMode(SWA,INPUT);
+  a.enable = 1;
+  a.target = 9;
 }
 
 void loop(void) {
-//
+//  
 //  for(int i=0; i<=305; i++) {
 //    a.step1();
 //    a.step2();
@@ -30,12 +32,12 @@ void loop(void) {
 //  a.moveLeft();
 //------------------------------------------
 //  a.moveRight();
-//  delay(10);
+//  delay(5);
 //------------------------------------------
 //Serial.println(a.checkLimit());
-    a.moveStepper(30);   
+    a.moveStepper();
 //    delay(100);
-    
+//Serial.println(a.target);  
 }
 
 

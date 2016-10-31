@@ -33,7 +33,7 @@ class Step {
     void distance();
     bool checkLimit(void);
 
-public:
+  public:
     
     uint8_t target;
     uint8_t enable;
