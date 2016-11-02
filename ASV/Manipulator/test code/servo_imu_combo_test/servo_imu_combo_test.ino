@@ -1,32 +1,31 @@
 #include <Servo.h>
-#include <Wire.h>
-#include "IMU.h"
-#include "Sweeper.h"
+#include <IMU.h>
+#include <Sweeper.h>
 
-long lastMillis = millis();
-long interval = 1000;
+Servo servo;
+IMU imu;
 
-Sweeper sweep(1);					//init servo object
-IMU imu;							// I2C address of the MPU-6050 is pre-set 0x68 if not given
+uint32_t looptime = 0;
 
-void setup(){
-  sweep.attach(9);                 // pin servo is attached
+Sweeper sweep(1);
+
+void setup() {
+  // put your setup code here, to run once:
+  imu.init();
+  sweep.attach(10);
   Serial.begin(115200);
-  imu.correctToZero();
-}
-void loop(){
-
-	imu.readAccTempGyro();
-	
-	if (millis() - lastMillis > interval) {
-		lastMillis = millis();
-		imu.printAccTempGyro();
-	}
-
-	int target_us = 0;
-	int diff = (round)(975 / 90 * imu.correctError() + 1525);
-
-	sweep.update(target_us, diff);
-
 }
 
+void loop() {
+//   put your main code here, to run repeatedly:
+
+  imu.readAccTempGyro();  
+  int target = 19;
+  target -= imu.correctError();
+  target = map(target,0,38,1980,2456); 
+
+  Serial.println(target);
+  
+  sweep.update(target);
+    
+}

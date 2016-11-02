@@ -16,6 +16,9 @@
 #define TORQEEDO1_ON 40
 #define TORQEEDO2_ON 38
 
+#define THRUSTERON 600	// At least 0.5 sec
+#define THRUSTEROFF 3500	// At least 3 sec
+
 #define BAUDRATE 19200
 
 /*=======================================================
@@ -100,6 +103,10 @@ private:
 
 	bool motorRequest = false;
 	bool motorReply = false;
+
+	int onPinPeriod = 0;
+	uint32_t onTime = 0;
+	bool powerSeq = false;
 	
 	typedef void(*WriteCallback)  (const byte what);    // send a byte to serial port
 	typedef int(*AvailableCallback)  ();    // return number of bytes available
@@ -118,6 +125,9 @@ public:
 	Torqeedo(int RXEN, int DXEN, int ON, int thruster_num);
 	~Torqeedo();
 	void init();
+
+	void onThruster(bool on_status);
+	bool checkThrusterOnOff();
 
 	bool setMotorDrive(int speed);
 	uint8_t* getMotorstats();
@@ -138,7 +148,7 @@ private:
 	
 	void decodeDisplay();
 	void decodeDisplayState();
-
+	
 	int16_t mapSpeed(int speed);
 
 	int8_t crc8(int8_t crc, int8_t crc_data);

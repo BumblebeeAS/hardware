@@ -12,16 +12,13 @@ Actuator KEYWORD1
 # Methods and Functions (KEYWORD2)
 #######################################
 init			KEYWORD2
-deployAcoustic		KEYWORD2
-retrieveAcoustic	KEYWORD2
-actuateShooter		KEYWORD2
+actuateAcoustic	KEYWORD2
+stopActuation	KEYWORD2
+actuateShooter	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
 #######################################
-ROTATED			LITERAL1
-ROTATE_EXTENDED	LITERAL1
-REST			LITERAL1
-ROTARY			LITERAL1
+ROTATE_DOWN		LITERAL1
+ROTATE_UP		LITERAL1
 LINEAR			LITERAL1
-SHOOT 			LITERAL1

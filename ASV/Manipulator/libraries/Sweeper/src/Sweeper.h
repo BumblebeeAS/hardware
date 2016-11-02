@@ -14,10 +14,14 @@ private:
 									//  y=975/90*x+1525
 									// ********THIS IS POSITION************
 public:
+
+	uint8_t enable;
+	uint8_t target;
+
 	Sweeper(int interval);
 	void attach(int pin);
 	void detach(void);
-	void update(int target_us, int error);
+	void update(int move);
 };          // end of Sweeper class 
 
            // servo reaction speed 6V no load 0.21s/60degree      0.63s/180deg       3.5ms/deg

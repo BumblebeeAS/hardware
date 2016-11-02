@@ -18,7 +18,7 @@
 #define SHOOTER  2
 #define SWEEPER  4
 #define STEPPER  8
-#define IMU_Ratio_Constant 10.83333333	// 1 step mapped to 1 deg
+// #define IMU_Ratio_Constant 10.83333333	// 1 step mapped to 1 deg
 
 MCP_CAN CAN(CAN_CHIP_SELECT);
 IMU imu;
@@ -34,8 +34,8 @@ void setup () {
  
 	CAN_init();
 	imu.init();
-  	imu.correctToZero();          // run only when fitting to new position
-  	sweep.attach(9);              // pin connection
+  imu.correctToZero();          // run only when fitting to new position
+  sweep.attach(9);              // pin connection
 	actuator.init();
   
 	heartbeat_loop = millis();
@@ -57,6 +57,7 @@ void loop() {
     decodeCANMsg(buf);
     sendCheckSum(buf);
   }
+  MoveMotor();
 } 
 
 void CAN_init(){
@@ -71,11 +72,11 @@ START_INIT:
    	  goto START_INIT;
     }    
 
-    CAN.init_Mask(0, 0, 0x3ff);                     // there are 2 mask in mcp2515, you need to set both of them
+    CAN.init_Mask(0, 0, 0x3ff);               // there are 2 mask in mcp2515, you need to set both of them
     CAN.init_Mask(1, 0, 0x3ff);
     CAN.init_Filt(0, 0, CAN_manipulator);			// only the ones u filter you will receive(?
-    												// if filtering for multi, use CAN.getId() for checking 
-    												// which part is it for 
+    											                   	// if filtering for multi, use CAN.getId() for checking 
+    											                   	// which part is it for 
 }
 
 void sendHeartBeat() {
@@ -85,44 +86,73 @@ void sendHeartBeat() {
 }
   
 void decodeCANMsg(const uint8_t* buf) {
-	uint8_t mask, diff = 0, shoot;
+	uint8_t mask, shoot;
 
 	for (mask = ACOUSTIC; mask <= STEPPER; mask<<=1) {
 		switch (buf[0] & mask) {
 			case ACOUSTIC: 
-				//acoustic
-				if ((bitRead(buf[1],0)) == 1) {
-					actuator.retrieveAcoustic(LINEAR);
-					actuator.retrieveAcoustic(ROTARY);
-				}
-				if( (bitRead(buf[1],1)) == 1) {
-					actuator.deployAcoustic(ROTARY);					
-				}
-				if( (bitRead(buf[1],2)) == 1) {
-					actuator.deployAcoustic(LINEAR);
-				}
-				break;
+        //acoustic
+        if ((bitRead(buf[1],0)) == 1) {
+          actuator.actuateAcoustic(ROTATE_UP);
+        }
+        else{
+          actuator.stopActuation(ROTATE_UP);
+        }
+        if( (bitRead(buf[1],1)) == 1) {
+          actuator.actuateAcoustic(ROTATE_DOWN);          
+        }
+        else{
+          actuator.stopActuation(ROTATE_DOWN);
+        }
+        if( (bitRead(buf[1],2)) == 1) {
+          actuator.actuateAcoustic(LINEAR);
+        }
+        else{
+          actuator.stopActuation(LINEAR);
+        }
+        break;
 			case SHOOTER: 
 				//shooter
 				shoot = buf[2]>>3;   // right shift mani_state such that shoot contains only bit for shooter
         //TODO finish shooter part
 				break;
-			case SWEEPER:
-				//sweeper
-        //read current IMU values
-				imu.readAccTempGyro();
-        //compute difference between desire and current values
-				diff = (round)(IMU_Ratio_Constant * imu.correctError() + 1525);
-        //update sweeper position
-				sweep.update(buf[2], diff);
-				break;
-			case STEPPER:	
-				//stepper
-				stepper_obj.moveStepper(buf[3]);
-        //TODO finish stepper part
+      case SWEEPER:
+        //sweeper
+        sweep.enable = 1;
+        sweep.target = buf[2];
+        break;
+      case STEPPER:
+        //stepper
+        // stepper_obj.moveStepper(buf[3]);
+        stepper_obj.enable = 1;
+        stepper_obj.target = buf[3];
 			default:;
 		}			
 	}
+  // disable stepper 
+  if (buf[0] & STEPPER == 0) {   
+    stepper_obj.enable = 0;
+  }
+  // disable servo
+  if (buf[0] & SWEEPER == 0) {
+    sweep.enable = 0;
+  }
+}
+
+void MoveMotor (void) {
+  uint8_t diff = 0;
+    //sweeper
+    //read current IMU values
+    imu.readAccTempGyro();
+    //compute difference between desire and current values
+    // diff = (round)(IMU_Ratio_Constant * imu.correctError() + 1525);
+    diff = sweep.target - imu.correctError();  
+    // plus or minus depends on how is the shooter platform mounted
+    diff = map(diff,0,38,1980,2456);
+    //update sweeper position
+    sweep.update(diff);
+    //stepper
+    stepper_obj.moveStepper();
 }
 
 void sendCheckSum(const uint8_t* buf){
