@@ -39,10 +39,38 @@ void Torqeedo::init()
 	pinMode(ON_PIN, OUTPUT);
 	digitalWrite(DX_ENABLE, LOW);  // disable sending
 	digitalWrite(RX_ENABLE, LOW);  // enable receiving
-	digitalWrite(ON_PIN, LOW);  // on thruster
-	delay(1000);
-	digitalWrite(ON_PIN, HIGH);  // on thruster
+	//digitalWrite(ON_PIN, LOW);  // on pin float
+	onThruster(true);
 	return;
+}
+
+void Torqeedo::onThruster(bool on_status)
+{
+	setMotorDrive(0);
+	startUpCount = 0;
+	digitalWrite(ON_PIN, HIGH);  // on thruster
+	if (on_status)
+	{
+		onPinPeriod = THRUSTERON;
+	}
+	else
+	{
+		onPinPeriod = THRUSTEROFF;
+	}
+	onTime = millis();
+	powerSeq = true;
+	Serial.println("ON");
+}
+bool Torqeedo::checkThrusterOnOff()
+{
+	if (powerSeq && (millis() - onTime > onPinPeriod))
+	{
+		digitalWrite(ON_PIN, LOW);
+		powerSeq = false;
+		Serial.println("OFF");
+		return true;
+	}
+	return false;
 }
 
 //=====================================
@@ -190,7 +218,7 @@ bool Torqeedo::decodeMessage()
 	case DeviceId_Display:
 		decodeDisplay();
 		//sendEmptyReply();
-		Serial.print("display");
+		//Serial.print("display");
 		break;
 
 	case DeviceId_Remote1:

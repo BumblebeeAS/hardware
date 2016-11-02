@@ -120,6 +120,7 @@ START_INIT:
 	// THRUSTER INIT
 	Thruster1.init();
 	Thruster2.init();
+	Serial.flush();
 }
 
 uint8_t led_buf[9] = { 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -135,7 +136,7 @@ uint8_t read_ctr;
 
 #ifdef _TEST_
 int speed = 0;
-char inputstr[10] = {};
+char inputstr[10] = {'\n'};
 int serialidx = 0;
 #endif
 
@@ -247,6 +248,10 @@ void loop()
 								Thruster2.setKill(false);
 							}
 							break;
+						case CAN_thruster_power:
+							Thruster1.onThruster(read_buffer[0] & 0x01);
+							Thruster2.onThruster(read_buffer[0] & 0x02);
+							break;
 						case CAN_LED:
 							if (!kill_status)
 								setLightTower(read_buffer[0]);
@@ -299,10 +304,18 @@ void loop()
 		{
 			inputstr[serialidx] = '\0';
 			speed = atoi(inputstr);
+			if (speed == 6666)
+			{
+				speed = 0;
+				Thruster1.onThruster(true);
+				Thruster2.onThruster(true);
+			}
 			if (speed == 5555)
 			{
 				speed = 0;
-				Thruster1.setMotorDrive(0);
+				Thruster1.onThruster(false);
+				Thruster2.onThruster(false);
+				/*Thruster1.setMotorDrive(0);
 				Thruster2.setMotorDrive(0);
 				digitalWrite(TORQEEDO1_ON, LOW);
 				digitalWrite(TORQEEDO2_ON, LOW);
@@ -310,7 +323,7 @@ void loop()
 				Thruster1.startUpCount = 0;
 				Thruster2.startUpCount = 0;
 				digitalWrite(TORQEEDO1_ON, HIGH);
-				digitalWrite(TORQEEDO2_ON, HIGH);
+				digitalWrite(TORQEEDO2_ON, HIGH);*/
 			}
 			if (speed == 4444)
 			{
@@ -469,14 +482,34 @@ void loop()
 		Thruster2.setMotorDrive(speed2);
 	}
 
-
+	// Parse thruster commands
 	if (Thruster1.readMessage())
 		thruster1_batt_heartbeat = true;
 	if (Thruster2.readMessage())
 		thruster2_batt_heartbeat = true;
 
-	//Thruster1.readMessage();
-	//Thruster2.readMessage();
+	// On/off thruster
+	if (Thruster1.checkThrusterOnOff())
+	{
+#ifndef _TEST_
+		id = CAN_thruster_power;
+		len = 2;
+		buf[0] = 0;
+		buf[1] = 0x01;
+		forwardCANtoSerial(buf);
+#endif
+	}
+	if (Thruster2.checkThrusterOnOff())
+	{
+#ifndef _TEST_
+		id = CAN_thruster_power;
+		len = 2;
+		buf[0] = 0;
+		buf[1] = 0x02;
+		forwardCANtoSerial(buf);
+#endif
+	}
+
 	if (millis() - thrusterStatsLoop200 > 200)
 	{
 #ifdef _TEST_
@@ -598,7 +631,7 @@ void initKill()
 uint8_t readKillBattVoltage()
 {
 	int input = analogRead(KILL_BATT);
-	Serial.print("A4:");
+	//Serial.print("A4:");
 	float voltage = ((float)input / 1023)*4.9 * 147 / 27;
 
 	return  uint8_t(voltage * 10);
