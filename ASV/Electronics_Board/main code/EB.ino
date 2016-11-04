@@ -122,6 +122,7 @@ START_INIT:
 	// THRUSTER INIT
 	Thruster1.init();
 	Thruster2.init();
+	Serial.flush();
 }
 
 uint8_t led_buf[9] = { 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -137,7 +138,7 @@ uint8_t read_ctr;
 
 #ifdef _TEST_
 int speed = 0;
-char inputstr[10] = {};
+char inputstr[10] = { '\n' };
 int serialidx = 0;
 #endif
 
@@ -249,6 +250,13 @@ void loop()
 								Thruster2.setKill(false);
 							}
 							break;
+						case CAN_thruster_power:
+							id = 56;
+							len = 2;
+							forwardCANtoSerial(read_buffer);
+							Thruster1.onThruster(read_buffer[0] & 0x01);
+							Thruster2.onThruster(read_buffer[0] & 0x02);
+							break;
 						case CAN_LED:
 							if (!kill_status)
 								setLightTower(read_buffer[0]);
@@ -286,7 +294,7 @@ void loop()
 		}
 	}
 #else
-// Manually type in speed through Serial monitor for testing
+	// Manually type in speed through Serial monitor for testing
 	if (Serial.available()) {
 		byte input = Serial.read();
 		inputstr[serialidx] = input;
@@ -304,6 +312,9 @@ void loop()
 			if (speed == 5555)
 			{
 				speed = 0;
+				Thruster1.onThruster(false);
+				Thruster2.onThruster(false);
+				/*
 				Thruster1.setMotorDrive(0);
 				Thruster2.setMotorDrive(0);
 				digitalWrite(TORQEEDO1_ON, HIGH);
@@ -313,6 +324,13 @@ void loop()
 				Thruster2.startUpCount = 0;
 				digitalWrite(TORQEEDO1_ON, LOW);
 				digitalWrite(TORQEEDO2_ON, LOW);
+				*/
+			}
+			if (speed == 6666)
+			{
+				speed = 0;
+				Thruster1.onThruster(true);
+				Thruster2.onThruster(true);
 			}
 			if (speed == 4444)
 			{
@@ -425,7 +443,7 @@ void loop()
 				}
 				ocsIdx++;
 			}
-			if (ocsIdx > 1 && ocsIdx-2>= ocslen)
+			if (ocsIdx > 1 && ocsIdx - 2 >= ocslen)
 			{
 				//Do shit
 				ocs_start1 = false;
@@ -433,7 +451,7 @@ void loop()
 				ocsIdx = 0;
 				if (ocsCANid == CAN_thruster)
 				{
-					if(manualOCScontrolBuffer[6]) manualOperationMode = true;
+					if (manualOCScontrolBuffer[6]) manualOperationMode = true;
 					else manualOperationMode = false;
 					speed1 = int16_t(CAN.parseCANFrame(manualOCScontrolBuffer, 2, 2)) - 1000;
 					speed2 = int16_t(CAN.parseCANFrame(manualOCScontrolBuffer, 4, 2)) - 1000;
@@ -443,15 +461,15 @@ void loop()
 					//speed2 = map(speed2, -127, 127, -1000, 1000);
 					//for(int i = 0; i < 3; i++)
 					//	Serial.print(manualOCScontrolBuffer[i], HEX); Serial.print(" ");
-					
-					/*Serial.print("Mode: ");
+					/*
+					Serial.print("Mode: ");
 					Serial.print(manualOCScontrolBuffer[6], HEX);
 					Serial.print(" Speed1: ");
 					Serial.print(speed1);
 					Serial.print(" Speed2: ");
 					Serial.print(speed2);
-					Serial.println();*/
-					
+					Serial.println();
+					*/
 				}
 				else if (ocsCANid == CAN_heartbeat)
 				{
@@ -465,19 +483,37 @@ void loop()
 			break;
 		}
 	}
-	//Serial.write(0xCC);
 	/**********************************************/
 	/*     Transmit / Receive Thruster commands   */
 	/**********************************************/
 
 	// Manual Operation Override
-	if (manualOperationMode)
+	Thruster1.setMotorDrive(speed1);
+	Thruster2.setMotorDrive(speed2);
+
+	// On/off thruster
+	if (Thruster1.checkThrusterOnOff())
 	{
-		Thruster1.setMotorDrive(speed1);
-		Thruster2.setMotorDrive(speed2);
+#ifndef _TEST_
+		id = CAN_thruster_power;
+		len = 2;
+		buf[0] = 0;
+		buf[1] = 0x01;
+		forwardCANtoSerial(buf);
+#endif
+	}
+	if (Thruster2.checkThrusterOnOff())
+	{
+#ifndef _TEST_
+		id = CAN_thruster_power;
+		len = 2;
+		buf[0] = 0;
+		buf[1] = 0x02;
+		forwardCANtoSerial(buf);
+#endif
 	}
 
-
+	// Parse thruster commands
 	if (Thruster1.readMessage())
 		thruster1_batt_heartbeat = true;
 	if (Thruster2.readMessage())
@@ -488,7 +524,7 @@ void loop()
 	if (millis() - thrusterStatsLoop200 > 200)
 	{
 #ifdef _TEST_
-		
+
 		Serial.print("Mode: ");
 		Serial.print(manualOperationMode);
 		Serial.print(" Speed1: ");
@@ -496,7 +532,7 @@ void loop()
 		Serial.print(" Speed2: ");
 		Serial.print(speed2);
 		Serial.println();
-		
+
 #else
 		uint8_t *thrusterbuf;
 		thrusterbuf = emptybuf;
@@ -545,7 +581,7 @@ void loop()
 #endif
 		statsState++;
 		thrusterStatsLoop200 = millis();
-}
+	}
 
 	/**********************************************/
 	/*           Operation Mode light status      */
