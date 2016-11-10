@@ -56,6 +56,7 @@ static uint32_t Temp_Humid_loop = 0; //250ms loop Publish temp and humidity
 static uint32_t thrusterStatsLoop200;
 static uint32_t lightStatsLoop500;
 static uint32_t thrusterHeartbeatLoop200;
+static uint32_t ocsHeartbeatTimeout;
 uint8_t eb_stat_buf[3];
 uint8_t light_num;
 uint8_t humid_ctr = 0;
@@ -96,6 +97,7 @@ void setup()
 	heartbeat_loop = millis();
 	Temp_Humid_loop = millis();
 	thrusterStatsLoop200 = millis();
+	ocsHeartbeatTimeout = millis();
 START_INIT:
 #ifndef _TEST_
 	if (CAN_OK == CAN.begin(CAN_1000KBPS))                   // init can bus : baudrate = 1000Kbps
@@ -262,8 +264,6 @@ void loop()
 								setLightTower(read_buffer[0]);
 							break;
 						case CAN_thruster:
-							/*if (!manualOperationMode)
-							{*/
 							//parse speed
 							speed1 = int16_t(CAN.parseCANFrame(read_buffer, 0, 2)) - 1000;
 							speed2 = int16_t(CAN.parseCANFrame(read_buffer, 2, 2)) - 1000;
@@ -273,11 +273,6 @@ void loop()
 							forwardCANtoSerial(read_buffer);
 							Thruster1.setMotorDrive(speed1);
 							Thruster2.setMotorDrive(speed2);
-							/*Serial.print("s1:");
-							Serial.print(speed1);
-							Serial.print("s2:");
-							Serial.print(speed2);*/
-							//}
 							break;
 						default:
 							CAN.sendMsgBuf(read_id, 0, read_size, read_buffer);
@@ -406,6 +401,7 @@ void loop()
 	/**********************************************/
 	//Serial.print("LOOP");
 	if (Serial3.available()) {
+		ocsHeartbeatTimeout = millis();
 		byte input = Serial3.read();
 		switch (input)
 		{
@@ -488,8 +484,17 @@ void loop()
 	/**********************************************/
 
 	// Manual Operation Override
-	Thruster1.setMotorDrive(speed1);
-	Thruster2.setMotorDrive(speed2);
+	if (manualOperationMode)
+		if (millis() - ocsHeartbeatTimeout < OCS_TIMEOUT)
+		{
+			Thruster1.setMotorDrive(speed1);
+			Thruster2.setMotorDrive(speed2);
+		}
+		else
+		{
+			Thruster1.setMotorDrive(0);
+			Thruster2.setMotorDrive(0);
+		}
 
 	// On/off thruster
 	if (Thruster1.checkThrusterOnOff())
@@ -581,7 +586,7 @@ void loop()
 #endif
 		statsState++;
 		thrusterStatsLoop200 = millis();
-	}
+}
 
 	/**********************************************/
 	/*           Operation Mode light status      */
