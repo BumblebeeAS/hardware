@@ -61,7 +61,7 @@ uint8_t eb_stat_buf[3];
 uint8_t light_num;
 uint8_t humid_ctr = 0;
 
-static char manualOCScontrolBuffer[12];
+static uint8_t manualOCScontrolBuffer[12];
 bool manualOperationMode = false;
 int ocsIdx = 0;
 byte ocsStart = 0xFF;
@@ -85,6 +85,15 @@ int statsState = 0;
 int16_t speed1 = 0;
 int16_t speed2 = 0;
 uint8_t emptybuf[8] = { 0 };
+bool speedtest = false;
+uint32_t speedtesttimer = 0;
+#define SPEEDTESTSIZE 20
+int speedtestidx = 0;
+int16_t speedtestarray[SPEEDTESTSIZE] =
+{0, 0, 100, 100, 100,
+0, 0, -100, -100, -100,
+0, 0, 0, 100, 100,
+-100, -100, 100, 100, 0};
 
 void setup()
 {
@@ -98,6 +107,8 @@ void setup()
 	Temp_Humid_loop = millis();
 	thrusterStatsLoop200 = millis();
 	ocsHeartbeatTimeout = millis();
+	speedtesttimer = millis();
+
 START_INIT:
 #ifndef _TEST_
 	if (CAN_OK == CAN.begin(CAN_1000KBPS))                   // init can bus : baudrate = 1000Kbps
@@ -309,23 +320,17 @@ void loop()
 				speed = 0;
 				Thruster1.onThruster(false);
 				Thruster2.onThruster(false);
-				/*
-				Thruster1.setMotorDrive(0);
-				Thruster2.setMotorDrive(0);
-				digitalWrite(TORQEEDO1_ON, HIGH);
-				digitalWrite(TORQEEDO2_ON, HIGH);
-				delay(3500);
-				Thruster1.startUpCount = 0;
-				Thruster2.startUpCount = 0;
-				digitalWrite(TORQEEDO1_ON, LOW);
-				digitalWrite(TORQEEDO2_ON, LOW);
-				*/
 			}
 			if (speed == 6666)
 			{
 				speed = 0;
 				Thruster1.onThruster(true);
 				Thruster2.onThruster(true);
+			}
+			if (speed == 1111)
+			{
+				speedtest = !speedtest;
+				speed = 0;
 			}
 			if (speed == 4444)
 			{
@@ -347,8 +352,25 @@ void loop()
 	}
 	if (!manualOperationMode)
 	{
-		Thruster1.setMotorDrive(speed);
-		Thruster2.setMotorDrive(speed);
+		if (speedtest)
+		{
+			if (millis() - speedtesttimer > 2000)
+			{
+				speedtestidx++;
+				if (speedtestidx >= SPEEDTESTSIZE)
+					speedtestidx = 0;
+				speedtesttimer = millis();
+				Serial.print("Auto speed: ");
+				Serial.println(speedtestarray[speedtestidx]);
+			}
+			speed1 = speedtestarray[speedtestidx];
+			speed2 = speedtestarray[speedtestidx];
+		}
+		else
+		{
+			speed1 = speed;
+			speed2 = speed;
+		}
 	}
 #endif
 
