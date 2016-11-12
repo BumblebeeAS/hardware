@@ -19,6 +19,7 @@
 // Written by Ren Zhi
 // Change Log:
 // v1.1 - changed to Xbee protocol to adapt to CAN
+// v1.2
 //###################################################
 //###################################################
 //###################################################
@@ -245,11 +246,11 @@ void loop()
 					read_buffer[read_ctr - 3] = incoming_data;
 					if (read_ctr == (2 + read_size))
 					{
+						
 						switch (read_id)
 						{
 						case CAN_heartbeat:
 							//Check for HEARTBEAT from SBC
-							//Serial.println("hb!");
 							break;
 						case CAN_e_stop:
 							if (read_buffer[0] && 0x01)
@@ -278,6 +279,9 @@ void loop()
 							//parse speed
 							speed1 = int16_t(CAN.parseCANFrame(read_buffer, 0, 2)) - 1000;
 							speed2 = int16_t(CAN.parseCANFrame(read_buffer, 2, 2)) - 1000;
+
+							Serial.print("s1:");
+							Serial.println(speed1);
 
 							id = 55;
 							len = 4;
@@ -505,18 +509,20 @@ void loop()
 	/*     Transmit / Receive Thruster commands   */
 	/**********************************************/
 
-	// Manual Operation Override
+	//Safety measure for Loss of Control Link 
 	if (manualOperationMode)
-		if (millis() - ocsHeartbeatTimeout < OCS_TIMEOUT)
+	{
+		if (millis() - ocsHeartbeatTimeout > OCS_TIMEOUT)
 		{
-			Thruster1.setMotorDrive(speed1);
-			Thruster2.setMotorDrive(speed2);
+			manualOperationMode = 0;
+			speed1 = 0;
+			speed2 = 0;
 		}
-		else
-		{
-			Thruster1.setMotorDrive(0);
-			Thruster2.setMotorDrive(0);
-		}
+	}	
+
+	//Thruster Control per loop
+	Thruster1.setMotorDrive(speed1);
+	Thruster2.setMotorDrive(speed2);
 
 	// On/off thruster
 	if (Thruster1.checkThrusterOnOff())
@@ -546,8 +552,6 @@ void loop()
 	if (Thruster2.readMessage())
 		thruster2_batt_heartbeat = true;
 
-	//Thruster1.readMessage();
-	//Thruster2.readMessage();
 	if (millis() - thrusterStatsLoop200 > 200)
 	{
 #ifdef _TEST_
