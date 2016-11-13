@@ -39,7 +39,7 @@ else{
 
   // after sending a tx request, we expect a status response
    // wait up to half a second for the status response
-   if (xbee.readPacket(1000))
+   if (xbee.readPacket(100))
    {
      // got a response!
      // should be a znet tx status              
@@ -47,7 +47,7 @@ else{
      {
         xbee.getResponse().getZBTxStatusResponse(txStatus);
         // get the delivery status, the fifth byte
-        if (txStatus.getDeliveryStatus() == SUCCESS) 
+        /*if (txStatus.getDeliveryStatus() == SUCCESS) 
         {
           // success.  time to celebrate
           //flashLed(statusLed, 5, 10);
@@ -59,6 +59,7 @@ else{
           //flashLed(errorLed, 1, 50);
           Serial.println("No Acknowledgement");
         }
+        */
       }      
    } 
    else 
@@ -67,5 +68,5 @@ else{
      //flashLed(errorLed, 5, 50);
      Serial.println("Sender Error");
    }
-   delay(200);
+   delay(100);
 }

@@ -9,7 +9,7 @@
 //#     ## #     ## ##     # ##     #  ##  ##
 // # ####   # ####   #######  #######   ####
 //
-//Firmware Version :             v1.0
+//Firmware Version :             v1.1
 ////EB Firmware for ASV 1.0
 //		SBC to CAN Interface
 //		Light Tower
@@ -18,7 +18,8 @@
 //
 // Written by Ren Zhi
 // Change Log:
-// NIL
+// v1.1 - changed to Xbee protocol to adapt to CAN
+// v1.2
 //###################################################
 //###################################################
 //###################################################
@@ -56,14 +57,17 @@ static uint32_t Temp_Humid_loop = 0; //250ms loop Publish temp and humidity
 static uint32_t thrusterStatsLoop200;
 static uint32_t lightStatsLoop500;
 static uint32_t thrusterHeartbeatLoop200;
+static uint32_t ocsHeartbeatTimeout;
 uint8_t eb_stat_buf[3];
 uint8_t light_num;
 uint8_t humid_ctr = 0;
 
-static char manualOCScontrolBuffer[12];
+static uint8_t manualOCScontrolBuffer[12];
 bool manualOperationMode = false;
 int ocsIdx = 0;
 byte ocsStart = 0xFF;
+uint8_t ocsCANid = 0x00;
+int ocslen = 0;
 
 bool ocs_start1 = false;
 bool ocs_start2 = false;
@@ -82,6 +86,15 @@ int statsState = 0;
 int16_t speed1 = 0;
 int16_t speed2 = 0;
 uint8_t emptybuf[8] = { 0 };
+bool speedtest = false;
+uint32_t speedtesttimer = 0;
+#define SPEEDTESTSIZE 20
+int speedtestidx = 0;
+int16_t speedtestarray[SPEEDTESTSIZE] =
+{0, 0, 100, 100, 100,
+0, 0, -100, -100, -100,
+0, 0, 0, 100, 100,
+-100, -100, 100, 100, 0};
 
 void setup()
 {
@@ -94,6 +107,9 @@ void setup()
 	heartbeat_loop = millis();
 	Temp_Humid_loop = millis();
 	thrusterStatsLoop200 = millis();
+	ocsHeartbeatTimeout = millis();
+	speedtesttimer = millis();
+
 START_INIT:
 #ifndef _TEST_
 	if (CAN_OK == CAN.begin(CAN_1000KBPS))                   // init can bus : baudrate = 1000Kbps
@@ -120,6 +136,7 @@ START_INIT:
 	// THRUSTER INIT
 	Thruster1.init();
 	Thruster2.init();
+	Serial.flush();
 }
 
 uint8_t led_buf[9] = { 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -135,7 +152,7 @@ uint8_t read_ctr;
 
 #ifdef _TEST_
 int speed = 0;
-char inputstr[10] = {};
+char inputstr[10] = { '\n' };
 int serialidx = 0;
 #endif
 
@@ -229,11 +246,11 @@ void loop()
 					read_buffer[read_ctr - 3] = incoming_data;
 					if (read_ctr == (2 + read_size))
 					{
+						
 						switch (read_id)
 						{
 						case CAN_heartbeat:
 							//Check for HEARTBEAT from SBC
-							//Serial.println("hb!");
 							break;
 						case CAN_e_stop:
 							if (read_buffer[0] && 0x01)
@@ -247,27 +264,30 @@ void loop()
 								Thruster2.setKill(false);
 							}
 							break;
+						case CAN_thruster_power:
+							id = 56;
+							len = 2;
+							forwardCANtoSerial(read_buffer);
+							Thruster1.onThruster(read_buffer[0] & 0x01);
+							Thruster2.onThruster(read_buffer[0] & 0x02);
+							break;
 						case CAN_LED:
 							if (!kill_status)
 								setLightTower(read_buffer[0]);
 							break;
 						case CAN_thruster:
-							/*if (!manualOperationMode)
-							{*/
 							//parse speed
 							speed1 = int16_t(CAN.parseCANFrame(read_buffer, 0, 2)) - 1000;
 							speed2 = int16_t(CAN.parseCANFrame(read_buffer, 2, 2)) - 1000;
+
+							Serial.print("s1:");
+							Serial.println(speed1);
 
 							id = 55;
 							len = 4;
 							forwardCANtoSerial(read_buffer);
 							Thruster1.setMotorDrive(speed1);
 							Thruster2.setMotorDrive(speed2);
-							/*Serial.print("s1:");
-							Serial.print(speed1);
-							Serial.print("s2:");
-							Serial.print(speed2);*/
-							//}
 							break;
 						default:
 							CAN.sendMsgBuf(read_id, 0, read_size, read_buffer);
@@ -284,7 +304,7 @@ void loop()
 		}
 	}
 #else
-// Manually type in speed through Serial monitor for testing
+	// Manually type in speed through Serial monitor for testing
 	if (Serial.available()) {
 		byte input = Serial.read();
 		inputstr[serialidx] = input;
@@ -302,15 +322,19 @@ void loop()
 			if (speed == 5555)
 			{
 				speed = 0;
-				Thruster1.setMotorDrive(0);
-				Thruster2.setMotorDrive(0);
-				digitalWrite(TORQEEDO1_ON, LOW);
-				digitalWrite(TORQEEDO2_ON, LOW);
-				delay(3500);
-				Thruster1.startUpCount = 0;
-				Thruster2.startUpCount = 0;
-				digitalWrite(TORQEEDO1_ON, HIGH);
-				digitalWrite(TORQEEDO2_ON, HIGH);
+				Thruster1.onThruster(false);
+				Thruster2.onThruster(false);
+			}
+			if (speed == 6666)
+			{
+				speed = 0;
+				Thruster1.onThruster(true);
+				Thruster2.onThruster(true);
+			}
+			if (speed == 1111)
+			{
+				speedtest = !speedtest;
+				speed = 0;
 			}
 			if (speed == 4444)
 			{
@@ -332,8 +356,25 @@ void loop()
 	}
 	if (!manualOperationMode)
 	{
-		Thruster1.setMotorDrive(speed);
-		Thruster2.setMotorDrive(speed);
+		if (speedtest)
+		{
+			if (millis() - speedtesttimer > 2000)
+			{
+				speedtestidx++;
+				if (speedtestidx >= SPEEDTESTSIZE)
+					speedtestidx = 0;
+				speedtesttimer = millis();
+				Serial.print("Auto speed: ");
+				Serial.println(speedtestarray[speedtestidx]);
+			}
+			speed1 = speedtestarray[speedtestidx];
+			speed2 = speedtestarray[speedtestidx];
+		}
+		else
+		{
+			speed1 = speed;
+			speed2 = speed;
+		}
 	}
 #endif
 
@@ -368,11 +409,6 @@ void loop()
 			eb_stat_buf[0] = humidTempSensor.getTemperature() + 0.5;
 			eb_stat_buf[1] = humidTempSensor.getHumidity() + 0.5;
 			eb_stat_buf[2] = readKillBattVoltage();
-			Serial.print(eb_stat_buf[0]);
-			Serial.print(" ");
-			Serial.print(eb_stat_buf[1]);
-			Serial.print(" ");
-			Serial.println(eb_stat_buf[2]);
 			id = CAN_EB_stats;
 			len = 3;
 			forwardCANtoSerial(eb_stat_buf);
@@ -391,11 +427,11 @@ void loop()
 	/**********************************************/
 	//Serial.print("LOOP");
 	if (Serial3.available()) {
+		ocsHeartbeatTimeout = millis();
 		byte input = Serial3.read();
 		switch (input)
 		{
-		case 0x2F:
-			ocs_stop1 = false;
+		case 0xFE:
 			if (ocs_start2)
 			{
 				manualOCScontrolBuffer[ocsIdx] = input;
@@ -411,72 +447,111 @@ void loop()
 				else
 					ocs_start1 = true;
 			break;
-		case 0x4F:
-			if (ocs_start2)
-				if (!ocs_stop1)
-					ocs_stop1 = true;
-				else
-				{
-					//Do shit
-					ocs_start1 = false;
-					ocs_start2 = false;
-					ocs_stop1 = false;
-					if (ocsIdx == 3)
-					{
-						ocsIdx = 0;
-						if (manualOCScontrolBuffer[0] == 0x01)
-							manualOperationMode = true;
-						else
-							manualOperationMode = false;
-						speed1 = (int8_t)(manualOCScontrolBuffer[1] - 127);
-						speed2 = (int8_t)(manualOCScontrolBuffer[2] - 127);
-						speed1 = map(speed1, -127, 127, -1000, 1000);
-						speed2 = map(speed2, -127, 127, -1000, 1000);
-						//for(int i = 0; i < 3; i++)
-						//	Serial.print(manualOCScontrolBuffer[i], HEX); Serial.print(" ");
-						/*
-						Serial.print("Mode: ");
-						Serial.print(manualOCScontrolBuffer[0], HEX);
-						Serial.print(" Speed1: ");
-						Serial.print(speed1);
-						Serial.print(" Speed2: ");
-						Serial.print(speed2);
-						Serial.println();
-						*/
-					}
-				}
-			break;
 		default:
 			ocs_stop1 = false;
 			if (ocs_start2)
 			{
-				manualOCScontrolBuffer[ocsIdx] = input;
-				//Serial.print(input, HEX); Serial.print(" ");
+				switch (ocsIdx)
+				{
+				case 0:
+					ocsCANid = input;
+					break;
+				case 1:
+					ocslen = input;
+					break;
+				default:
+					manualOCScontrolBuffer[ocsIdx] = input;
+					//Serial.print(input, HEX); Serial.print(" ");
+				}
 				ocsIdx++;
+			}
+			if (ocsIdx > 1 && ocsIdx - 2 >= ocslen)
+			{
+				//Do shit
+				ocs_start1 = false;
+				ocs_start2 = false;
+				ocsIdx = 0;
+				if (ocsCANid == CAN_thruster)
+				{
+					if (manualOCScontrolBuffer[6]) manualOperationMode = true;
+					else manualOperationMode = false;
+					speed1 = int16_t(CAN.parseCANFrame(manualOCScontrolBuffer, 2, 2)) - 1000;
+					speed2 = int16_t(CAN.parseCANFrame(manualOCScontrolBuffer, 4, 2)) - 1000;
+					//speed1 = (int8_t)(manualOCScontrolBuffer[3] - 127);
+					//speed2 = (int8_t)(manualOCScontrolBuffer[4] - 127);
+					//speed1 = map(speed1, -127, 127, -1000, 1000);
+					//speed2 = map(speed2, -127, 127, -1000, 1000);
+					//for(int i = 0; i < 3; i++)
+					//	Serial.print(manualOCScontrolBuffer[i], HEX); Serial.print(" ");
+					/*
+					Serial.print("Mode: ");
+					Serial.print(manualOCScontrolBuffer[6], HEX);
+					Serial.print(" Speed1: ");
+					Serial.print(speed1);
+					Serial.print(" Speed2: ");
+					Serial.print(speed2);
+					Serial.println();
+					*/
+				}
+				else if (ocsCANid == CAN_heartbeat)
+				{
+					//Serial.println("h");
+					id = CAN_heartbeat;
+					len = 1;
+					buf[0] = HEARTBEAT_OCS;
+					forwardCANtoSerial(buf);
+				}
 			}
 			break;
 		}
 	}
-	//Serial.write(0xCC);
 	/**********************************************/
 	/*     Transmit / Receive Thruster commands   */
 	/**********************************************/
 
-	// Manual Operation Override
+	//Safety measure for Loss of Control Link 
 	if (manualOperationMode)
 	{
-		Thruster1.setMotorDrive(speed1);
-		Thruster2.setMotorDrive(speed2);
+		if (millis() - ocsHeartbeatTimeout > OCS_TIMEOUT)
+		{
+			manualOperationMode = 0;
+			speed1 = 0;
+			speed2 = 0;
+		}
+	}	
+
+	//Thruster Control per loop
+	Thruster1.setMotorDrive(speed1);
+	Thruster2.setMotorDrive(speed2);
+
+	// On/off thruster
+	if (Thruster1.checkThrusterOnOff())
+	{
+#ifndef _TEST_
+		id = CAN_thruster_power;
+		len = 2;
+		buf[0] = 0;
+		buf[1] = 0x01;
+		forwardCANtoSerial(buf);
+#endif
+	}
+	if (Thruster2.checkThrusterOnOff())
+	{
+#ifndef _TEST_
+		id = CAN_thruster_power;
+		len = 2;
+		buf[0] = 0;
+		buf[1] = 0x02;
+		forwardCANtoSerial(buf);
+#endif
 	}
 
-
+	// Parse thruster commands
 	if (Thruster1.readMessage())
 		thruster1_batt_heartbeat = true;
 	if (Thruster2.readMessage())
 		thruster2_batt_heartbeat = true;
 
-	//Thruster1.readMessage();
-	//Thruster2.readMessage();
 	if (millis() - thrusterStatsLoop200 > 200)
 	{
 #ifdef _TEST_
@@ -488,6 +563,7 @@ void loop()
 		Serial.print(" Speed2: ");
 		Serial.print(speed2);
 		Serial.println();
+
 #else
 		uint8_t *thrusterbuf;
 		thrusterbuf = emptybuf;
@@ -536,7 +612,7 @@ void loop()
 #endif
 		statsState++;
 		thrusterStatsLoop200 = millis();
-	}
+}
 
 	/**********************************************/
 	/*           Operation Mode light status      */
@@ -598,7 +674,6 @@ void initKill()
 uint8_t readKillBattVoltage()
 {
 	int input = analogRead(KILL_BATT);
-	Serial.print("A4:");
 	float voltage = ((float)input / 1023)*4.9 * 147 / 27;
 
 	return  uint8_t(voltage * 10);
