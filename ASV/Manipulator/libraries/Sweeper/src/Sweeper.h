@@ -9,8 +9,8 @@ private:
 	Servo servo;
 	int updateInterval;             // interval between updates
 	unsigned long lastUpdate;       // last update position
-	int target_us;                  //  550 is 0 deg, 2500 is 180 deg,1525 is 90deg ---!!!!!!!!---- different for each servo
-	int error;                      // wrt from x axis  1deg 10.83333333µs
+	int error;		                //  550 is 0 deg, 2500 is 180 deg,1525 is 90deg ---!!!!!!!!---- different for each servo
+	                    		    // wrt from x axis  1deg 10.83333333µs
 									//  y=975/90*x+1525
 									// ********THIS IS POSITION************
 public:
