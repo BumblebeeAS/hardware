@@ -40,10 +40,6 @@ void setup () {
   stepper_obj.Init();
   
 	heartbeat_loop = millis();
-
-  stepper_obj.enable = 1;
-  sweep.enable = 1;
-
 }
 
 void loop() {
