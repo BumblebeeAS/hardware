@@ -19,6 +19,7 @@
 // Written by Ren Zhi
 // Change Log:
 // v1.1 - changed to Xbee protocol to adapt to CAN
+// v1.2
 //###################################################
 //###################################################
 //###################################################
@@ -56,6 +57,7 @@ static uint32_t Temp_Humid_loop = 0; //250ms loop Publish temp and humidity
 static uint32_t thrusterStatsLoop200;
 static uint32_t lightStatsLoop500;
 static uint32_t thrusterHeartbeatLoop200;
+static uint32_t ocsHeartbeatTimeout;
 uint8_t eb_stat_buf[3];
 uint8_t light_num;
 uint8_t humid_ctr = 0;
@@ -106,7 +108,9 @@ void setup()
 	heartbeat_loop = millis();
 	Temp_Humid_loop = millis();
 	thrusterStatsLoop200 = millis();
+	ocsHeartbeatTimeout = millis();
 	speedtesttimer = millis();
+
 START_INIT:
 #ifndef _TEST_
 	if (CAN_OK == CAN.begin(CAN_1000KBPS))                   // init can bus : baudrate = 1000Kbps
@@ -243,11 +247,11 @@ void loop()
 					read_buffer[read_ctr - 3] = incoming_data;
 					if (read_ctr == (2 + read_size))
 					{
+						
 						switch (read_id)
 						{
 						case CAN_heartbeat:
 							//Check for HEARTBEAT from SBC
-							//Serial.println("hb!");
 							break;
 						case CAN_e_stop:
 							if (read_buffer[0] && 0x01)
@@ -273,22 +277,18 @@ void loop()
 								setLightTower(read_buffer[0]);
 							break;
 						case CAN_thruster:
-							/*if (!manualOperationMode)
-							{*/
 							//parse speed
 							speed1 = int16_t(CAN.parseCANFrame(read_buffer, 0, 2)) - 1000;
 							speed2 = int16_t(CAN.parseCANFrame(read_buffer, 2, 2)) - 1000;
+
+							Serial.print("s1:");
+							Serial.println(speed1);
 
 							id = 55;
 							len = 4;
 							forwardCANtoSerial(read_buffer);
 							Thruster1.setMotorDrive(speed1);
 							Thruster2.setMotorDrive(speed2);
-							/*Serial.print("s1:");
-							Serial.print(speed1);
-							Serial.print("s2:");
-							Serial.print(speed2);*/
-							//}
 							break;
 						default:
 							CAN.sendMsgBuf(read_id, 0, read_size, read_buffer);
@@ -428,6 +428,7 @@ void loop()
 	/**********************************************/
 	//Serial.print("LOOP");
 	if (Serial3.available()) {
+		ocsHeartbeatTimeout = millis();
 		byte input = Serial3.read();
 		switch (input)
 		{
@@ -509,7 +510,18 @@ void loop()
 	/*     Transmit / Receive Thruster commands   */
 	/**********************************************/
 
-	// Manual Operation Override
+	//Safety measure for Loss of Control Link 
+	if (manualOperationMode)
+	{
+		if (millis() - ocsHeartbeatTimeout > OCS_TIMEOUT)
+		{
+			manualOperationMode = 0;
+			speed1 = 0;
+			speed2 = 0;
+		}
+	}	
+
+	//Thruster Control per loop
 	Thruster1.setMotorDrive(speed1);
 	Thruster2.setMotorDrive(speed2);
 
@@ -541,8 +553,6 @@ void loop()
 	if (Thruster2.readMessage())
 		thruster2_batt_heartbeat = true;
 
-	//Thruster1.readMessage();
-	//Thruster2.readMessage();
 	if (millis() - thrusterStatsLoop200 > 200)
 	{
 #ifdef _TEST_
@@ -603,7 +613,7 @@ void loop()
 #endif
 		statsState++;
 		thrusterStatsLoop200 = millis();
-	}
+}
 
 	/**********************************************/
 	/*           Operation Mode light status      */
