@@ -277,17 +277,16 @@ void loop()
 							break;
 						case CAN_thruster:
 							//parse speed
-							speed1 = int16_t(CAN.parseCANFrame(read_buffer, 0, 2)) - 1000;
-							speed2 = int16_t(CAN.parseCANFrame(read_buffer, 2, 2)) - 1000;
-
-							Serial.print("s1:");
-							Serial.println(speed1);
-
+							if (!manualOperationMode)
+							{
+								speed1 = int16_t(CAN.parseCANFrame(read_buffer, 0, 2)) - 1000;
+								speed2 = int16_t(CAN.parseCANFrame(read_buffer, 2, 2)) - 1000;
+							}
 							id = 55;
 							len = 4;
 							forwardCANtoSerial(read_buffer);
-							Thruster1.setMotorDrive(speed1);
-							Thruster2.setMotorDrive(speed2);
+							//Thruster1.setMotorDrive(speed1);
+							//Thruster2.setMotorDrive(speed2);
 							break;
 						default:
 							CAN.sendMsgBuf(read_id, 0, read_size, read_buffer);
@@ -354,28 +353,7 @@ void loop()
 		}
 		serialidx++;
 	}
-	if (!manualOperationMode)
-	{
-		if (speedtest)
-		{
-			if (millis() - speedtesttimer > 2000)
-			{
-				speedtestidx++;
-				if (speedtestidx >= SPEEDTESTSIZE)
-					speedtestidx = 0;
-				speedtesttimer = millis();
-				Serial.print("Auto speed: ");
-				Serial.println(speedtestarray[speedtestidx]);
-			}
-			speed1 = speedtestarray[speedtestidx];
-			speed2 = speedtestarray[speedtestidx];
-		}
-		else
-		{
-			speed1 = speed;
-			speed2 = speed;
-		}
-	}
+	
 #endif
 
 	/**********************************************/
@@ -435,7 +413,6 @@ void loop()
 			if (ocs_start2)
 			{
 				manualOCScontrolBuffer[ocsIdx] = input;
-				//Serial.print(input, HEX); Serial.print(" ");
 				ocsIdx++;
 			}
 			else
@@ -461,7 +438,6 @@ void loop()
 					break;
 				default:
 					manualOCScontrolBuffer[ocsIdx] = input;
-					//Serial.print(input, HEX); Serial.print(" ");
 				}
 				ocsIdx++;
 			}
@@ -495,7 +471,6 @@ void loop()
 				}
 				else if (ocsCANid == CAN_heartbeat)
 				{
-					//Serial.println("h");
 					id = CAN_heartbeat;
 					len = 1;
 					buf[0] = HEARTBEAT_OCS;
@@ -514,6 +489,8 @@ void loop()
 	{
 		if (millis() - ocsHeartbeatTimeout > OCS_TIMEOUT)
 		{
+			digitalWrite(LIGHTTOWER_GREEN, HIGH);
+			digitalWrite(LIGHTTOWER_YELLOW, HIGH);
 			manualOperationMode = 0;
 			speed1 = 0;
 			speed2 = 0;
