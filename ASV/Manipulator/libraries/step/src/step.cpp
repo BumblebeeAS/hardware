@@ -4,32 +4,24 @@
 #define LEFT 0
 #define RIGHT 1
 // #define step_ratio 11.595744680			// 545 step loop mapped over 47cm
-#define step_length 0.0706422018//0.0697247706//0.0862385321		// 1 step loop distance in cm
-//					38.5			38			47
+#define step_length 0.0706422018			// 1 step loop distance in cm
+//					38.5cm			
 #define Stepper_looptime 6
 
 
 Step::Step(void) {
-inA1 = 23; // input 1 of the stepper  
-inA2 = 25; // input 2 of the stepper
-inB1 = 24; // input 3 of the stepper
-inB2 = 26; // input 4 of the stepper
+inA1 = A0; // input 1 of the stepper  
+inA2 = A2; // input 2 of the stepper
+inB1 = A1; // input 3 of the stepper
+inB2 = A3; // input 4 of the stepper
     // for testing 
     // inA1 = 2;
     // inA2 = 4;
     // inB1 = 3;
     // inB2 = 5;
 
-/*
-    correct mapping on manipulator board 
-    23			PC0			STPA1		
-    24			PC1			STPA2
-    25			PC2			STPA3
-    26			PC3			STPA4
-*/
-
-    SWA = 22;  // limit switch A
-	SWB = 19;  // limit switch B
+    SWA = A6;  // limit switch A   left
+	SWB = A7;  // limit switch B   right
 }
 
 void Step::Init() {
@@ -48,15 +40,16 @@ void Step::Init() {
     target = 0;
 
 
-    for (int i=0;i<545;i++) {		// move the stepper to the left most when start up
-    	if(checkLimit()) {
+    for (int i=0;i<1000;i++) {		// move the stepper to the left most when start up
+    	if(checkLeftLimit()) {
     		break;
     	}
-		step3();
-		step2();
 		step1();
-		step4();
+		step2();
+		step3();
+		step4();	
     }
+    stopMotor();
 
 }
 
@@ -98,29 +91,31 @@ void Step::stopMotor() {
 void Step::moveRight() {
 	// int i = 0;
 	// for (i=0; i<=dist; i++) {
-		if (checkLimit()) {
+		if (checkRightLimit()) {
 			return;
 		}
-		step1();
-		step2();
 		step3();
-		step4();
+		step2();
+		step1();
+		step4();	
 	// }
 	stopMotor();	
+	pos+=step_length;
 }
 
 void Step::moveLeft() {
 	// int i=0;
 	// for (i=0; i<=dist; i++) {
-		if (checkLimit()) {
+		if (checkLeftLimit()) {
 			return;
 		}
-		step3();
-		step2();
 		step1();
-		step4();			
+		step2();
+		step3();
+		step4();				
 	// }
 	stopMotor();
+	pos-=step_length;
 }
 
 void Step::checkDir() {
@@ -150,28 +145,34 @@ void Step::moveStepper() {       // left most is 0   viewed from the back
 			if (pos < 0.0) {
 				return;
 			}
-			moveLeft();
-			pos-=step_length;
+			moveLeft();		
 		} else if (dir == RIGHT) {
 			if (pos > 38.0) {
 				return;
 			}
 			moveRight();
-			pos+=step_length;
 		}	
 		stopMotor();
 	}
 }
 
-bool Step::checkLimit(void) {
-	// if ( digitalRead(SWB) == LOW) {
-	// 	return true;
-	// }
-	if ( digitalRead(SWA) == LOW) {
+bool Step::checkRightLimit(void) {
+	if (analogRead(SWA) < 500) {
 		return true;
-	}
+	} 
 	return false;
 }
+
+bool Step::checkLeftLimit(void) {
+	if(analogRead(SWB) < 500) {
+		return true;
+	} 
+	return false;
+}
+
 		//   1234		from left to right   viewed from back
+		// for (i=0; i<545; i++) {
+		// 	maps for 38.5cm
+		// }
 
 		//	 3214		from right to left   viewed from bacl

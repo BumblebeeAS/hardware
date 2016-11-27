@@ -37,6 +37,7 @@ void setup () {
   imu.correctToZero();          // run only when fitting to new position
   sweep.attach(9);              // pin connection
 	actuator.init();
+  stepper_obj.Init();
   
 	heartbeat_loop = millis();
 }

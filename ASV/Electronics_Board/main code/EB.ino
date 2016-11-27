@@ -88,13 +88,14 @@ int16_t speed2 = 0;
 uint8_t emptybuf[8] = { 0 };
 bool speedtest = false;
 uint32_t speedtesttimer = 0;
-#define SPEEDTESTSIZE 20
+#define SPEEDTESTSIZE 27
+#define SPEEDTESTSTEP 1000
 int speedtestidx = 0;
 int16_t speedtestarray[SPEEDTESTSIZE] =
-{0, 0, 100, 100, 100,
-0, 0, -100, -100, -100,
-0, 0, 0, 100, 100,
--100, -100, 100, 100, 0};
+{0, 500, 500, 500, 500, 500, 500,
+0, -1000, -1000, -1000, -1000, -1000, -1000,
+0, 500, 500, 500, 500,
+-1000, -1000, -1000, -1000, 500, 500, 500, 500};
 
 void setup()
 {
@@ -353,7 +354,6 @@ void loop()
 		}
 		serialidx++;
 	}
-	
 #endif
 
 	/**********************************************/
@@ -532,7 +532,7 @@ void loop()
 	if (millis() - thrusterStatsLoop200 > 200)
 	{
 #ifdef _TEST_
-
+		/*
 		Serial.print("Mode: ");
 		Serial.print(manualOperationMode);
 		Serial.print(" Speed1: ");
@@ -540,7 +540,7 @@ void loop()
 		Serial.print(" Speed2: ");
 		Serial.print(speed2);
 		Serial.println();
-
+		*/
 #else
 		uint8_t *thrusterbuf;
 		thrusterbuf = emptybuf;
