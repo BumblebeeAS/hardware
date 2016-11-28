@@ -24,7 +24,7 @@ inB2 = A3; // input 4 of the stepper
 	SWB = A7;  // limit switch B   right
 }
 
-void Step::Init() {
+void Step::init() {
 	pinMode(inA1, OUTPUT);                        
 	pinMode(inA2, OUTPUT);     
 	pinMode(inB1, OUTPUT);     
@@ -41,7 +41,7 @@ void Step::Init() {
 
 
     for (int i=0;i<1000;i++) {		// move the stepper to the left most when start up
-    	if(checkLeftLimit()) {
+    	if(checkLeftLimit() || checkRightLimit()) {
     		break;
     	}
 		step1();
@@ -91,7 +91,7 @@ void Step::stopMotor() {
 void Step::moveRight() {
 	// int i = 0;
 	// for (i=0; i<=dist; i++) {
-		if (checkRightLimit()) {
+		if (checkLeftLimit() || checkRightLimit()) {
 			return;
 		}
 		step3();
@@ -106,7 +106,7 @@ void Step::moveRight() {
 void Step::moveLeft() {
 	// int i=0;
 	// for (i=0; i<=dist; i++) {
-		if (checkLeftLimit()) {
+		if (checkLeftLimit() || checkRightLimit()) {
 			return;
 		}
 		step1();

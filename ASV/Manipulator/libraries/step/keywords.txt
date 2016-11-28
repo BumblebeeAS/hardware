@@ -6,12 +6,12 @@
 # Datatypes (KEYWORD1)
 #######################################
 
-Step	KEYWORD1	Step
+step	KEYWORD1	Step
 
 #######################################
 # Methods and Functions (KEYWORD2)
 #######################################
-Init	KEYWORD2
+init	KEYWORD2
 step1	KEYWORD2
 step2	KEYWORD2
 step3	KEYWORD2

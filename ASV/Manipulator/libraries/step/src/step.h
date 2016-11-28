@@ -19,7 +19,7 @@ class Step {
     uint8_t dir;
     uint32_t stepperTime;
 
-    int stepDelay;      // Delay between steps in milliseconds
+    int stepDelay;      // delay between steps in milliseconds
 
     void step1(void);
     void step2(void);
@@ -41,10 +41,8 @@ class Step {
 
     Step(void); 
 
-    void Init(void);
+    void init(void);
     void moveStepper();
-
-
 };
 
 #endif 
