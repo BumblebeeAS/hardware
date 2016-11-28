@@ -1,5 +1,5 @@
 #include <Actuator.h>
-#include "TimerOne\TimerOne.h"
+#include "FlexiTimer2\FlexiTimer2.h"
 
 //create an actuator pointer for call back function
 Actuator* actPtr = nullptr;
@@ -36,7 +36,7 @@ void Actuator::actuatorCallBack(void) {
 	}
 
 	if(stopTimer == true){
-		Timer1.stop();
+		FlexiTimer2::stop();
 	}
 
 }
@@ -83,12 +83,10 @@ void Actuator::init(void) {
 	//point the actuator pointer to this object so to use the call back function
 	actPtr = this;
 
-	//initialize timer1, interrupt at 100ms
-	Timer1.initialize(100000);
-	//attach call back function
-	Timer1.attachInterrupt(actuatorCallBackWrapper);
-	//set timer 1 to initially stopped
-	Timer1.stop();
+	//initialize timer2, interrupt at 100ms, attach call back function
+	FlexiTimer2::set(100, actuatorCallBackWrapper);
+	//set timer2 to initially stopped
+	FlexiTimer2::stop();
 }
 
 void Actuator::actuateAcoustic(ActuationType actuationType) {
@@ -138,9 +136,9 @@ void Actuator::actuateShooter(uint8_t num) {
 			}
 		}
 
-		//if none of the shooter is currently using the timer, resart the timer
+		//if none of the shooter is currently using the timer, start the timer
 		if (resetTimer == true) {
-			Timer1.restart();
+			FlexiTimer2::start();
 		}
 	}
 }
