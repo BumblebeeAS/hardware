@@ -28,7 +28,7 @@ public:
 	void printAccTempGyro();	// print on Serial Monitor
 
 	void correctToZero();		// setting zero_pt
-	double correctError();		// correction
+	double calculateError();		// correction
 	void calibrateAcc();		// loop for ave value of readings
 
 };     // end of IMU class

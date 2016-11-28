@@ -1,5 +1,7 @@
 #include "IMU.h"
 #include <Wire.h>
+#include <math.h>
+#include <avr/eeprom.h>
 
 /***********************************************************************************************
 *	References for use on imu
@@ -10,7 +12,7 @@
 
 
 /****************************
-*	START OF PRIVATE METHOD
+*	START OF PRIVATE METHOD *
 *****************************/
 
 unsigned int IMU::readReg(int reg) {
@@ -29,19 +31,50 @@ void IMU::writeReg(int reg, int data) {
 }
 
 /*************************
-*	END OF PRIVATE METHOD
+*	END OF PRIVATE METHOD*
 **************************/
 
 /**************************
-*	START OF PUBLIC METHOD
+*	START OF PUBLIC METHOD*
 ***************************/
+
+int compare(const double lhs, const double rhs) {
+	if(lhs < rhs) {
+		return -1;
+	}
+	else if(lhs == rhs) {
+		return 0;
+	}
+	else {
+		return 1;
+	}
+}
 
 void IMU::init() {
 	Wire.begin();
+	Wire.setClock(400000L);
 	Wire.beginTransmission(MPU_addr);
 	Wire.write(0x6B);  // PWR_MGMT_1 register
 	Wire.write(0);     // set to zero (wakes up the MPU-6050)
 	Wire.endTransmission(true);
+
+	//wait for eeprom to be ready
+	while(!eeprom_is_ready());
+	//read saved result from eeprom
+	zero_pt = eeprom_read_float(0);
+	Serial.print("Previously Calibrated Zero: ");
+	Serial.println(zero_pt);
+
+	pinMode(9, INPUT);
+	if (digitalRead(9) == LOW) {
+		correctToZero();
+		for (uint8_t i = 0; i < 3; i++) {
+			for (uint8_t j = 0; j < 255; j++) {
+				Serial.write(255);
+			}
+			delay(500);
+		}
+	}
 }
 
 IMU::IMU(const int addr) {
@@ -83,32 +116,40 @@ void IMU::readAccTempGyro() {
 	GyZ = Wire.read() << 8 | Wire.read();  // 0x47 (GYRO_ZOUT_H) & 0x48 (GYRO_ZOUT_L)
 
 	AcX -= 1726;  AcY -= 146; AcZ -= 930; GyX += 221; GyY -= 51;  GyZ = GyZ;
-}  
-
-void IMU::correctToZero() {
-	readAccTempGyro();
-	pitch = atan2(AcX, AcZ);
-	pitch = pitch * 180 / 3.1415926535;
-	zero_pt = pitch;
-#if DEBUG==1
-	Serial.println(pitch);
-#endif
 }
 
-double IMU::correctError() {
-	error = atan2(AcX, AcZ);
-	error = error * 180 / 3.1415926535;
-	return error;
+void IMU::correctToZero() {
+	double zeros[9] = {0};
+	for(int i = 0; i < 9; i ++) {
+		readAccTempGyro();
+		zeros[i] = atan2(AcX, AcZ) * 180 / PI;
+	}
+	qsort(zeros, 9, sizeof(double), compare);
+	//take the median value
+	zero_pt = zeros[4];
+	Serial.print("Calibrated Zero Pitch: ");
+	Serial.println(zero_pt);
+
+	//wait for eeprom ready
+	while(!eeprom_is_ready());
+	//save result into eeprom at first location
+	eeprom_update_float(0, zero_pt);
+}
+
+double IMU::calculateError() {
+	readAccTempGyro();
+	return zero_pt - atan2(AcX, AcZ) * 180 / PI;
 }
 
 void IMU::printAccTempGyro() {
-	Serial.print("AcX = "); Serial.print(AcX);
-	Serial.print(" | AcY = "); Serial.print(AcY);
-	Serial.print(" | AcZ = "); Serial.print(AcZ);
-	Serial.print(" | Tmp = "); Serial.print(Tmp / 340.00 + 36.53);  //equation for temperature in degrees C from datasheet
-	Serial.print(" | GyX = "); Serial.print(GyX);
-	Serial.print(" | GyY = "); Serial.print(GyY);
-	Serial.print(" | GyZ = "); Serial.println(GyZ);
+	Serial.println("Parameters: ");
+	Serial.print("AcX = "); Serial.println(AcX);
+	Serial.print("AcY = "); Serial.println(AcY);
+	Serial.print("AcZ = "); Serial.println(AcZ);
+	Serial.print("Tmp = "); Serial.println(Tmp / 340.00 + 36.53);  //equation for temperature in degrees C from datasheet
+	Serial.print("GyX = "); Serial.println(GyX);
+	Serial.print("GyY = "); Serial.println(GyY);
+	Serial.print("GyZ = "); Serial.println(GyZ);
 }
 
 void IMU::calibrateAcc() {
@@ -134,9 +175,9 @@ void IMU::calibrateAcc() {
 	Serial.println(caliGx);
 	Serial.println(caliGy);
 	Serial.println(caliGz);
-	delay(30000);
+	delay(3000);
 }
 
 /**************************
-*	END OF PUBLIC METHOD
+*	END OF PUBLIC METHOD  *
 ***************************/
