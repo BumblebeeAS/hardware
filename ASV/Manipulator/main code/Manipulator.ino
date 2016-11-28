@@ -5,7 +5,7 @@
 #include <Sweeper.h>
 #include "can_asv_defines.h"
 #include <Actuator.h>
-#include <Step.h>
+#include <step.h>
 
 //pin definition
 #define CAN_CHIP_SELECT 8
