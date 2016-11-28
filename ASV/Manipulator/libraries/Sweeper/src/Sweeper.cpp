@@ -1,41 +1,41 @@
 #include "Sweeper.h"
 
 #define HORIZONTAL 2168    // initial flat position at 15deg (0-38deg scale)
-
+#define MAX_PULSE_LIMIT  2456
+#define MIN_PULSE_LIMIT  1980
+#define MAX_ANGLE  38
+#define MIN_ANGLE  0
 
 /**************************
 *	START OF PUBLIC METHOD
 ***************************/
 
-Sweeper::Sweeper(int interval) {
-	updateInterval = interval;
-
-}
-
 void Sweeper::attach(int pin) {
-	servo.attach(pin);
-	target = HORIZONTAL;
+	servo.attach(pin, 500, 2500);
+	this->target = HORIZONTAL;
 }
 
 void Sweeper::detach(void) {
 	servo.detach();
 }
 
-void Sweeper::update(int move) { 
-	if (enable != 1) {
-		return;
-	}
-													//2456 is max backward-------176 deg-------38
-	if (move>2456) {								//2250 is flat---------------157 deg-------19
-		move=2456;									//1980 is max forward--------132 deg-------0
-	}
-	if (move<1980) {
-		move=1980;
-	}
-	if ((millis() - lastUpdate) > updateInterval) {
-		lastUpdate = millis();
-		servo.writeMicroseconds(move);
-	}
+int Sweeper::currTarget(void) {
+	return this->target;
+}
+
+void Sweeper::updateTargetPos(int target) {
+	this->target = target;
+}
+
+void Sweeper::updateCurrPos(int newTarget) {
+	//convert newTarget in angles to actual microseconds
+	//2456 is max backward-------176 deg-------38
+	//2250 is flat---------------157 deg-------19
+	//1980 is max forward--------132 deg-------0
+	newTarget = map(newTarget, MIN_ANGLE, MAX_ANGLE, MIN_PULSE_LIMIT, MAX_PULSE_LIMIT);
+	newTarget = constrain(newTarget, MIN_PULSE_LIMIT, MAX_PULSE_LIMIT);
+
+	servo.writeMicroseconds(newTarget);
 }
 
 /**************************
