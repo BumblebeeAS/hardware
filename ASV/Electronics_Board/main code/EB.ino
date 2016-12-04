@@ -29,6 +29,7 @@
 #include <can_defines.h>
 #include <can.h>
 #include <HIH613x.h>
+#include <Xbee.h>
 
 #include "Torqeedo.h"
 #include "can_asv_defines.h"
@@ -59,11 +60,10 @@ static uint32_t thrusterSpeedLoop100;
 static uint32_t lightStatsLoop500;
 static uint32_t thrusterHeartbeatLoop200;
 static uint32_t ocsHeartbeatTimeout;
-uint8_t eb_stat_buf[3];
+uint8_t eb_stat_buf[4];
 uint8_t light_num;
 uint8_t humid_ctr = 0;
 
-static uint8_t manualOCScontrolBuffer[12];
 bool manualOperationMode = false;
 int ocsIdx = 0;
 byte ocsStart = 0xFF;
@@ -87,16 +87,14 @@ int statsState = 0;
 int16_t speed1 = 0;
 int16_t speed2 = 0;
 uint8_t emptybuf[8] = { 0 };
-bool speedtest = false;
-uint32_t speedtesttimer = 0;
-#define SPEEDTESTSIZE 27
-#define SPEEDTESTSTEP 1000
-int speedtestidx = 0;
-int16_t speedtestarray[SPEEDTESTSIZE] =
-{0, 500, 500, 500, 500, 500, 500,
-0, -1000, -1000, -1000, -1000, -1000, -1000,
-0, 500, 500, 500, 500,
--1000, -1000, -1000, -1000, 500, 500, 500, 500};
+
+XBeeResponse response = XBeeResponse();
+ZBRxResponse rx = ZBRxResponse();
+XBee xbee = XBee();
+uint8_t *payload;
+uint8_t cmd[] = { 'D','B' };
+AtCommandRequest atRequest = AtCommandRequest();
+AtCommandResponse atResponse = AtCommandResponse();
 
 void setup()
 {
@@ -104,15 +102,18 @@ void setup()
 
 	// CAN BUS INIT
 	Serial.begin(115200);
-	Serial3.begin(XBEE_BAUDRATE);
+	
 	sbc_bus_loop = millis();
 	heartbeat_loop = millis();
 	Temp_Humid_loop = millis();
 	thrusterStatsLoop200 = millis();
 	thrusterSpeedLoop100 = millis();
 	ocsHeartbeatTimeout = millis();
-	speedtesttimer = millis();
 
+	// XBEE INIT
+	Serial3.begin(XBEE_BAUDRATE);
+	xbee.setSerial(Serial3);
+	
 START_INIT:
 #ifndef _TEST_
 	if (CAN_OK == CAN.begin(CAN_1000KBPS))                   // init can bus : baudrate = 1000Kbps
@@ -332,11 +333,7 @@ void loop()
 				Thruster1.onThruster(true);
 				Thruster2.onThruster(true);
 			}
-			if (speed == 1111)
-			{
-				speedtest = !speedtest;
-				speed = 0;
-			}
+
 			if (speed == 4444)
 			{
 				if (!Thruster2.kill)
@@ -388,6 +385,9 @@ void loop()
 			eb_stat_buf[0] = humidTempSensor.getTemperature() + 0.5;
 			eb_stat_buf[1] = humidTempSensor.getHumidity() + 0.5;
 			eb_stat_buf[2] = readKillBattVoltage();
+			atRequest.setCommand(cmd);
+			eb_stat_buf[3] = getRssi();
+			Serial.println(eb_stat_buf[3]);
 			id = CAN_EB_stats;
 			len = 3;
 			forwardCANtoSerial(eb_stat_buf);
@@ -404,77 +404,43 @@ void loop()
 	/**********************************************/
 	/* Read OCS XBEE for Manual Thruster override */
 	/**********************************************/
-	//Serial.print("LOOP");
-	if (Serial3.available()) {
-		ocsHeartbeatTimeout = millis();
-		byte input = Serial3.read();
-		switch (input)
+	xbee.readPacket();
+	if (xbee.getResponse().isAvailable())
+	{
+		if (xbee.getResponse().getApiId() == ZB_RX_RESPONSE)
 		{
-		case 0xFE:
-			if (ocs_start2)
+			xbee.getResponse().getZBRxResponse(rx);
+			payload = rx.getData();
+			switch (payload[2])
 			{
-				manualOCScontrolBuffer[ocsIdx] = input;
-				ocsIdx++;
+			case CAN_thruster:
+				if (payload[8]) manualOperationMode = true;
+				else manualOperationMode = false;
+				speed1 = int16_t(CAN.parseCANFrame(payload, 4, 2)) - 1000;
+				speed2 = int16_t(CAN.parseCANFrame(payload, 6, 2)) - 1000;
+				/*
+				Serial.print("Mode: ");
+				Serial.print(payload[8], HEX);
+				Serial.print(" Speed1: ");
+				Serial.print(speed1);
+				Serial.print(" Speed2: ");
+				Serial.print(speed2);
+				Serial.println();
+				*/
+				break;
+			case CAN_heartbeat:
+				id = CAN_heartbeat;
+				len = 1;
+				buf[0] = HEARTBEAT_OCS;
+				forwardCANtoSerial(buf);
+				break;
+			default:
+				break;
 			}
-			else
-				if (ocs_start1)
-				{
-					ocs_start2 = true;
-					ocsIdx = 0;
-				}
-				else
-					ocs_start1 = true;
-			break;
-		default:
-			ocs_stop1 = false;
-			if (ocs_start2)
-			{
-				switch (ocsIdx)
-				{
-				case 0:
-					ocsCANid = input;
-					break;
-				case 1:
-					ocslen = input;
-					break;
-				default:
-					manualOCScontrolBuffer[ocsIdx] = input;
-				}
-				ocsIdx++;
-			}
-			if (ocsIdx > 1 && ocsIdx - 2 >= ocslen)
-			{
-				//Do shit
-				ocs_start1 = false;
-				ocs_start2 = false;
-				ocsIdx = 0;
-				if (ocsCANid == CAN_thruster)
-				{
-					if (manualOCScontrolBuffer[6]) manualOperationMode = true;
-					else manualOperationMode = false;
-					speed1 = int16_t(CAN.parseCANFrame(manualOCScontrolBuffer, 2, 2)) - 1000;
-					speed2 = int16_t(CAN.parseCANFrame(manualOCScontrolBuffer, 4, 2)) - 1000;
-					/*
-					Serial.print("Mode: ");
-					Serial.print(manualOCScontrolBuffer[6], HEX);
-					Serial.print(" Speed1: ");
-					Serial.print(speed1);
-					Serial.print(" Speed2: ");
-					Serial.print(speed2);
-					Serial.println();
-					*/
-				}
-				else if (ocsCANid == CAN_heartbeat)
-				{
-					id = CAN_heartbeat;
-					len = 1;
-					buf[0] = HEARTBEAT_OCS;
-					forwardCANtoSerial(buf);
-				}
-			}
-			break;
 		}
+
 	}
+
 	/**********************************************/
 	/*     Transmit / Receive Thruster commands   */
 	/**********************************************/
@@ -524,6 +490,7 @@ void loop()
 	if (Thruster2.readMessage())
 		thruster2_batt_heartbeat = true;
 
+#ifndef _TEST_
 	if (millis() - thrusterSpeedLoop100 > 100)
 	{
 		id = CAN_motor_speed_eb;
@@ -532,6 +499,7 @@ void loop()
 		CAN.setupCANFrame(buf, 2, 2, ((uint32_t)speed2) + 1000);
 		forwardCANtoSerial(buf);
 	}
+#endif
 
 	if (millis() - thrusterStatsLoop200 > 200)
 	{
@@ -710,4 +678,26 @@ void setLightTower(byte colour)
 		digitalWrite(LIGHTTOWER_GREEN, HIGH);
 	else
 		digitalWrite(LIGHTTOWER_GREEN, LOW);
+}
+
+//==========================================
+//          XBEE FUNCTIONS
+//==========================================
+
+uint8_t getRssi() {
+	xbee.send(atRequest);
+
+	// wait up to 5 seconds for the status response
+	if (xbee.readPacket(100)) {
+		// got a response!
+
+		// should be an AT command response
+		if (xbee.getResponse().getApiId() == AT_COMMAND_RESPONSE) {
+			xbee.getResponse().getAtCommandResponse(atResponse);
+
+			if (atResponse.isOk()) {
+				return atResponse.getValue()[0];
+			}
+		}
+	}
 }
