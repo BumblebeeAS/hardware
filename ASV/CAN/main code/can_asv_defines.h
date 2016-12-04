@@ -49,10 +49,11 @@
 #define CAN_PMB2_stats 117
 #define CAN_PMB2_stats2 118
 #define CAN_PMB2_stats3 119
-#define CAN_EB_BUS_stats 120
-#define CAN_PMB1_BUS_stats 121
-#define CAN_PMB2_BUS_stats 122
-#define CAN_Mani_BUS_stats 123
+#define CAN_motor_speed_eb 120
+#define CAN_EB_BUS_stats 121
+#define CAN_PMB1_BUS_stats 122
+#define CAN_PMB2_BUS_stats 123
+#define CAN_Mani_BUS_stats 124
 
 //CAN Heartbeat
 #define HEARTBEAT_EB 1

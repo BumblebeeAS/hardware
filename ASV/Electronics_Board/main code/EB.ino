@@ -55,6 +55,7 @@ bool hard_kill = false;
 HIH613x humidTempSensor(0x27);
 static uint32_t Temp_Humid_loop = 0; //250ms loop Publish temp and humidity
 static uint32_t thrusterStatsLoop200;
+static uint32_t thrusterSpeedLoop100;
 static uint32_t lightStatsLoop500;
 static uint32_t thrusterHeartbeatLoop200;
 static uint32_t ocsHeartbeatTimeout;
@@ -108,6 +109,7 @@ void setup()
 	heartbeat_loop = millis();
 	Temp_Humid_loop = millis();
 	thrusterStatsLoop200 = millis();
+	thrusterSpeedLoop100 = millis();
 	ocsHeartbeatTimeout = millis();
 	speedtesttimer = millis();
 
@@ -266,9 +268,11 @@ void loop()
 							}
 							break;
 						case CAN_thruster_power:
-							id = 56;
+							id = CAN_thruster_power;
 							len = 2;
-							forwardCANtoSerial(read_buffer);
+							buf[0] = 0;
+							buf[1] = read_buffer[0];
+							forwardCANtoSerial(buf);
 							Thruster1.onThruster(read_buffer[0] & 0x01);
 							Thruster2.onThruster(read_buffer[0] & 0x02);
 							break;
@@ -283,9 +287,6 @@ void loop()
 								speed1 = int16_t(CAN.parseCANFrame(read_buffer, 0, 2)) - 1000;
 								speed2 = int16_t(CAN.parseCANFrame(read_buffer, 2, 2)) - 1000;
 							}
-							id = 55;
-							len = 4;
-							forwardCANtoSerial(read_buffer);
 							//Thruster1.setMotorDrive(speed1);
 							//Thruster2.setMotorDrive(speed2);
 							break;
@@ -453,12 +454,6 @@ void loop()
 					else manualOperationMode = false;
 					speed1 = int16_t(CAN.parseCANFrame(manualOCScontrolBuffer, 2, 2)) - 1000;
 					speed2 = int16_t(CAN.parseCANFrame(manualOCScontrolBuffer, 4, 2)) - 1000;
-					//speed1 = (int8_t)(manualOCScontrolBuffer[3] - 127);
-					//speed2 = (int8_t)(manualOCScontrolBuffer[4] - 127);
-					//speed1 = map(speed1, -127, 127, -1000, 1000);
-					//speed2 = map(speed2, -127, 127, -1000, 1000);
-					//for(int i = 0; i < 3; i++)
-					//	Serial.print(manualOCScontrolBuffer[i], HEX); Serial.print(" ");
 					/*
 					Serial.print("Mode: ");
 					Serial.print(manualOCScontrolBuffer[6], HEX);
@@ -528,6 +523,15 @@ void loop()
 		thruster1_batt_heartbeat = true;
 	if (Thruster2.readMessage())
 		thruster2_batt_heartbeat = true;
+
+	if (millis() - thrusterSpeedLoop100 > 100)
+	{
+		id = CAN_motor_speed_eb;
+		len = 4;
+		CAN.setupCANFrame(buf, 0, 2, ((uint32_t)speed1) + 1000);
+		CAN.setupCANFrame(buf, 2, 2, ((uint32_t)speed2) + 1000);
+		forwardCANtoSerial(buf);
+	}
 
 	if (millis() - thrusterStatsLoop200 > 200)
 	{
