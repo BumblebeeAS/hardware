@@ -1,0 +1,83 @@
+\hypertarget{class_z_b_rx_io_sample_response}{}\section{Z\+B\+Rx\+Io\+Sample\+Response Class Reference}
+\label{class_z_b_rx_io_sample_response}\index{Z\+B\+Rx\+Io\+Sample\+Response@{Z\+B\+Rx\+Io\+Sample\+Response}}
+
+
+{\ttfamily \#include $<$X\+Bee.\+h$>$}
+
+
+
+Inheritance diagram for Z\+B\+Rx\+Io\+Sample\+Response\+:
+% FIG 0
+
+
+Collaboration diagram for Z\+B\+Rx\+Io\+Sample\+Response\+:
+% FIG 1
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_z_b_rx_io_sample_response_ae1e501e3e940a1b199955d5c938e8970}{}\label{class_z_b_rx_io_sample_response_ae1e501e3e940a1b199955d5c938e8970} 
+bool {\bfseries contains\+Analog} ()
+\item 
+\hypertarget{class_z_b_rx_io_sample_response_a12d70fd07c66e37ea06d8ae92672d320}{}\label{class_z_b_rx_io_sample_response_a12d70fd07c66e37ea06d8ae92672d320} 
+bool {\bfseries contains\+Digital} ()
+\item 
+bool \hyperlink{class_z_b_rx_io_sample_response_ad0e444cc8854c996517c1ecde033a9c8}{is\+Analog\+Enabled} (uint8\+\_\+t pin)
+\item 
+bool \hyperlink{class_z_b_rx_io_sample_response_a946c653da11f62b319c3ca6606f8edff}{is\+Digital\+Enabled} (uint8\+\_\+t pin)
+\item 
+uint16\+\_\+t \hyperlink{class_z_b_rx_io_sample_response_aa74edf46988bd3e50ce4037350cbb91e}{get\+Analog} (uint8\+\_\+t pin)
+\item 
+bool \hyperlink{class_z_b_rx_io_sample_response_ac94f045360d7dbb009ac16bc437cbbd5}{is\+Digital\+On} (uint8\+\_\+t pin)
+\item 
+\hypertarget{class_z_b_rx_io_sample_response_af15dc5e0954ece81bb28b33316ad0fcd}{}\label{class_z_b_rx_io_sample_response_af15dc5e0954ece81bb28b33316ad0fcd} 
+uint8\+\_\+t {\bfseries get\+Digital\+Mask\+Msb} ()
+\item 
+\hypertarget{class_z_b_rx_io_sample_response_a2bc101d5276c92f09ebe3a2f370ad0c2}{}\label{class_z_b_rx_io_sample_response_a2bc101d5276c92f09ebe3a2f370ad0c2} 
+uint8\+\_\+t {\bfseries get\+Digital\+Mask\+Lsb} ()
+\item 
+\hypertarget{class_z_b_rx_io_sample_response_a065e15e00c505045a13e95091a62fae5}{}\label{class_z_b_rx_io_sample_response_a065e15e00c505045a13e95091a62fae5} 
+uint8\+\_\+t {\bfseries get\+Analog\+Mask} ()
+\end{DoxyCompactItemize}
+\subsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_z_b_rx_io_sample_response_a700847e033b7359f5f93b1867461aa75}{}\label{class_z_b_rx_io_sample_response_a700847e033b7359f5f93b1867461aa75} 
+static const uint8\+\_\+t {\bfseries A\+P\+I\+\_\+\+ID} = Z\+B\+\_\+\+I\+O\+\_\+\+S\+A\+M\+P\+L\+E\+\_\+\+R\+E\+S\+P\+O\+N\+SE
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+Represents a Series 2 RX I/O Sample packet 
+
+\subsection{Member Function Documentation}
+\hypertarget{class_z_b_rx_io_sample_response_aa74edf46988bd3e50ce4037350cbb91e}{}\label{class_z_b_rx_io_sample_response_aa74edf46988bd3e50ce4037350cbb91e} 
+\index{Z\+B\+Rx\+Io\+Sample\+Response@{Z\+B\+Rx\+Io\+Sample\+Response}!get\+Analog@{get\+Analog}}
+\index{get\+Analog@{get\+Analog}!Z\+B\+Rx\+Io\+Sample\+Response@{Z\+B\+Rx\+Io\+Sample\+Response}}
+\subsubsection{\texorpdfstring{get\+Analog()}{getAnalog()}}
+{\footnotesize\ttfamily uint16\+\_\+t Z\+B\+Rx\+Io\+Sample\+Response\+::get\+Analog (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{pin }\end{DoxyParamCaption})}
+
+Returns the 10-\/bit analog reading of the specified pin. Valid pins include A\+DC\+:xxx. \hypertarget{class_z_b_rx_io_sample_response_ad0e444cc8854c996517c1ecde033a9c8}{}\label{class_z_b_rx_io_sample_response_ad0e444cc8854c996517c1ecde033a9c8} 
+\index{Z\+B\+Rx\+Io\+Sample\+Response@{Z\+B\+Rx\+Io\+Sample\+Response}!is\+Analog\+Enabled@{is\+Analog\+Enabled}}
+\index{is\+Analog\+Enabled@{is\+Analog\+Enabled}!Z\+B\+Rx\+Io\+Sample\+Response@{Z\+B\+Rx\+Io\+Sample\+Response}}
+\subsubsection{\texorpdfstring{is\+Analog\+Enabled()}{isAnalogEnabled()}}
+{\footnotesize\ttfamily bool Z\+B\+Rx\+Io\+Sample\+Response\+::is\+Analog\+Enabled (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{pin }\end{DoxyParamCaption})}
+
+Returns true if the pin is enabled \hypertarget{class_z_b_rx_io_sample_response_a946c653da11f62b319c3ca6606f8edff}{}\label{class_z_b_rx_io_sample_response_a946c653da11f62b319c3ca6606f8edff} 
+\index{Z\+B\+Rx\+Io\+Sample\+Response@{Z\+B\+Rx\+Io\+Sample\+Response}!is\+Digital\+Enabled@{is\+Digital\+Enabled}}
+\index{is\+Digital\+Enabled@{is\+Digital\+Enabled}!Z\+B\+Rx\+Io\+Sample\+Response@{Z\+B\+Rx\+Io\+Sample\+Response}}
+\subsubsection{\texorpdfstring{is\+Digital\+Enabled()}{isDigitalEnabled()}}
+{\footnotesize\ttfamily bool Z\+B\+Rx\+Io\+Sample\+Response\+::is\+Digital\+Enabled (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{pin }\end{DoxyParamCaption})}
+
+Returns true if the pin is enabled \hypertarget{class_z_b_rx_io_sample_response_ac94f045360d7dbb009ac16bc437cbbd5}{}\label{class_z_b_rx_io_sample_response_ac94f045360d7dbb009ac16bc437cbbd5} 
+\index{Z\+B\+Rx\+Io\+Sample\+Response@{Z\+B\+Rx\+Io\+Sample\+Response}!is\+Digital\+On@{is\+Digital\+On}}
+\index{is\+Digital\+On@{is\+Digital\+On}!Z\+B\+Rx\+Io\+Sample\+Response@{Z\+B\+Rx\+Io\+Sample\+Response}}
+\subsubsection{\texorpdfstring{is\+Digital\+On()}{isDigitalOn()}}
+{\footnotesize\ttfamily bool Z\+B\+Rx\+Io\+Sample\+Response\+::is\+Digital\+On (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{pin }\end{DoxyParamCaption})}
+
+Returns true if the specified pin is high/on. Valid pins include D\+IO\+:xxx. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+C\+:/\+Users/\+Goh Eng Wei/\+Documents/\+Arduino/libraries/\+X\+Bee/X\+Bee.\+h\item 
+C\+:/\+Users/\+Goh Eng Wei/\+Documents/\+Arduino/libraries/\+X\+Bee/X\+Bee.\+cpp\end{DoxyCompactItemize}

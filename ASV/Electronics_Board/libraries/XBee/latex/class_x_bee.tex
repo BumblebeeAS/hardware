@@ -1,0 +1,105 @@
+\hypertarget{class_x_bee}{}\section{X\+Bee Class Reference}
+\label{class_x_bee}\index{X\+Bee@{X\+Bee}}
+
+
+{\ttfamily \#include $<$X\+Bee.\+h$>$}
+
+
+
+Inheritance diagram for X\+Bee\+:
+% FIG 0
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{class_x_bee_a7d788232f44e8b3c10dc686a0299fcc6}{read\+Packet} ()
+\item 
+bool \hyperlink{class_x_bee_ae1c9f3b53df50564ab9aca2716792b44}{read\+Packet} (int timeout)
+\item 
+void \hyperlink{class_x_bee_a594e2bb2ccb7b3fe7a2278b9324b4083}{read\+Packet\+Until\+Available} ()
+\item 
+void \hyperlink{class_x_bee_a2d170fc3f2412712adee0af794dc6263}{begin} (Stream \&serial)
+\item 
+\hypertarget{class_x_bee_ac88079aa744d36b26a0c6a0add939898}{}\label{class_x_bee_ac88079aa744d36b26a0c6a0add939898} 
+void {\bfseries get\+Response} (\hyperlink{class_x_bee_response}{X\+Bee\+Response} \&response)
+\item 
+\hyperlink{class_x_bee_response}{X\+Bee\+Response} \& \hyperlink{class_x_bee_a18250def80e8b643aa1ccc15a98937f3}{get\+Response} ()
+\item 
+void \hyperlink{class_x_bee_a802387f468be8622941d16739ac848f2}{send} (\hyperlink{class_x_bee_request}{X\+Bee\+Request} \&request)
+\item 
+uint8\+\_\+t \hyperlink{class_x_bee_a25bd226e41517e8a66a13e531d31438d}{get\+Next\+Frame\+Id} ()
+\item 
+void \hyperlink{class_x_bee_a58ff19e5342060ca91aea247db99b927}{set\+Serial} (Stream \&serial)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Primary interface for communicating with an \hyperlink{class_x_bee}{X\+Bee} Radio. This class provides methods for sending and receiving packets with an \hyperlink{class_x_bee}{X\+Bee} radio via the serial port. The \hyperlink{class_x_bee}{X\+Bee} radio must be configured in A\+PI (packet) mode (AP=2) in order to use this software. 
+
+Since this code is designed to run on a microcontroller, with only one thread, you are responsible for reading the data off the serial buffer in a timely manner. This involves a call to a variant of read\+Packet(...). If your serial port is receiving data faster than you are reading, you can expect to lose packets. Arduino only has a 128 byte serial buffer so it can easily overflow if two or more packets arrive without a call to read\+Packet(...) 
+
+In order to conserve resources, this class only supports storing one response packet in memory at a time. This means that you must fully consume the packet prior to calling read\+Packet(...), because calling read\+Packet(...) overwrites the previous response. 
+
+This class creates an array of size M\+A\+X\+\_\+\+F\+R\+A\+M\+E\+\_\+\+D\+A\+T\+A\+\_\+\+S\+I\+ZE for storing the response packet. You may want to adjust this value to conserve memory.
+
+\begin{DoxyAuthor}{Author}
+Andrew Rapp 
+\end{DoxyAuthor}
+
+
+\subsection{Member Function Documentation}
+\hypertarget{class_x_bee_a2d170fc3f2412712adee0af794dc6263}{}\label{class_x_bee_a2d170fc3f2412712adee0af794dc6263} 
+\index{X\+Bee@{X\+Bee}!begin@{begin}}
+\index{begin@{begin}!X\+Bee@{X\+Bee}}
+\subsubsection{\texorpdfstring{begin()}{begin()}}
+{\footnotesize\ttfamily void X\+Bee\+::begin (\begin{DoxyParamCaption}\item[{Stream \&}]{serial }\end{DoxyParamCaption})}
+
+Starts the serial connection on the specified serial port \hypertarget{class_x_bee_a25bd226e41517e8a66a13e531d31438d}{}\label{class_x_bee_a25bd226e41517e8a66a13e531d31438d} 
+\index{X\+Bee@{X\+Bee}!get\+Next\+Frame\+Id@{get\+Next\+Frame\+Id}}
+\index{get\+Next\+Frame\+Id@{get\+Next\+Frame\+Id}!X\+Bee@{X\+Bee}}
+\subsubsection{\texorpdfstring{get\+Next\+Frame\+Id()}{getNextFrameId()}}
+{\footnotesize\ttfamily uint8\+\_\+t X\+Bee\+::get\+Next\+Frame\+Id (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Returns a sequential frame id between 1 and 255 \hypertarget{class_x_bee_a18250def80e8b643aa1ccc15a98937f3}{}\label{class_x_bee_a18250def80e8b643aa1ccc15a98937f3} 
+\index{X\+Bee@{X\+Bee}!get\+Response@{get\+Response}}
+\index{get\+Response@{get\+Response}!X\+Bee@{X\+Bee}}
+\subsubsection{\texorpdfstring{get\+Response()}{getResponse()}}
+{\footnotesize\ttfamily \hyperlink{class_x_bee_response}{X\+Bee\+Response} \& X\+Bee\+::get\+Response (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Returns a reference to the current response Note\+: once read\+Packet is called again this response will be overwritten! \hypertarget{class_x_bee_a7d788232f44e8b3c10dc686a0299fcc6}{}\label{class_x_bee_a7d788232f44e8b3c10dc686a0299fcc6} 
+\index{X\+Bee@{X\+Bee}!read\+Packet@{read\+Packet}}
+\index{read\+Packet@{read\+Packet}!X\+Bee@{X\+Bee}}
+\subsubsection{\texorpdfstring{read\+Packet()}{readPacket()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily void X\+Bee\+::read\+Packet (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Reads all available serial bytes until a packet is parsed, an error occurs, or the buffer is empty. You may call {\itshape xbee}.\hyperlink{class_x_bee_a18250def80e8b643aa1ccc15a98937f3}{get\+Response()}.is\+Available() after calling this method to determine if a packet is ready, or {\itshape xbee}.\hyperlink{class_x_bee_a18250def80e8b643aa1ccc15a98937f3}{get\+Response()}.is\+Error() to determine if a error occurred. 
+
+This method should always return quickly since it does not wait for serial data to arrive. You will want to use this method if you are doing other timely stuff in your loop, where a delay would cause problems. N\+O\+TE\+: calling this method resets the current response, so make sure you first consume the current response \hypertarget{class_x_bee_ae1c9f3b53df50564ab9aca2716792b44}{}\label{class_x_bee_ae1c9f3b53df50564ab9aca2716792b44} 
+\index{X\+Bee@{X\+Bee}!read\+Packet@{read\+Packet}}
+\index{read\+Packet@{read\+Packet}!X\+Bee@{X\+Bee}}
+\subsubsection{\texorpdfstring{read\+Packet()}{readPacket()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily bool X\+Bee\+::read\+Packet (\begin{DoxyParamCaption}\item[{int}]{timeout }\end{DoxyParamCaption})}
+
+Waits a maximum of {\itshape timeout} milliseconds for a response packet before timing out; returns true if packet is read. Returns false if timeout or error occurs. \hypertarget{class_x_bee_a594e2bb2ccb7b3fe7a2278b9324b4083}{}\label{class_x_bee_a594e2bb2ccb7b3fe7a2278b9324b4083} 
+\index{X\+Bee@{X\+Bee}!read\+Packet\+Until\+Available@{read\+Packet\+Until\+Available}}
+\index{read\+Packet\+Until\+Available@{read\+Packet\+Until\+Available}!X\+Bee@{X\+Bee}}
+\subsubsection{\texorpdfstring{read\+Packet\+Until\+Available()}{readPacketUntilAvailable()}}
+{\footnotesize\ttfamily void X\+Bee\+::read\+Packet\+Until\+Available (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Reads until a packet is received or an error occurs. Caution\+: use this carefully since if you don\textquotesingle{}t get a response, your Arduino code will hang on this call forever!! often it\textquotesingle{}s better to use a timeout\+: \hyperlink{class_x_bee_ae1c9f3b53df50564ab9aca2716792b44}{read\+Packet(int)} \hypertarget{class_x_bee_a802387f468be8622941d16739ac848f2}{}\label{class_x_bee_a802387f468be8622941d16739ac848f2} 
+\index{X\+Bee@{X\+Bee}!send@{send}}
+\index{send@{send}!X\+Bee@{X\+Bee}}
+\subsubsection{\texorpdfstring{send()}{send()}}
+{\footnotesize\ttfamily void X\+Bee\+::send (\begin{DoxyParamCaption}\item[{\hyperlink{class_x_bee_request}{X\+Bee\+Request} \&}]{request }\end{DoxyParamCaption})}
+
+Sends a \hyperlink{class_x_bee_request}{X\+Bee\+Request} (TX packet) out the serial port \hypertarget{class_x_bee_a58ff19e5342060ca91aea247db99b927}{}\label{class_x_bee_a58ff19e5342060ca91aea247db99b927} 
+\index{X\+Bee@{X\+Bee}!set\+Serial@{set\+Serial}}
+\index{set\+Serial@{set\+Serial}!X\+Bee@{X\+Bee}}
+\subsubsection{\texorpdfstring{set\+Serial()}{setSerial()}}
+{\footnotesize\ttfamily void X\+Bee\+::set\+Serial (\begin{DoxyParamCaption}\item[{Stream \&}]{serial }\end{DoxyParamCaption})}
+
+Specify the serial port. Only relevant for Arduinos that support multiple serial ports (e.\+g. Mega) 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+C\+:/\+Users/\+Goh Eng Wei/\+Documents/\+Arduino/libraries/\+X\+Bee/X\+Bee.\+h\item 
+C\+:/\+Users/\+Goh Eng Wei/\+Documents/\+Arduino/libraries/\+X\+Bee/X\+Bee.\+cpp\end{DoxyCompactItemize}

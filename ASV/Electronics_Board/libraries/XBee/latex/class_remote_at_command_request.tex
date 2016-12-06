@@ -1,0 +1,113 @@
+\hypertarget{class_remote_at_command_request}{}\section{Remote\+At\+Command\+Request Class Reference}
+\label{class_remote_at_command_request}\index{Remote\+At\+Command\+Request@{Remote\+At\+Command\+Request}}
+
+
+{\ttfamily \#include $<$X\+Bee.\+h$>$}
+
+
+
+Inheritance diagram for Remote\+At\+Command\+Request\+:
+% FIG 0
+
+
+Collaboration diagram for Remote\+At\+Command\+Request\+:
+% FIG 1
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{class_remote_at_command_request_ac6977fe584bab7d7414b0c45d1ae37cc}{Remote\+At\+Command\+Request} (uint16\+\_\+t remote\+Address16, uint8\+\_\+t $\ast$command, uint8\+\_\+t $\ast$command\+Value, uint8\+\_\+t command\+Value\+Length)
+\item 
+\hyperlink{class_remote_at_command_request_ae8139e39010dcd8956a4281109885a81}{Remote\+At\+Command\+Request} (uint16\+\_\+t remote\+Address16, uint8\+\_\+t $\ast$command)
+\item 
+\hyperlink{class_remote_at_command_request_ae49de42cdec0b9689882e2372a3bae1d}{Remote\+At\+Command\+Request} (\hyperlink{class_x_bee_address64}{X\+Bee\+Address64} \&remote\+Address64, uint8\+\_\+t $\ast$command, uint8\+\_\+t $\ast$command\+Value, uint8\+\_\+t command\+Value\+Length)
+\item 
+\hyperlink{class_remote_at_command_request_aa01b3f59d62d444ad78d6f1bbf8124aa}{Remote\+At\+Command\+Request} (\hyperlink{class_x_bee_address64}{X\+Bee\+Address64} \&remote\+Address64, uint8\+\_\+t $\ast$command)
+\item 
+\hypertarget{class_remote_at_command_request_a1802fa7c5d644184f19fcd3da839f08a}{}\label{class_remote_at_command_request_a1802fa7c5d644184f19fcd3da839f08a} 
+uint16\+\_\+t {\bfseries get\+Remote\+Address16} ()
+\item 
+\hypertarget{class_remote_at_command_request_a91d4ee0fa25a634e419df1b0059f6073}{}\label{class_remote_at_command_request_a91d4ee0fa25a634e419df1b0059f6073} 
+void {\bfseries set\+Remote\+Address16} (uint16\+\_\+t remote\+Address16)
+\item 
+\hypertarget{class_remote_at_command_request_ab6c602ded638f7740ac69319915e0389}{}\label{class_remote_at_command_request_ab6c602ded638f7740ac69319915e0389} 
+\hyperlink{class_x_bee_address64}{X\+Bee\+Address64} \& {\bfseries get\+Remote\+Address64} ()
+\item 
+\hypertarget{class_remote_at_command_request_abf42b8f760f1f1959de090f4493e928b}{}\label{class_remote_at_command_request_abf42b8f760f1f1959de090f4493e928b} 
+void {\bfseries set\+Remote\+Address64} (\hyperlink{class_x_bee_address64}{X\+Bee\+Address64} \&remote\+Address64)
+\item 
+\hypertarget{class_remote_at_command_request_ad9098bc0358fa44f73c0cc51bc244bf3}{}\label{class_remote_at_command_request_ad9098bc0358fa44f73c0cc51bc244bf3} 
+bool {\bfseries get\+Apply\+Changes} ()
+\item 
+\hypertarget{class_remote_at_command_request_aab7cf2bf1ca644a17bede9abd3929acd}{}\label{class_remote_at_command_request_aab7cf2bf1ca644a17bede9abd3929acd} 
+void {\bfseries set\+Apply\+Changes} (bool apply\+Changes)
+\item 
+uint8\+\_\+t \hyperlink{class_remote_at_command_request_a0e576cf564ebd5a82cb2ed05239a856a}{get\+Frame\+Data} (uint8\+\_\+t pos)
+\item 
+uint8\+\_\+t \hyperlink{class_remote_at_command_request_a1d78334a8924b0a0e06de6ef3a09c24f}{get\+Frame\+Data\+Length} ()
+\end{DoxyCompactItemize}
+\subsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_remote_at_command_request_a72668f0e22df605d5b32141bd7ca0256}{}\label{class_remote_at_command_request_a72668f0e22df605d5b32141bd7ca0256} 
+static \hyperlink{class_x_bee_address64}{X\+Bee\+Address64} {\bfseries broadcast\+Address64} = \hyperlink{class_x_bee_address64}{X\+Bee\+Address64}(0x0, B\+R\+O\+A\+D\+C\+A\+S\+T\+\_\+\+A\+D\+D\+R\+E\+S\+S)
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+Represents an Remote AT Command TX packet The command is used to configure a remote \hyperlink{class_x_bee}{X\+Bee} radio 
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{class_remote_at_command_request_ac6977fe584bab7d7414b0c45d1ae37cc}{}\label{class_remote_at_command_request_ac6977fe584bab7d7414b0c45d1ae37cc} 
+\index{Remote\+At\+Command\+Request@{Remote\+At\+Command\+Request}!Remote\+At\+Command\+Request@{Remote\+At\+Command\+Request}}
+\index{Remote\+At\+Command\+Request@{Remote\+At\+Command\+Request}!Remote\+At\+Command\+Request@{Remote\+At\+Command\+Request}}
+\subsubsection{\texorpdfstring{Remote\+At\+Command\+Request()}{RemoteAtCommandRequest()}\hspace{0.1cm}{\footnotesize\ttfamily [1/4]}}
+{\footnotesize\ttfamily Remote\+At\+Command\+Request\+::\+Remote\+At\+Command\+Request (\begin{DoxyParamCaption}\item[{uint16\+\_\+t}]{remote\+Address16,  }\item[{uint8\+\_\+t $\ast$}]{command,  }\item[{uint8\+\_\+t $\ast$}]{command\+Value,  }\item[{uint8\+\_\+t}]{command\+Value\+Length }\end{DoxyParamCaption})}
+
+Creates a \hyperlink{class_remote_at_command_request}{Remote\+At\+Command\+Request} with 16-\/bit address to set a command. 64-\/bit address defaults to broadcast and apply\+Changes is true. \hypertarget{class_remote_at_command_request_ae8139e39010dcd8956a4281109885a81}{}\label{class_remote_at_command_request_ae8139e39010dcd8956a4281109885a81} 
+\index{Remote\+At\+Command\+Request@{Remote\+At\+Command\+Request}!Remote\+At\+Command\+Request@{Remote\+At\+Command\+Request}}
+\index{Remote\+At\+Command\+Request@{Remote\+At\+Command\+Request}!Remote\+At\+Command\+Request@{Remote\+At\+Command\+Request}}
+\subsubsection{\texorpdfstring{Remote\+At\+Command\+Request()}{RemoteAtCommandRequest()}\hspace{0.1cm}{\footnotesize\ttfamily [2/4]}}
+{\footnotesize\ttfamily Remote\+At\+Command\+Request\+::\+Remote\+At\+Command\+Request (\begin{DoxyParamCaption}\item[{uint16\+\_\+t}]{remote\+Address16,  }\item[{uint8\+\_\+t $\ast$}]{command }\end{DoxyParamCaption})}
+
+Creates a \hyperlink{class_remote_at_command_request}{Remote\+At\+Command\+Request} with 16-\/bit address to query a command. 64-\/bit address defaults to broadcast and apply\+Changes is true. \hypertarget{class_remote_at_command_request_ae49de42cdec0b9689882e2372a3bae1d}{}\label{class_remote_at_command_request_ae49de42cdec0b9689882e2372a3bae1d} 
+\index{Remote\+At\+Command\+Request@{Remote\+At\+Command\+Request}!Remote\+At\+Command\+Request@{Remote\+At\+Command\+Request}}
+\index{Remote\+At\+Command\+Request@{Remote\+At\+Command\+Request}!Remote\+At\+Command\+Request@{Remote\+At\+Command\+Request}}
+\subsubsection{\texorpdfstring{Remote\+At\+Command\+Request()}{RemoteAtCommandRequest()}\hspace{0.1cm}{\footnotesize\ttfamily [3/4]}}
+{\footnotesize\ttfamily Remote\+At\+Command\+Request\+::\+Remote\+At\+Command\+Request (\begin{DoxyParamCaption}\item[{\hyperlink{class_x_bee_address64}{X\+Bee\+Address64} \&}]{remote\+Address64,  }\item[{uint8\+\_\+t $\ast$}]{command,  }\item[{uint8\+\_\+t $\ast$}]{command\+Value,  }\item[{uint8\+\_\+t}]{command\+Value\+Length }\end{DoxyParamCaption})}
+
+Creates a \hyperlink{class_remote_at_command_request}{Remote\+At\+Command\+Request} with 64-\/bit address to set a command. 16-\/bit address defaults to broadcast and apply\+Changes is true. \hypertarget{class_remote_at_command_request_aa01b3f59d62d444ad78d6f1bbf8124aa}{}\label{class_remote_at_command_request_aa01b3f59d62d444ad78d6f1bbf8124aa} 
+\index{Remote\+At\+Command\+Request@{Remote\+At\+Command\+Request}!Remote\+At\+Command\+Request@{Remote\+At\+Command\+Request}}
+\index{Remote\+At\+Command\+Request@{Remote\+At\+Command\+Request}!Remote\+At\+Command\+Request@{Remote\+At\+Command\+Request}}
+\subsubsection{\texorpdfstring{Remote\+At\+Command\+Request()}{RemoteAtCommandRequest()}\hspace{0.1cm}{\footnotesize\ttfamily [4/4]}}
+{\footnotesize\ttfamily Remote\+At\+Command\+Request\+::\+Remote\+At\+Command\+Request (\begin{DoxyParamCaption}\item[{\hyperlink{class_x_bee_address64}{X\+Bee\+Address64} \&}]{remote\+Address64,  }\item[{uint8\+\_\+t $\ast$}]{command }\end{DoxyParamCaption})}
+
+Creates a \hyperlink{class_remote_at_command_request}{Remote\+At\+Command\+Request} with 16-\/bit address to query a command. 16-\/bit address defaults to broadcast and apply\+Changes is true. 
+
+\subsection{Member Function Documentation}
+\hypertarget{class_remote_at_command_request_a0e576cf564ebd5a82cb2ed05239a856a}{}\label{class_remote_at_command_request_a0e576cf564ebd5a82cb2ed05239a856a} 
+\index{Remote\+At\+Command\+Request@{Remote\+At\+Command\+Request}!get\+Frame\+Data@{get\+Frame\+Data}}
+\index{get\+Frame\+Data@{get\+Frame\+Data}!Remote\+At\+Command\+Request@{Remote\+At\+Command\+Request}}
+\subsubsection{\texorpdfstring{get\+Frame\+Data()}{getFrameData()}}
+{\footnotesize\ttfamily uint8\+\_\+t Remote\+At\+Command\+Request\+::get\+Frame\+Data (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{pos }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+Starting after the frame id (pos = 0) and up to but not including the checksum Note\+: Unlike Digi\textquotesingle{}s definition of the frame data, this does not start with the A\+PI ID. The reason for this is the A\+PI ID and Frame ID are common to all requests, whereas my definition of frame data is only the A\+PI specific data. 
+
+Reimplemented from \hyperlink{class_at_command_request_aa4fc8f0c8404172cd5532f3d8e5564f2}{At\+Command\+Request}.
+
+\hypertarget{class_remote_at_command_request_a1d78334a8924b0a0e06de6ef3a09c24f}{}\label{class_remote_at_command_request_a1d78334a8924b0a0e06de6ef3a09c24f} 
+\index{Remote\+At\+Command\+Request@{Remote\+At\+Command\+Request}!get\+Frame\+Data\+Length@{get\+Frame\+Data\+Length}}
+\index{get\+Frame\+Data\+Length@{get\+Frame\+Data\+Length}!Remote\+At\+Command\+Request@{Remote\+At\+Command\+Request}}
+\subsubsection{\texorpdfstring{get\+Frame\+Data\+Length()}{getFrameDataLength()}}
+{\footnotesize\ttfamily uint8\+\_\+t Remote\+At\+Command\+Request\+::get\+Frame\+Data\+Length (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+Returns the size of the api frame (not including frame id or api id or checksum). 
+
+Reimplemented from \hyperlink{class_at_command_request_aad12b8357e63fca9e95b6731a4bfda0d}{At\+Command\+Request}.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+C\+:/\+Users/\+Goh Eng Wei/\+Documents/\+Arduino/libraries/\+X\+Bee/X\+Bee.\+h\item 
+C\+:/\+Users/\+Goh Eng Wei/\+Documents/\+Arduino/libraries/\+X\+Bee/X\+Bee.\+cpp\end{DoxyCompactItemize}

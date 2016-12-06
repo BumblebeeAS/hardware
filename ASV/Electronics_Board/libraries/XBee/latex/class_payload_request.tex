@@ -1,0 +1,68 @@
+\hypertarget{class_payload_request}{}\section{Payload\+Request Class Reference}
+\label{class_payload_request}\index{Payload\+Request@{Payload\+Request}}
+
+
+{\ttfamily \#include $<$X\+Bee.\+h$>$}
+
+
+
+Inheritance diagram for Payload\+Request\+:
+% FIG 0
+
+
+Collaboration diagram for Payload\+Request\+:
+% FIG 1
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_payload_request_a22cc9fd971a1334346560689d7d8c8d5}{}\label{class_payload_request_a22cc9fd971a1334346560689d7d8c8d5} 
+{\bfseries Payload\+Request} (uint8\+\_\+t api\+Id, uint8\+\_\+t frame\+Id, uint8\+\_\+t $\ast$payload, uint8\+\_\+t payload\+Length)
+\item 
+uint8\+\_\+t $\ast$ \hyperlink{class_payload_request_a1e2d5757fefda70dfd0c567b3dd0ba39}{get\+Payload} ()
+\item 
+void \hyperlink{class_payload_request_aa9abc1f496a1c457f796207aa8a7567d}{set\+Payload} (uint8\+\_\+t $\ast$payload\+Ptr)
+\item 
+\hypertarget{class_payload_request_a652f6963154003cd6e17cbcee990376a}{}\label{class_payload_request_a652f6963154003cd6e17cbcee990376a} 
+void {\bfseries set\+Payload} (uint8\+\_\+t $\ast$payload\+Ptr, uint8\+\_\+t payload\+Length)
+\item 
+uint8\+\_\+t \hyperlink{class_payload_request_afb718d069f05611623833437c99893a4}{get\+Payload\+Length} ()
+\item 
+void \hyperlink{class_payload_request_a6e86a663ab6299afaa1cf21ad7c2c5c1}{set\+Payload\+Length} (uint8\+\_\+t payload\+Length)
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+All TX packets that support payloads extend this class 
+
+\subsection{Member Function Documentation}
+\hypertarget{class_payload_request_a1e2d5757fefda70dfd0c567b3dd0ba39}{}\label{class_payload_request_a1e2d5757fefda70dfd0c567b3dd0ba39} 
+\index{Payload\+Request@{Payload\+Request}!get\+Payload@{get\+Payload}}
+\index{get\+Payload@{get\+Payload}!Payload\+Request@{Payload\+Request}}
+\subsubsection{\texorpdfstring{get\+Payload()}{getPayload()}}
+{\footnotesize\ttfamily uint8\+\_\+t $\ast$ Payload\+Request\+::get\+Payload (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Returns the payload of the packet, if not null \hypertarget{class_payload_request_afb718d069f05611623833437c99893a4}{}\label{class_payload_request_afb718d069f05611623833437c99893a4} 
+\index{Payload\+Request@{Payload\+Request}!get\+Payload\+Length@{get\+Payload\+Length}}
+\index{get\+Payload\+Length@{get\+Payload\+Length}!Payload\+Request@{Payload\+Request}}
+\subsubsection{\texorpdfstring{get\+Payload\+Length()}{getPayloadLength()}}
+{\footnotesize\ttfamily uint8\+\_\+t Payload\+Request\+::get\+Payload\+Length (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Returns the length of the payload array, as specified by the user. \hypertarget{class_payload_request_aa9abc1f496a1c457f796207aa8a7567d}{}\label{class_payload_request_aa9abc1f496a1c457f796207aa8a7567d} 
+\index{Payload\+Request@{Payload\+Request}!set\+Payload@{set\+Payload}}
+\index{set\+Payload@{set\+Payload}!Payload\+Request@{Payload\+Request}}
+\subsubsection{\texorpdfstring{set\+Payload()}{setPayload()}}
+{\footnotesize\ttfamily void Payload\+Request\+::set\+Payload (\begin{DoxyParamCaption}\item[{uint8\+\_\+t $\ast$}]{payload\+Ptr }\end{DoxyParamCaption})}
+
+Sets the payload array \hypertarget{class_payload_request_a6e86a663ab6299afaa1cf21ad7c2c5c1}{}\label{class_payload_request_a6e86a663ab6299afaa1cf21ad7c2c5c1} 
+\index{Payload\+Request@{Payload\+Request}!set\+Payload\+Length@{set\+Payload\+Length}}
+\index{set\+Payload\+Length@{set\+Payload\+Length}!Payload\+Request@{Payload\+Request}}
+\subsubsection{\texorpdfstring{set\+Payload\+Length()}{setPayloadLength()}}
+{\footnotesize\ttfamily void Payload\+Request\+::set\+Payload\+Length (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{payload\+Length }\end{DoxyParamCaption})}
+
+Sets the length of the payload to include in the request. For example if the payload array is 50 bytes and you only want the first 10 to be included in the packet, set the length to 10. Length must be $<$= to the array length. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+C\+:/\+Users/\+Goh Eng Wei/\+Documents/\+Arduino/libraries/\+X\+Bee/X\+Bee.\+h\item 
+C\+:/\+Users/\+Goh Eng Wei/\+Documents/\+Arduino/libraries/\+X\+Bee/X\+Bee.\+cpp\end{DoxyCompactItemize}

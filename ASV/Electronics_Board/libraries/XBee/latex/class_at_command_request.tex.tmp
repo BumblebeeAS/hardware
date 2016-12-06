@@ -1,0 +1,94 @@
+\hypertarget{class_at_command_request}{}\section{At\+Command\+Request Class Reference}
+\label{class_at_command_request}\index{At\+Command\+Request@{At\+Command\+Request}}
+
+
+{\ttfamily \#include $<$X\+Bee.\+h$>$}
+
+
+
+Inheritance diagram for At\+Command\+Request\+:
+% FIG 0
+
+
+Collaboration diagram for At\+Command\+Request\+:
+% FIG 1
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_at_command_request_ab62a1c4d5cd0d99cfb3e55fccd19f2fa}{}\label{class_at_command_request_ab62a1c4d5cd0d99cfb3e55fccd19f2fa} 
+{\bfseries At\+Command\+Request} (uint8\+\_\+t $\ast$command)
+\item 
+\hypertarget{class_at_command_request_a20ca09437c349f4b71abbcb0bc007c56}{}\label{class_at_command_request_a20ca09437c349f4b71abbcb0bc007c56} 
+{\bfseries At\+Command\+Request} (uint8\+\_\+t $\ast$command, uint8\+\_\+t $\ast$command\+Value, uint8\+\_\+t command\+Value\+Length)
+\item 
+uint8\+\_\+t \hyperlink{class_at_command_request_aa4fc8f0c8404172cd5532f3d8e5564f2}{get\+Frame\+Data} (uint8\+\_\+t pos)
+\item 
+uint8\+\_\+t \hyperlink{class_at_command_request_aad12b8357e63fca9e95b6731a4bfda0d}{get\+Frame\+Data\+Length} ()
+\item 
+\hypertarget{class_at_command_request_a5b2607da4f8f66fde9e87c25d575de7a}{}\label{class_at_command_request_a5b2607da4f8f66fde9e87c25d575de7a} 
+uint8\+\_\+t $\ast$ {\bfseries get\+Command} ()
+\item 
+\hypertarget{class_at_command_request_aeae10ae23793aae47db036a0700407cc}{}\label{class_at_command_request_aeae10ae23793aae47db036a0700407cc} 
+void {\bfseries set\+Command} (uint8\+\_\+t $\ast$command)
+\item 
+\hypertarget{class_at_command_request_a3faa9c8b83960d6464ab718a5f9179fa}{}\label{class_at_command_request_a3faa9c8b83960d6464ab718a5f9179fa} 
+uint8\+\_\+t $\ast$ {\bfseries get\+Command\+Value} ()
+\item 
+\hypertarget{class_at_command_request_acd78ffba48b7c860c2be86f4a7787109}{}\label{class_at_command_request_acd78ffba48b7c860c2be86f4a7787109} 
+void {\bfseries set\+Command\+Value} (uint8\+\_\+t $\ast$command)
+\item 
+\hypertarget{class_at_command_request_ac5a4595489d7c06779511243b38b99fb}{}\label{class_at_command_request_ac5a4595489d7c06779511243b38b99fb} 
+uint8\+\_\+t {\bfseries get\+Command\+Value\+Length} ()
+\item 
+\hypertarget{class_at_command_request_a1fc2fb3033d4c7f1280c0989fd309519}{}\label{class_at_command_request_a1fc2fb3033d4c7f1280c0989fd309519} 
+void {\bfseries set\+Command\+Value\+Length} (uint8\+\_\+t length)
+\item 
+void \hyperlink{class_at_command_request_a6842d0e270162c389d804eafd37a4f45}{clear\+Command\+Value} ()
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+Represents an AT Command TX packet The command is used to configure the serially connected \hyperlink{class_x_bee}{X\+Bee} radio 
+
+\subsection{Member Function Documentation}
+\hypertarget{class_at_command_request_a6842d0e270162c389d804eafd37a4f45}{}\label{class_at_command_request_a6842d0e270162c389d804eafd37a4f45} 
+\index{At\+Command\+Request@{At\+Command\+Request}!clear\+Command\+Value@{clear\+Command\+Value}}
+\index{clear\+Command\+Value@{clear\+Command\+Value}!At\+Command\+Request@{At\+Command\+Request}}
+\subsubsection{\texorpdfstring{clear\+Command\+Value()}{clearCommandValue()}}
+{\footnotesize\ttfamily void At\+Command\+Request\+::clear\+Command\+Value (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Clears the optional command\+Value and command\+Value\+Length so that a query may be sent \hypertarget{class_at_command_request_aa4fc8f0c8404172cd5532f3d8e5564f2}{}\label{class_at_command_request_aa4fc8f0c8404172cd5532f3d8e5564f2} 
+\index{At\+Command\+Request@{At\+Command\+Request}!get\+Frame\+Data@{get\+Frame\+Data}}
+\index{get\+Frame\+Data@{get\+Frame\+Data}!At\+Command\+Request@{At\+Command\+Request}}
+\subsubsection{\texorpdfstring{get\+Frame\+Data()}{getFrameData()}}
+{\footnotesize\ttfamily uint8\+\_\+t At\+Command\+Request\+::get\+Frame\+Data (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{pos }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+Starting after the frame id (pos = 0) and up to but not including the checksum Note\+: Unlike Digi\textquotesingle{}s definition of the frame data, this does not start with the A\+PI ID. The reason for this is the A\+PI ID and Frame ID are common to all requests, whereas my definition of frame data is only the A\+PI specific data. 
+
+Implements \hyperlink{class_x_bee_request_ad5b998cd95a570bdaa4d74c6c8790d94}{X\+Bee\+Request}.
+
+
+
+Reimplemented in \hyperlink{class_remote_at_command_request_a0e576cf564ebd5a82cb2ed05239a856a}{Remote\+At\+Command\+Request}.
+
+\hypertarget{class_at_command_request_aad12b8357e63fca9e95b6731a4bfda0d}{}\label{class_at_command_request_aad12b8357e63fca9e95b6731a4bfda0d} 
+\index{At\+Command\+Request@{At\+Command\+Request}!get\+Frame\+Data\+Length@{get\+Frame\+Data\+Length}}
+\index{get\+Frame\+Data\+Length@{get\+Frame\+Data\+Length}!At\+Command\+Request@{At\+Command\+Request}}
+\subsubsection{\texorpdfstring{get\+Frame\+Data\+Length()}{getFrameDataLength()}}
+{\footnotesize\ttfamily uint8\+\_\+t At\+Command\+Request\+::get\+Frame\+Data\+Length (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+Returns the size of the api frame (not including frame id or api id or checksum). 
+
+Implements \hyperlink{class_x_bee_request_a03b6c558db5836fa7167c0fba7405642}{X\+Bee\+Request}.
+
+
+
+Reimplemented in \hyperlink{class_remote_at_command_request_a1d78334a8924b0a0e06de6ef3a09c24f}{Remote\+At\+Command\+Request}.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+C\+:/\+Users/\+Goh Eng Wei/\+Documents/\+Arduino/libraries/\+X\+Bee/X\+Bee.\+h\item 
+C\+:/\+Users/\+Goh Eng Wei/\+Documents/\+Arduino/libraries/\+X\+Bee/X\+Bee.\+cpp\end{DoxyCompactItemize}

@@ -1,0 +1,128 @@
+Arduino library for communicating with X\+Bees in A\+PI mode, with support for both Series 1 (802.\+15.\+4) and Series 2 (ZB Pro/\+Z\+Net). This library Includes support for the majority of packet types, including\+: T\+X/\+RX, AT Command, Remote AT, I/O Samples and Modem Status.
+
+\subsection*{News}
+
+
+\begin{DoxyItemize}
+\item 11/18/15 Matthijs Kooijman\textquotesingle{}s new book, \href{http://www.amazon.com/gp/product/1784395587/ref=as_li_tl?ie=UTF8&camp=1789&creative=9325&creativeASIN=1784395587&linkCode=as2&tag=xbapra-20&linkId=CEH23GT6ZPOT4ZH4}{\tt Building Wireless Sensor Networks Using Arduino} is now available. He covers the fundamentals of working with X\+Bees in A\+PI mode, including some advanced topics (encryption, security, sleep), as well as creating projects with this library.
+\item 9/15/15 Matthijs Kooijman has contributed numerous enhancements to the library, including callbacks, enhanced debugging, added features and bug fixes! These can be found in the 0.\+6.\+0 release.
+\item 2/28/15 The code is now on github, although some documentation is still on googlecode \href{https://code.google.com/p/xbee-arduino/}{\tt https\+://code.\+google.\+com/p/xbee-\/arduino/}
+\item 2/1/14 Release 0.\+5 is available. This is essentially the 0.\+4 Software Serial release with a bug fix or two. If upgrading from a version prior to 0.\+4, please note that the method for specifying the serial port has changed; see See Software\+Serial\+Release\+Notes. Along with this release I have converted the repository from Subversion to Git
+\item 10/15/12 Release 0.\+4 (beta) is available. Paul Stoffregen (Teensy creator) has contributed a patch that allows for using Software\+Serial? for \hyperlink{class_x_bee}{X\+Bee} communication! This frees up the Serial port for debug or to use with other hardware. Try it out and report any issues on the Google group page. Important\+: See Software\+Serial\+Release\+Notes as it was necessary to change the A\+PI to support this feature.
+\item 12/21/11 Release 0.\+3 is now available. This release includes support for Arduino 1.\+0 along with some bug fixes and a new set\+Serial function for using alternate serial ports (e.\+g. Mega). This release is compatible with previous Arduino releases as well.
+\item 4/3/11 I have created an X\+Bee\+Use\+Cases wiki on \hyperlink{class_x_bee}{X\+Bee} A\+PI that describes several use cases for communicating with X\+Bees.
+\item 11/14/09 Version 0.\+2.\+1 is available. This release contains a bug fix for Remote AT
+\item 10/26/09 X\+Bee-\/\+Arduino 0.\+2 is now available. This release adds support for AT Command, Remote AT, and I/O sample (series 1 and 2) packets. Along with this release I have created several new examples.
+\item 8/09/09 I have released Droplet, a wireless L\+CD display/remote control with support for Twitter, Google Calendar, weather etc. It uses this software to send and receive \hyperlink{class_x_bee}{X\+Bee} packets.
+\item 4/19/09 Release 0.\+1.\+2\+: In this release I added some abbreviated constructors for creating basic Requests and get/set methods to facilitate the reuse of Requests
+\item 3/29/09 Initial Release
+\end{DoxyItemize}
+
+\subsection*{Documentation}
+
+Doxygen A\+PI documentation is available in the downloads. Unfortunately it is not available online anymore as Git does not support the html mime type as Subversion does
+
+https\+://github.com/andrewrapp/xbee-\/arduino/blob/wiki/\+Developers\+Guide.\+md \char`\"{}\+Developer\textquotesingle{}s Guide\char`\"{}
+
+\href{https://github.com/andrewrapp/xbee-api}{\tt X\+Bee A\+PI (Java) Project} Although this project is a Java implementation, it contains a few wikis relevant to this project, including xbee configuration and use cases.
+
+\href{https://groups.google.com/forum/#!forum/xbee-api}{\tt Google Group}
+
+\subsection*{Example}
+
+I have created several sketches of sending/receiving packets with Series 1 and 2 \hyperlink{class_x_bee}{X\+Bee} radios. You can find these in the examples folder. Here\textquotesingle{}s an example of sending a packet with a Series 2 radio\+:
+
+
+\begin{DoxyCode}
+// Create an XBee object at the top of your sketch
+XBee xbee = XBee();
+
+// Start the serial port
+Serial.begin(9600);
+// Tell XBee to use Hardware Serial. It's also possible to use SoftwareSerial
+xbee.setSerial(Serial);
+
+// Create an array for holding the data you want to send.
+uint8\_t payload[] = \{ 'H', 'i' \};
+
+// Specify the address of the remote XBee (this is the SH + SL)
+XBeeAddress64 addr64 = XBeeAddress64(0x0013a200, 0x403e0f30);
+
+// Create a TX Request
+ZBTxRequest zbTx = ZBTxRequest(addr64, payload, sizeof(payload));
+
+// Send your request
+xbee.send(zbTx);
+\end{DoxyCode}
+
+
+See the examples folder for the full source. There are more examples in the download.
+
+See the \hyperlink{class_x_bee}{X\+Bee} A\+PI project for Arduino $<$ -\/ $>$ Computer communication.
+
+To add \hyperlink{class_x_bee}{X\+Bee} support to a new sketch, add \char`\"{}\#include $<$\+X\+Bee.\+h$>$\char`\"{} (without quotes) to the top of your sketch. You can also add it by selecting the \char`\"{}sketch\char`\"{} menu, and choosing \char`\"{}\+Import Library-\/$>$\+X\+Bee\char`\"{}.
+
+\subsection*{Learning/\+Books}
+
+Check out these books to learn more about Arduino and \hyperlink{class_x_bee}{X\+Bee}\+:
+
+
+\begin{DoxyItemize}
+\item \href{http://www.amazon.com/gp/product/1784395587/ref=as_li_tl?ie=UTF8&camp=1789&creative=9325&creativeASIN=1784395587&linkCode=as2&tag=xbapra-20&linkId=CEH23GT6ZPOT4ZH4}{\tt Building Wireless Sensor Networks Using Arduino} (Kindle version available)
+\item \href{http://www.amazon.com/gp/product/0596807732?ie=UTF8&tag=xbapra-20&linkCode=as2&camp=1789&creative=9325&creativeASIN=0596807732Building}{\tt Wireless Sensor Networks\+: with Zig\+Bee, X\+Bee, Arduino, and Processing} (Kindle version available)
+\item Programming Arduino Getting Started with Sketches
+\item Making Things Talk
+\item Getting Started with Arduino (Make\+: Projects (Available in Kindle)
+\item Arduino Cookbook (Oreilly Cookbooks) (Available in Kindle)
+\end{DoxyItemize}
+
+\subsection*{Hardware}
+
+For development and general tinkering I highly recommend using an Arduino that has 2 serial ports, such as the Arduino Leonardo. The reason is the \hyperlink{class_x_bee}{X\+Bee} requires serial port access and it is useful to have another serial port available for debugging via the Arduino serial console.
+
+
+\begin{DoxyItemize}
+\item Arduino Leonardo (recommended)
+\item Arduino U\+NO R3 (single serial port)
+\item Arduino Pro (single serial port)
+\end{DoxyItemize}
+
+\hyperlink{class_x_bee}{X\+Bee} radios come in two models\+: Series 1 (S1) and Series 2 (S2). Series 1 are the best choice for most people as they are the easiest to configure. Series 2 \hyperlink{class_x_bee}{X\+Bee} radios feature Zig\+Bee and require a firmware update to use this software. Series 1 and 2 are not compatible with each other.
+
+
+\begin{DoxyItemize}
+\item \hyperlink{class_x_bee}{X\+Bee} Series 1
+\item \hyperlink{class_x_bee}{X\+Bee} Series 2 (Zig\+Bee)
+\end{DoxyItemize}
+
+The Arduino \hyperlink{class_x_bee}{X\+Bee} Shield is the easiest option for connecting the \hyperlink{class_x_bee}{X\+Bee} to an Arduino. You can find \hyperlink{class_x_bee}{X\+Bee} Shields from several vendors and even on ebay. Keep in mind if you select the Spark\+Fun \hyperlink{class_x_bee}{X\+Bee} Shield, it requires soldering headers (not included) to connect to an Arduino board.
+
+If not using an \hyperlink{class_x_bee}{X\+Bee} shield you\textquotesingle{}ll need a 3.\+3V regulator and logic shifting to convert from 5V (Arduino) to 3.\+3V (\hyperlink{class_x_bee}{X\+Bee}). The Arduino is 3.\+3V tolerant.
+
+An \hyperlink{class_x_bee}{X\+Bee} Explorer is highly recommended for updating firmware and configuring the radio. This is also useful for interfacing an \hyperlink{class_x_bee}{X\+Bee} with a computer. If you are using Series 2 radios you\textquotesingle{}ll need an \hyperlink{class_x_bee}{X\+Bee} Explorer to upload A\+PI firmware to the radio, via X-\/\+C\+TU (they ship with AT firmware).
+
+\subsection*{Installation}
+
+Arduino 1.\+5 and later
+
+Arduino now includes a library manager for easier library installation. From the Sketch menu select include library-\/$>$Manage Libraries, then type \char`\"{}xbee\char`\"{} in the filter and install.
+
+Prior to Arduino 1.\+5 installation is a manual
+
+Download a .zip or .tar.\+gz release from github. Determine the location of your sketchbook by selecting \char`\"{}preferences\char`\"{} on the Arduino menu. Create a \char`\"{}libraries\char`\"{} folder in your sketchbook and unzip the release file in that location.
+
+\subsection*{Uploading Sketches}
+
+Uploading sketches with a Leonardo is as simple as connecting the Arduino to your computer and uploading. When using a single serial port Arduino, such as the U\+NO, the jumpers on the \hyperlink{class_x_bee}{X\+Bee} Shield must be set to U\+SB. Then, after upload, set back to the \hyperlink{class_x_bee}{X\+Bee} position for the \hyperlink{class_x_bee}{X\+Bee} to have access to the serial port. Always remember to power off the Arduino before moving the jumpers.
+
+\subsection*{Configuration}
+
+To use this library your \hyperlink{class_x_bee}{X\+Bee} must be configured in A\+PI mode (AP=2). Take a look at this for information on configuring your radios to form a network.
+
+\subsection*{Questions/\+Feedback}
+
+Questions about this project should be posted to \href{http://groups.google.com/group/xbee-api?pli=1}{\tt http\+://groups.\+google.\+com/group/xbee-\/api?pli=1} Be sure to provide as much detail as possible (e.\+g. what radios s1 or s2, firmware versions, configuration and code).
+
+\subsection*{Consulting/\+Commercial Licenses}
+
+I\textquotesingle{}m available for consulting to assist businesses or entrepreneurs that need help getting their projects up and running. I can also provide a commercial license for situations where you need to distribute code to clients/third parties that would otherwise conflict with G\+PL. For these matters I can be contacted at andrew.\+rapp \mbox{[}at\mbox{]} gmail. 
