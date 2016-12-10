@@ -52,6 +52,7 @@ uint32_t time_test = 0;
 
 bool kill_status = false;
 bool hard_kill = false;
+bool autonomous = false;
 
 HIH613x humidTempSensor(0x27);
 static uint32_t Temp_Humid_loop = 0; //250ms loop Publish temp and humidity
@@ -60,7 +61,9 @@ static uint32_t thrusterSpeedLoop100;
 static uint32_t lightStatsLoop500;
 static uint32_t thrusterHeartbeatLoop200;
 static uint32_t ocsHeartbeatTimeout;
+static uint32_t autoTimeout;
 uint8_t eb_stat_buf[4];
+uint8_t kill_buf[1];
 uint8_t light_num;
 uint8_t humid_ctr = 0;
 
@@ -283,6 +286,7 @@ void loop()
 							break;
 						case CAN_thruster:
 							//parse speed
+							autonomous = true;
 							if (!manualOperationMode)
 							{
 								speed1 = int16_t(CAN.parseCANFrame(read_buffer, 0, 2)) - 1000;
@@ -290,6 +294,7 @@ void loop()
 							}
 							//Thruster1.setMotorDrive(speed1);
 							//Thruster2.setMotorDrive(speed2);
+							autoTimeout = millis();
 							break;
 						default:
 							CAN.sendMsgBuf(read_id, 0, read_size, read_buffer);
@@ -377,6 +382,7 @@ void loop()
 		case 0:
 			humidTempSensor.measurementRequest();
 			humid_ctr++;
+			Temp_Humid_loop = millis();
 			break;
 		case 1:
 			//Get I2C Data
@@ -387,12 +393,11 @@ void loop()
 			eb_stat_buf[2] = readKillBattVoltage();
 			atRequest.setCommand(cmd);
 			eb_stat_buf[3] = getRssi();
-			Serial.println(eb_stat_buf[3]);
 			id = CAN_EB_stats;
-			len = 3;
+			len = 4;
 			forwardCANtoSerial(eb_stat_buf);
 			humid_ctr = 0;
-			Temp_Humid_loop = Temp_Humid_loop + HUMID_TIMEOUT;
+			Temp_Humid_loop = millis();
 			break;
 		default:
 			break;
@@ -400,7 +405,6 @@ void loop()
 	}
 
 #endif
-
 	/**********************************************/
 	/* Read OCS XBEE for Manual Thruster override */
 	/**********************************************/
@@ -416,8 +420,18 @@ void loop()
 			case CAN_thruster:
 				if (payload[8]) manualOperationMode = true;
 				else manualOperationMode = false;
-				speed1 = int16_t(CAN.parseCANFrame(payload, 4, 2)) - 1000;
-				speed2 = int16_t(CAN.parseCANFrame(payload, 6, 2)) - 1000;
+				
+				if(manualOperationMode)//Manual mode activated, overrides CAN data
+				{
+					speed1 = int16_t(CAN.parseCANFrame(payload, 4, 2)) - 1000;
+					speed2 = int16_t(CAN.parseCANFrame(payload, 6, 2)) - 1000;
+				}
+				else if (!manualOperationMode && !autonomous) //When system is not in autonomous mode, to reset speed for joystick release
+				{
+					speed1 = 0;
+					speed2 = 0;
+				}
+
 				/*
 				Serial.print("Mode: ");
 				Serial.print(payload[8], HEX);
@@ -432,6 +446,7 @@ void loop()
 				id = CAN_heartbeat;
 				len = 1;
 				buf[0] = HEARTBEAT_OCS;
+				ocsHeartbeatTimeout = millis();
 				forwardCANtoSerial(buf);
 				break;
 			default:
@@ -457,6 +472,12 @@ void loop()
 			speed2 = 0;
 		}
 	}	
+
+	//Autonomous loop to transit between commands 
+	if (millis() - autoTimeout > AUTONOMOUS_MODE_TIMEOUT)
+	{
+		autonomous = false;
+	}
 
 	//Thruster Control per loop
 	Thruster1.setMotorDrive(speed1);
@@ -488,7 +509,7 @@ void loop()
 	if (Thruster1.readMessage())
 		thruster1_batt_heartbeat = true;
 	if (Thruster2.readMessage())
-		thruster2_batt_heartbeat = true;
+		thruster2_batt_heartbeat |= true;
 
 #ifndef _TEST_
 	if (millis() - thrusterSpeedLoop100 > 100)
@@ -498,6 +519,7 @@ void loop()
 		CAN.setupCANFrame(buf, 0, 2, ((uint32_t)speed1) + 1000);
 		CAN.setupCANFrame(buf, 2, 2, ((uint32_t)speed2) + 1000);
 		forwardCANtoSerial(buf);
+		thrusterSpeedLoop100 = millis();
 	}
 #endif
 
@@ -575,11 +597,20 @@ void loop()
 		if (digitalRead(KILL_STATUS) == LOW)
 		{
 			digitalWrite(LIGHTTOWER_RED, HIGH);
+			id = 103;
+			len = 1;
+			kill_buf[1] = 1;
+			forwardCANtoSerial(kill_buf);
 		}
 		else
 		{
 			digitalWrite(LIGHTTOWER_RED, LOW);
+			id = 103;
+			len = 1;
+			kill_buf[1] = 0;
+			forwardCANtoSerial(kill_buf);
 		}
+
 		if (manualOperationMode)
 		{
 			//setLightTower(2);
