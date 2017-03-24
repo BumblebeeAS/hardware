@@ -1,5 +1,5 @@
 //Library with the implementation of all the functions of the PMB
-#include <PMB.h>
+#include "PMB.h"
 
 //local variables
 PMB thisPMB;
@@ -33,7 +33,8 @@ void loop(){
 		//Serial.println("shunt curr");
 		thisPMB.calculateCapacity();
 		//Serial.println("capacity");
-		thisPMB.logEEPROM();
+		// TODO: Code EEPROM
+		//thisPMB.logEEPROM();
 	}
 	
 	//secondary loop for transmitting messages
@@ -47,7 +48,7 @@ void loop(){
 		thisPMB.updateDisplay();
 	}
 
-	//teritary loop for transmitting CAN status
+	//tertiary loop for transmitting CAN status
 	if(now - lastCANStatusLoop >= CAN_STATUS_LOOP_INTERVAL){
     	lastCANStatusLoop = now;
 		thisPMB.publishCANStats();
