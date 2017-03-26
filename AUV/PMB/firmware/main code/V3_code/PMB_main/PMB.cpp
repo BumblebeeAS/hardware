@@ -44,8 +44,11 @@ void PMB::init(){
 	//do multiple times to initialise the array
 	for (uint8_t i = 0; i < MEDIAN_FILTER_SIZE; ++i){
 		getShuntCurrent();
+    cell6_raw_array[cell6_raw_index] = analogRead(PIN_CELL6);
+    cell6_raw_index = (cell6_raw_index+1) % MEDIAN_FILTER_SIZE;
 		delay(10);
 	}
+ 
 	// Serial.println(shunt_current);
 
 	// TODO: Implement check for random shutdown (to determine get cap from eeprom)
@@ -53,7 +56,7 @@ void PMB::init(){
 
 	//read other values so they are initialised
 	readCellVoltages();
-	readPressure();
+  readPressure();
 	readTemperature();
 
 	//finally turn power to the vehicle on
@@ -123,14 +126,25 @@ void PMB::getCapFromStorage(){
 
 void PMB::readCellVoltages(){
 
-	cell_voltage[5] = ((analogRead(PIN_CELL6) * cell6_adc_ratio) + cell6_adc_offset);
+  cell6_raw_array[cell6_raw_index] = analogRead(PIN_CELL6);
+  cell6_raw_index = (cell6_raw_index+1) % MEDIAN_FILTER_SIZE;
+  cell_voltage[5] = ((mean(cell6_raw_array) * cell6_adc_ratio) + cell6_adc_offset);
+  //reading = mean(cell6_raw_array);
+  //cell_voltage[5] = ((reading * cell6_adc_ratio) + cell6_adc_offset);
+  
 	// 0 - 4 is garbage value
-    cell_voltage[4] = ((analogRead(PIN_CELL5) * cell5_adc_ratio) + cell5_adc_offset);
-    cell_voltage[3] = ((analogRead(PIN_CELL4) * cell4_adc_ratio) + cell4_adc_offset);
-    cell_voltage[2] = ((analogRead(PIN_CELL3) * cell3_adc_ratio) + cell3_adc_offset);
-    cell_voltage[1] = ((analogRead(PIN_CELL2) * cell2_adc_ratio) + cell2_adc_offset);
-    cell_voltage[0] = ((analogRead(PIN_CELL1) * cell1_adc_ratio) + cell1_adc_offset);
+  cell_voltage[4] = ((analogRead(PIN_CELL5) * cell5_adc_ratio) + cell5_adc_offset);
+  cell_voltage[3] = ((analogRead(PIN_CELL4) * cell4_adc_ratio) + cell4_adc_offset);
+  cell_voltage[2] = ((analogRead(PIN_CELL3) * cell3_adc_ratio) + cell3_adc_offset);
+  cell_voltage[1] = ((analogRead(PIN_CELL2) * cell2_adc_ratio) + cell2_adc_offset);
+  cell_voltage[0] = ((analogRead(PIN_CELL1) * cell1_adc_ratio) + cell1_adc_offset);
 
+  // Flag if battery low
+  if (cell_voltage[5] < BATT_LOW_VOLT) displayLowWarning();
+
+  // Auto-shutdown if battery super low
+  if (cell_voltage[5] < BATT_SHUTDOWN_VOLT && cell_voltage[5] > 15) shutDownPMB();
+  
 }
 
 void PMB::getShuntCurrent(){
@@ -163,6 +177,14 @@ uint16_t PMB::median(uint16_t buffer[]){
 	}
 
 	return median_val;
+}
+
+uint16_t PMB::mean(uint16_t buffer[]){
+  int accum = 0;
+  for(uint8_t i=0; i< MEDIAN_FILTER_SIZE; i++){
+    accum += buffer[i];
+  }
+  return accum/MEDIAN_FILTER_SIZE;
 }
 
 uint16_t PMB::extractMin(uint16_t *source, uint8_t size){
@@ -250,6 +272,7 @@ void PMB::publishPMBStats(){
 	CAN.setupCANFrame(PMB_stats3, 2, 1, percentage_left);
 	CAN.setupCANFrame(PMB_stats3, 3, 1, board_temperature);
 	CAN.setupCANFrame(PMB_stats3, 4, 1, board_pressure);
+  CAN.setupCANFrame(PMB_stats3, 5, 1, (batt_low)? 1: 0);
 
 	//Send those messages
 	CAN.sendMsgBuf(ID_CAN_PMB_stats[0], 0, 8, PMB_stats1);
@@ -376,6 +399,10 @@ void PMB::updateDisplay(){
    display.setCursor(6, 0);
    display.write("Pod Pres: ");
    display.print(board_pressure);
+   display.setCursor(7, 0);
+   //display.print(reading);
+   display.write("Low Batt: ");
+   (batt_low) ? display.print("YES") : display.print("NO");
 
 // for adafruit library
 //    display.setTextSize(1);
@@ -404,12 +431,13 @@ void PMB::updateDisplay(){
 }
 
 void PMB::shutDownPMB(){
-	//displayTextOLED("PMB SHUTDOWN", 1, 2);
-	delay(2000);
+	displayTextOLED("PMB SHUTDOWN", 1, 2);
+	delay(4000);
 	digitalWrite(PIN_PMB_POWER, HIGH);
 }
 
-void PMB::shutDownVehicle(){	
+void PMB::shutDownVehicle(){
+  //displayTextOLED("VEHICLE SHUTDOWN", 1, 2);	
 	delay(2000);
 	digitalWrite(PIN_VEHICLE_POWER, LOW);
 }
@@ -422,6 +450,6 @@ void PMB::powerUpVehicle(){
 }
 
 void PMB::displayLowWarning(){
-	delay(1000);
-	//LOW BATTERY WARNING
+  //LOW BATTERY WARNING
+  batt_low = true;
 }

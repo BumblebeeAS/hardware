@@ -31,6 +31,9 @@
 #define MEDIAN_FILTER_SIZE			7
 		
 #define CELLS						6
+
+#define BATT_LOW_VOLT        22200
+#define BATT_SHUTDOWN_VOLT   21000
 		
 #define CONFIG_TEMP_SENS			96
 

@@ -33,11 +33,13 @@ private:
 				
 	uint16_t cell_voltage[CELLS]   							= {0};
 	//for filtering cell 6
-	// uint16_t cell6_raw_array[MEDIAN_FILTER_SIZE] 			= {0};
-	// uint8_t cell6_raw_index 								= 0;
-	// uint16_t cell6_mean_array[MEDIAN_FILTER_SIZE] 			= {0};
-	// uint16_t cell6_filtered 								= 0;
-				
+	uint16_t cell6_raw_array[MEDIAN_FILTER_SIZE] 			= {0};
+	uint8_t cell6_raw_index 								= 0;
+
+  //uint16_t reading = 0;
+  
+  bool batt_low                           = false;
+        
 	uint8_t board_pressure 									= 0;
 	uint8_t board_temperature 								= 0;
 
@@ -50,7 +52,7 @@ private:
 
 	uint8_t PMB_stats1[8]									= {0, 1, 2, 3, 4, 5, 6, 7};
 	uint8_t PMB_stats2[8] 									= {8, 9, 10, 11, 12, 13, 14, 15};
-	uint8_t PMB_stats3[5] 									= {16, 17, 18, 19, 20};
+	uint8_t PMB_stats3[6] 									= {16, 17, 18, 19, 20, 21};
 
 	//all the components
 	// ADS1115 ADS;
@@ -69,6 +71,7 @@ private:
 	void getCapFromVolt();
 	void getCapFromStorage();
 	uint16_t median(uint16_t buffer[]);
+  uint16_t mean(uint16_t buffer[]);
 	uint16_t extractMin(uint16_t *source, uint8_t size);
 
 public:
