@@ -14,7 +14,7 @@
 #include <can.h>
 #include <EEPROMPlus.h>
 #include <SSD1306_text.h>
-//#include <Adafruit_SSD1306.h>
+
 
 class PMB{
 private:
@@ -61,7 +61,6 @@ private:
 	MCP_CAN CAN;
 	EEPROMPlus EEPROM;
 	SSD1306_text display;
-	//Adafruit_SSD1306 display;
 
 	void CAN_init();
 	void CAN_checkForPmb1();

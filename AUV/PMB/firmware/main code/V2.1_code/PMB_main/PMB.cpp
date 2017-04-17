@@ -28,7 +28,6 @@ void PMB::init(){
 
 	//init devices
 	display.init();
-//  display.begin(SSD1306_SWITCHCAPVCC, 0x3D); //for adafruit
  
 	// ADS.init();
 	ADS.begin();
@@ -367,11 +366,9 @@ void PMB::logEEPROM(){
 }
 
 void PMB::displayTextOLED(char* text, uint8_t size, uint8_t pos){
-	  //display.clearDisplay(); //for adafruit
     display.clear();
 	  display.setCursor(pos, 10);
     display.setTextSize(size, 1);
-    //display.setTextSize(1); //for adafruit library
     display.write(text);
 }
 
@@ -403,31 +400,6 @@ void PMB::updateDisplay(){
    //display.print(reading);
    display.write("Low Batt: ");
    (batt_low) ? display.print("YES") : display.print("NO");
-
-// for adafruit library
-//    display.setTextSize(1);
-//	  display.setCursor(0, 0);
-//    display.print("Battery Pod ");
-//    display.print(PMB_no);
-//	  display.setCursor(1, 0);
-//    display.print("Batt %: ");
-//    display.print(percentage_left);
-//	  display.setCursor(2, 0);
-//    display.print("Batt Volt: ");
-//    display.print(cell_voltage[5]);
-//	  display.setCursor(3, 0);
-//    display.print("Current drawn: ");
-//    display.print(shunt_current);
-//    display.setCursor(4, 0);
-//    display.print("C: ");
-//    display.print(capacity_left);
-//  	display.setCursor(5, 0);
-//    display.print("Pod Temp: ");
-//    display.print(board_temperature);
-//	  display.setCursor(6, 0);
-//    display.print("Pod Pres: ");
-//    display.print(board_pressure);
-
 }
 
 void PMB::shutDownPMB(){
@@ -445,7 +417,6 @@ void PMB::shutDownVehicle(){
 void PMB::powerUpVehicle(){
 	delay(1000);
 	digitalWrite(PIN_VEHICLE_POWER, HIGH);
-	//display.clearDisplay(); //for adafruit
 	display.clear();
 }
 

@@ -6,7 +6,7 @@
 //maximum battery capacity
 #define BATTERY_CAPACITY 		36000000
 
-#define PMB_no					4
+#define PMB_no					6
 
 #if PMB_no == 1
 	//cubic approximation coefficients
@@ -102,14 +102,14 @@
 	#define CURRENT_OFFSET      0.03
 
 	//voltage readings caliberation
-	#define cell6_adc_ratio     34.25 
+	#define cell6_adc_ratio     32.095
 	#define cell5_adc_ratio     0.197181814  
 	#define cell4_adc_ratio     0.244377275  
 	#define cell3_adc_ratio     0.325966493  
 	#define cell2_adc_ratio     0.497397968  
 	#define cell1_adc_ratio     0.993694855  
 
-	#define cell6_adc_offset    -592.62 
+	#define cell6_adc_offset    89.271 
 	#define cell5_adc_offset    0.05269355 
 	#define cell4_adc_offset    -0.1076     
 	#define cell3_adc_offset    -0.1076     
@@ -129,14 +129,14 @@
 	#define CURRENT_OFFSET      49.307
 
 	//voltage readings caliberation
-	#define cell6_adc_ratio     32.214
+	#define cell6_adc_ratio     32.512
 	#define cell5_adc_ratio     0.197181814  
 	#define cell4_adc_ratio     0.244377275  
 	#define cell3_adc_ratio     0.325966493  
 	#define cell2_adc_ratio     0.497397968  
 	#define cell1_adc_ratio     0.993694855  
 
-	#define cell6_adc_offset    55.385  
+	#define cell6_adc_offset    88.27  
 	#define cell5_adc_offset    0.05269355 
 	#define cell4_adc_offset    -0.1076     
 	#define cell3_adc_offset    -0.1076     
@@ -156,14 +156,14 @@
 	#define CURRENT_OFFSET      303.9
 
 	//voltage readings caliberation
-	#define cell6_adc_ratio     32.481
+	#define cell6_adc_ratio     32.324
 	#define cell5_adc_ratio     0.197181814  
 	#define cell4_adc_ratio     0.244377275  
 	#define cell3_adc_ratio     0.325966493  
 	#define cell2_adc_ratio     0.497397968  
 	#define cell1_adc_ratio     0.993694855  
 
-	#define cell6_adc_offset    -138.87
+	#define cell6_adc_offset    86.55
 	#define cell5_adc_offset    0.05269355 
 	#define cell4_adc_offset    -0.1076     
 	#define cell3_adc_offset    -0.1076     
