@@ -126,9 +126,10 @@ void PMB::getCapFromStorage(){
 void PMB::readCellVoltages(){
 
   cell6_raw_array[cell6_raw_index] = analogRead(PIN_CELL6);
+  //reading = cell6_raw_array[cell6_raw_index];
   cell6_raw_index = (cell6_raw_index+1) % MEDIAN_FILTER_SIZE;
   cell_voltage[5] = ((mean(cell6_raw_array) * cell6_adc_ratio) + cell6_adc_offset);
-  //reading = mean(cell6_raw_array);
+  
   //cell_voltage[5] = ((reading * cell6_adc_ratio) + cell6_adc_offset);
   
 	// 0 - 4 is garbage value
@@ -147,13 +148,19 @@ void PMB::readCellVoltages(){
 }
 
 void PMB::getShuntCurrent(){
-	
-	uint16_t ads_raw = ADS.readADC_SingleEnded(CHANNEL_CURRENT_SENS);
+
+  int16_t temp = ADS.readADC_SingleEnded(CHANNEL_CURRENT_SENS_A);
+	uint16_t ads_raw = (temp < 0) ? 0 : temp;
+//  temp = ADS.readADC_SingleEnded(CHANNEL_CURRENT_SENS_B);
+//  uint16_t ads_raw_C = (temp < 0) ? 0 : temp;
 	shunt_voltage_raw_array[shunt_voltage_raw_index] = ads_raw;
-	shunt_voltage_filtered = median(shunt_voltage_raw_array);
+	shunt_voltage_filtered = mean(shunt_voltage_raw_array);
+  //reading = ADS.readADC_SingleEnded(CHANNEL_CURRENT_SENS_A);
+  //reading1 = ADS.readADC_SingleEnded(CHANNEL_CURRENT_SENS_B);
 	
 	// TODO: Recalibrate offsets
-	shunt_current = float((shunt_voltage_filtered * CURRENT_RATIO * 1.5) + CURRENT_OFFSET - 100.0);
+	shunt_current = float((shunt_voltage_filtered * CURRENT_RATIO) + CURRENT_OFFSET);
+  if (shunt_current < 0) shunt_current = 0;
 
 	shunt_voltage_raw_index = (shunt_voltage_raw_index+1) % MEDIAN_FILTER_SIZE;
 }
@@ -178,12 +185,22 @@ uint16_t PMB::median(uint16_t buffer[]){
 	return median_val;
 }
 
-uint16_t PMB::mean(uint16_t buffer[]){
-  int accum = 0;
+int16_t PMB::avg(int16_t buffer[]){
+  int32_t accum = 0;
   for(uint8_t i=0; i< MEDIAN_FILTER_SIZE; i++){
     accum += buffer[i];
   }
-  return accum/MEDIAN_FILTER_SIZE;
+  int16_t avg = accum/MEDIAN_FILTER_SIZE;
+  return avg;
+}
+
+uint16_t PMB::mean(uint16_t buffer[]){
+  uint32_t accum = 0;
+  for(uint8_t i=0; i< MEDIAN_FILTER_SIZE; i++){
+    accum += buffer[i];
+  }
+  uint16_t avg = accum/MEDIAN_FILTER_SIZE;
+  return avg;
 }
 
 uint16_t PMB::extractMin(uint16_t *source, uint8_t size){
@@ -376,16 +393,18 @@ void PMB::updateDisplay(){
 	//display.clear();
    display.setTextSize(1, 1);
    display.setCursor(0, 0);
-   display.write("Battery Pod ");
+   display.write("Battery PMB ");
    display.print(PMB_no);
    display.setCursor(1, 0);
-   display.write("Batt %: ");
+   display.write("Batt %:      ");
+   display.setCursor(1, 48);
    display.print(percentage_left);
    display.setCursor(2, 0);
    display.write("Batt Volt: ");
    display.print(cell_voltage[5]);
    display.setCursor(3, 0);
-   display.write("Current drawn: ");
+   display.write("Current drawn:        ");
+   display.setCursor(3, 88);
    display.print(shunt_current);
    display.setCursor(4, 0);
    display.write("C: ");
@@ -397,7 +416,11 @@ void PMB::updateDisplay(){
    display.write("Pod Pres: ");
    display.print(board_pressure);
    display.setCursor(7, 0);
-   //display.print(reading);
+//   display.write("|| ");
+//   display.print(reading);
+//   display.write(" ||");
+//   display.print(reading1);
+//   display.write(" ||");
    display.write("Low Batt: ");
    (batt_low) ? display.print("YES") : display.print("NO");
 }

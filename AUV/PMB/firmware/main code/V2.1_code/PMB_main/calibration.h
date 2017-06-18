@@ -6,7 +6,7 @@
 //maximum battery capacity
 #define BATTERY_CAPACITY 		36000000
 
-#define PMB_no					6
+#define PMB_no				 3
 
 #if PMB_no == 1
 	//cubic approximation coefficients
@@ -17,8 +17,8 @@
 	#define coef_e				1489641.436
 
 	//current measurement caliberation
-	#define CURRENT_RATIO       1.7123 
-	#define CURRENT_OFFSET      21.202
+	#define CURRENT_RATIO       3.3583
+	#define CURRENT_OFFSET      -94.338
 
 	//voltage readings caliberation
 	#define cell6_adc_ratio     31.94
@@ -44,8 +44,8 @@
 	#define coef_e				1489641.436
 
 	//current measurement caliberation
-	#define CURRENT_RATIO       1.5173 
-	#define CURRENT_OFFSET      77.834
+	#define CURRENT_RATIO       2.7797 
+	#define CURRENT_OFFSET      -62.246
 
 	//voltage readings caliberation
 	#define cell6_adc_ratio     31.998
@@ -71,8 +71,8 @@
 	#define coef_e				1399267.88461
 
 	//current measurement caliberation
-	#define CURRENT_RATIO       1.4851
-	#define CURRENT_OFFSET      104.61
+	#define CURRENT_RATIO       2.288
+	#define CURRENT_OFFSET      -104.98
 
 	//voltage readings caliberation
 	#define cell6_adc_ratio     33.399
@@ -82,7 +82,7 @@
 	#define cell2_adc_ratio     0.497397968  
 	#define cell1_adc_ratio     0.993694855  
 
-	#define cell6_adc_offset    -39.788
+	#define cell6_adc_offset    -539.788 //additional -500mV offset
 	#define cell5_adc_offset    0.05269355 
 	#define cell4_adc_offset    -0.1076     
 	#define cell3_adc_offset    -0.1076     
@@ -98,8 +98,8 @@
 	#define coef_e				1489641.436
 
 	//current measurement caliberation
-	#define CURRENT_RATIO       0.7216811031  
-	#define CURRENT_OFFSET      0.03
+	#define CURRENT_RATIO       2.3196  
+	#define CURRENT_OFFSET      -73.755
 
 	//voltage readings caliberation
 	#define cell6_adc_ratio     32.095
@@ -125,8 +125,8 @@
 	#define coef_e				1489641.436
 
 	//current measurement caliberation 
-	#define CURRENT_RATIO       1.5452
-	#define CURRENT_OFFSET      49.307
+	#define CURRENT_RATIO       4.6445
+	#define CURRENT_OFFSET      -234.74
 
 	//voltage readings caliberation
 	#define cell6_adc_ratio     32.512
@@ -152,8 +152,8 @@
 	#define coef_e				1489641.436
 
 	//current measurement caliberation 
-	#define CURRENT_RATIO       1.7759  
-	#define CURRENT_OFFSET      303.9
+	#define CURRENT_RATIO       2.1304  
+	#define CURRENT_OFFSET      -152.86
 
 	//voltage readings caliberation
 	#define cell6_adc_ratio     32.324

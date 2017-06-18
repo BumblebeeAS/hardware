@@ -44,8 +44,9 @@
 #define ADDR_OLED					0X3D
 
 
-#define CHANNEL_CURRENT_SENS		0
+#define CHANNEL_CURRENT_SENS_A		0
 #define CHANNEL_PRESSURE			1
+#define CHANNEL_CURRENT_SENS_B    2
 
 #define INTPRES_REF 				5
 

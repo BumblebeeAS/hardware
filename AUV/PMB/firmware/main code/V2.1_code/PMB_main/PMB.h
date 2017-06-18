@@ -19,8 +19,11 @@
 class PMB{
 private:
 	uint16_t shunt_voltage_raw_array[MEDIAN_FILTER_SIZE] 	= {0};
-	uint8_t shunt_voltage_raw_index 						= 0;
-	uint16_t shunt_voltage_filtered 						= 0;
+	uint8_t shunt_voltage_raw_index						= 0;
+	uint16_t shunt_voltage_filtered 					= 0;
+//  uint16_t shunt_voltage_raw_array_C[MEDIAN_FILTER_SIZE]   = {0};
+//  uint8_t shunt_voltage_raw_index_C             = 0;
+//  uint16_t shunt_voltage_filtered_C             = 0;
 	float shunt_current  									= 0.0;
 	uint32_t old_time                                       = 0.0;
 	uint32_t new_time                                       = 0.0;
@@ -36,7 +39,8 @@ private:
 	uint16_t cell6_raw_array[MEDIAN_FILTER_SIZE] 			= {0};
 	uint8_t cell6_raw_index 								= 0;
 
-  //uint16_t reading = 0;
+  int16_t reading = 0;
+  int16_t reading1 = 0;
   
   bool batt_low                           = false;
         
@@ -71,6 +75,7 @@ private:
 	void getCapFromStorage();
 	uint16_t median(uint16_t buffer[]);
   uint16_t mean(uint16_t buffer[]);
+  int16_t avg(int16_t buffer[]);
 	uint16_t extractMin(uint16_t *source, uint8_t size);
 
 public:
