@@ -9,11 +9,11 @@
 #include "can_defines.h"
 
 //Include libraries
-#include <Adafruit_ADS1015.h>
-#include <TempAD7414.h>
-#include <can.h>
-#include <EEPROMPlus.h>
-#include <SSD1306_text.h>
+#include "TempAD7414.h"
+#include "can.h"
+#include "EEPROMPlus.h"
+#include "SSD1306_text.h"
+#include "Adafruit_ADS1015.h"
 
 
 class PMB{

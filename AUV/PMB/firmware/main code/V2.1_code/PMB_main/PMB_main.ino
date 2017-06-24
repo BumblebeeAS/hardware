@@ -1,4 +1,6 @@
 //Library with the implementation of all the functions of the PMB
+
+#include "Arduino.h"
 #include "PMB.h"
 
 //local variables
@@ -8,8 +10,8 @@ uint32_t lastMsgLoop = 0;
 uint32_t lastCANStatusLoop = 0;
 
 void setup(){
-  Serial.begin(9600);
-  delay(500);
+	Serial.begin(9600);
+	delay(500);
 	thisPMB.init();
 }
 
@@ -20,7 +22,7 @@ void loop(){
 	//See if need to shutdown
 	if(digitalRead(PIN_POWEROFF_SIGNAL)){
 		//Serial.println(digitalRead(PIN_POWEROFF_SIGNAL));
-	    thisPMB.shutDownPMB();
+		thisPMB.shutDownPMB();
 	}
 
 	//main loop for calculation
@@ -36,21 +38,23 @@ void loop(){
 		// TODO: Code EEPROM
 		//thisPMB.logEEPROM();
 	}
-	
+
 	//secondary loop for transmitting messages
 	if(now - lastMsgLoop >= MSG_LOOP_INTERVAL){
-    	lastMsgLoop = now;
+		lastMsgLoop = now;
 		thisPMB.readPressure();
 		thisPMB.readTemperature();
 		//serial for debugging purposes
 		thisPMB.publishSerial();
-    thisPMB.publishPMBStats();
+		thisPMB.publishPMBStats();
 		thisPMB.updateDisplay();
 	}
 
 	//tertiary loop for transmitting CAN status
 	if(now - lastCANStatusLoop >= CAN_STATUS_LOOP_INTERVAL){
-    	lastCANStatusLoop = now;
+		lastCANStatusLoop = now;
 		thisPMB.publishCANStats();
 	}
 }
+
+

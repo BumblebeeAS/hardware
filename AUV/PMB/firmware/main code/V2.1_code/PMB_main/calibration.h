@@ -62,7 +62,7 @@
 	#define cell2_adc_offset    0.0078684   
 	#define cell1_adc_offset    0.00739624  
 
-#elif PMB_no == 3
+#elif PMB_no == 3  //HARDCODED CAUSE THE PMB READS CELL5
 	//cubic approximation coefficients
 	#define coef_a              4.42455
 	#define coef_b              -420.46384
@@ -71,18 +71,18 @@
 	#define coef_e				1399267.88461
 
 	//current measurement caliberation
-	#define CURRENT_RATIO       2.288
-	#define CURRENT_OFFSET      -104.98
+	#define CURRENT_RATIO       2.9219
+	#define CURRENT_OFFSET      -166.11
 
 	//voltage readings caliberation
-	#define cell6_adc_ratio     33.399
+	#define cell6_adc_ratio     38.531
 	#define cell5_adc_ratio     0.197181814  
 	#define cell4_adc_ratio     0.244377275  
 	#define cell3_adc_ratio     0.325966493  
 	#define cell2_adc_ratio     0.497397968  
 	#define cell1_adc_ratio     0.993694855  
 
-	#define cell6_adc_offset    -539.788 //additional -500mV offset
+	#define cell6_adc_offset    178.61
 	#define cell5_adc_offset    0.05269355 
 	#define cell4_adc_offset    -0.1076     
 	#define cell3_adc_offset    -0.1076     
