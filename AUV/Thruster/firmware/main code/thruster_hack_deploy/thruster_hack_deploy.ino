@@ -178,7 +178,6 @@ void checkCANmsg()
 			break;
 		}
 		case CAN_heartbeat:
-			CAN.readMsgBuf(&len, buf);
 			if (buf[0] == 5)
 			{
 				Serial.println(buf[0]);
@@ -187,9 +186,21 @@ void checkCANmsg()
 			}
 			break;
 		case CAN_SA_stats:
-			CAN.readMsgBuf(&len, buf);
-			Serial.print("le");
-			Serial.println(buf[3]);
+    Serial.println("*************** SA CAN ********************");
+      Serial.print("le");
+      Serial.println(buf[3]);
+     Serial.print("CANID: ");
+     Serial.println(CAN.getCanId());
+     Serial.print("buflen: ");
+     Serial.println(len,HEX);
+     Serial.print("buf: ");
+     for(int i = 0; i < len; i++)
+     {
+      Serial.print(buf[i],HEX);
+      Serial.print(" ");
+     }
+     Serial.println("");
+    Serial.println("*******************************************");
 			if (buf[3] == 1)
 			{
 				while (1)
@@ -205,6 +216,7 @@ void checkCANmsg()
 			}
 		default:{
 			//TODO=>throw an error 
+       break;
 		};
 				break;
 		}
