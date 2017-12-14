@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="6.6.0">
+<eagle version="8.1.0">
 <drawing>
 <settings>
 <setting alwaysvectorfont="no"/>
@@ -64,7 +64,7 @@
 <layer number="54" name="bPadExt" color="1" fill="1" visible="no" active="no"/>
 <layer number="56" name="wert" color="7" fill="1" visible="no" active="no"/>
 <layer number="57" name="tCAD" color="7" fill="1" visible="no" active="no"/>
-<layer number="90" name="Modules" color="5" fill="1" visible="yes" active="yes"/>
+<layer number="90" name="Modules" color="5" fill="1" visible="no" active="no"/>
 <layer number="91" name="Nets" color="2" fill="1" visible="no" active="no"/>
 <layer number="92" name="Busses" color="1" fill="1" visible="no" active="no"/>
 <layer number="93" name="Pins" color="2" fill="1" visible="no" active="no"/>
@@ -3715,6 +3715,9 @@ design rules under a new name.</description>
 <autorouter>
 <pass name="Default">
 <param name="RoutingGrid" value="50mil"/>
+<param name="AutoGrid" value="1"/>
+<param name="Efforts" value="0"/>
+<param name="TopRouterVariant" value="1"/>
 <param name="tpViaShape" value="round"/>
 <param name="PrefDir.1" value="|"/>
 <param name="PrefDir.2" value="0"/>
@@ -3831,38 +3834,38 @@ design rules under a new name.</description>
 <attribute name="NAME" x="38.52" y="53.277" size="0.6096" layer="25"/>
 </element>
 <element name="C1" library="Panasonic-EEEFT_EEEH" package="CAPAE660X800N" value="100UF" x="57.15" y="35.56" smashed="yes" rot="R270">
-<attribute name="PACKAGE" value="CASE-D8" x="6.35" y="-16.51" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="OC_NEWARK" value="31T8173" x="6.35" y="-16.51" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="TOLERANCE" value="±20 %" x="6.35" y="-16.51" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="MPN" value="EEE-FTV151XAP" x="6.35" y="-16.51" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="SUPPLIER" value="PANASONIC" x="6.35" y="-16.51" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="VOLTAGERATING" value="35V" x="6.35" y="-16.51" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="OC_FARNELL" value="1868418  " x="6.35" y="-16.51" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="NAME" x="59.7154" y="40.3606" size="0.6096" layer="25" ratio="10" rot="SR0"/>
+<attribute name="OC_FARNELL" value="1868418  " x="6.35" y="-16.51" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="OC_NEWARK" value="31T8173" x="6.35" y="-16.51" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="PACKAGE" value="CASE-D8" x="6.35" y="-16.51" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="SUPPLIER" value="PANASONIC" x="6.35" y="-16.51" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="TOLERANCE" value="±20 %" x="6.35" y="-16.51" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="VOLTAGERATING" value="35V" x="6.35" y="-16.51" size="1.778" layer="27" rot="R270" display="off"/>
 </element>
 <element name="D2" library="diode" package="1N5817" value="1N5817" x="44.958" y="27.178" smashed="yes" rot="R180">
 <attribute name="NAME" x="45.926" y="29.669" size="0.6096" layer="25" rot="R180"/>
 </element>
 <element name="L1" library="WE-PD" package="WE-PD_1030/1050" value="100 uH" x="46.228" y="35.814" smashed="yes">
-<attribute name="PACKAGE" value="1050" x="117.348" y="4.064" size="1.778" layer="27" display="off"/>
-<attribute name="OC_NEWARK" value="88T7105" x="117.348" y="4.064" size="1.778" layer="27" display="off"/>
 <attribute name="MPN" value="7447714101" x="117.348" y="4.064" size="1.778" layer="27" display="off"/>
-<attribute name="SUPPLIER" value="Wuerth Elektronik" x="117.348" y="4.064" size="1.778" layer="27" display="off"/>
-<attribute name="OC_FARNELL" value="2082677" x="117.348" y="4.064" size="1.778" layer="27" display="off"/>
 <attribute name="NAME" x="45.8036" y="42.0097" size="0.6096" layer="25"/>
+<attribute name="OC_FARNELL" value="2082677" x="117.348" y="4.064" size="1.778" layer="27" display="off"/>
+<attribute name="OC_NEWARK" value="88T7105" x="117.348" y="4.064" size="1.778" layer="27" display="off"/>
+<attribute name="PACKAGE" value="1050" x="117.348" y="4.064" size="1.778" layer="27" display="off"/>
+<attribute name="SUPPLIER" value="Wuerth Elektronik" x="117.348" y="4.064" size="1.778" layer="27" display="off"/>
 </element>
 <element name="R3" library="resistor" package="R0805W" value="330" x="65.786" y="27.94" smashed="yes">
 <attribute name="NAME" x="67.945" y="26.797" size="0.6096" layer="25"/>
 </element>
 <element name="C2" library="Panasonic-EEEFT_EEEH" package="CAPAE660X800N" value="100UF" x="57.15" y="48.26" smashed="yes" rot="R90">
-<attribute name="PACKAGE" value="CASE-D8" x="107.95" y="111.76" size="1.778" layer="27" rot="R90" display="off"/>
-<attribute name="OC_NEWARK" value="31T8173" x="107.95" y="111.76" size="1.778" layer="27" rot="R90" display="off"/>
-<attribute name="TOLERANCE" value="±20 %" x="107.95" y="111.76" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="MPN" value="EEE-FTV151XAP" x="107.95" y="111.76" size="1.778" layer="27" rot="R90" display="off"/>
-<attribute name="SUPPLIER" value="PANASONIC" x="107.95" y="111.76" size="1.778" layer="27" rot="R90" display="off"/>
-<attribute name="VOLTAGERATING" value="35V" x="107.95" y="111.76" size="1.778" layer="27" rot="R90" display="off"/>
-<attribute name="OC_FARNELL" value="1868418  " x="107.95" y="111.76" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="NAME" x="59.0804" y="53.1876" size="0.6096" layer="25" ratio="10" rot="SR0"/>
+<attribute name="OC_FARNELL" value="1868418  " x="107.95" y="111.76" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="OC_NEWARK" value="31T8173" x="107.95" y="111.76" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="PACKAGE" value="CASE-D8" x="107.95" y="111.76" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="SUPPLIER" value="PANASONIC" x="107.95" y="111.76" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="TOLERANCE" value="±20 %" x="107.95" y="111.76" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="VOLTAGERATING" value="35V" x="107.95" y="111.76" size="1.778" layer="27" rot="R90" display="off"/>
 </element>
 <element name="JP2" library="pinhead" package="1X06/90" value="" x="114.3" y="16.764" smashed="yes" rot="R270">
 <attribute name="NAME" x="116.84" y="18.669" size="0.6096" layer="25" ratio="10" rot="R90"/>
@@ -3875,7 +3878,7 @@ design rules under a new name.</description>
 <element name="SW1" library="mc32829(pb_sw)" package="MC32829" value="MC32829" x="84.582" y="46.99" smashed="yes" rot="R270">
 <attribute name="NAME" x="83.439" y="52.324" size="0.6096" layer="25"/>
 </element>
-<element name="C3" library="SparkFun-Capacitors" package="0805" value="100p" x="80.518" y="11.176" smashed="yes" rot="MR0">
+<element name="C3" library="SparkFun-Capacitors" package="0805" value="100n" x="80.518" y="11.176" smashed="yes" rot="MR0">
 <attribute name="NAME" x="81.153" y="12.1285" size="0.4064" layer="26" rot="MR0"/>
 </element>
 <element name="R4" library="resistor" package="R0805W" value="10k" x="77.978" y="50.292" smashed="yes">
@@ -3903,12 +3906,12 @@ design rules under a new name.</description>
 <attribute name="NAME" x="113.0935" y="45.339" size="0.6096" layer="25" rot="R90"/>
 </element>
 <element name="VOLTAGE_REF" library="AD1583" package="SOT95P237X112-3N" value="AD1583BRTZ-REEL7" x="94.234" y="29.718" smashed="yes" rot="MR270">
-<attribute name="PACKAGE" value="SOT23-3" x="169.164" y="-9.652" size="1.778" layer="28" rot="MR270" display="off"/>
-<attribute name="OC_NEWARK" value="59K3394" x="169.164" y="-9.652" size="1.778" layer="28" rot="MR270" display="off"/>
 <attribute name="MPN" value="AD1583BRTZ-Reel7" x="169.164" y="-9.652" size="1.778" layer="28" rot="MR270" display="off"/>
-<attribute name="SUPPLIER" value="Analog Devices" x="169.164" y="-9.652" size="1.778" layer="28" rot="MR270" display="off"/>
-<attribute name="OC_FARNELL" value="2074900" x="169.164" y="-9.652" size="1.778" layer="28" rot="MR270" display="off"/>
 <attribute name="NAME" x="92.6338" y="27.686" size="0.4064" layer="26" ratio="10" rot="SMR180"/>
+<attribute name="OC_FARNELL" value="2074900" x="169.164" y="-9.652" size="1.778" layer="28" rot="MR270" display="off"/>
+<attribute name="OC_NEWARK" value="59K3394" x="169.164" y="-9.652" size="1.778" layer="28" rot="MR270" display="off"/>
+<attribute name="PACKAGE" value="SOT23-3" x="169.164" y="-9.652" size="1.778" layer="28" rot="MR270" display="off"/>
+<attribute name="SUPPLIER" value="Analog Devices" x="169.164" y="-9.652" size="1.778" layer="28" rot="MR270" display="off"/>
 </element>
 <element name="C8" library="SparkFun-Capacitors" package="0805" value="1u" x="97.79" y="29.718" smashed="yes" rot="MR90">
 <attribute name="NAME" x="98.7425" y="28.956" size="0.6096" layer="26" rot="MR90"/>
@@ -3994,12 +3997,12 @@ design rules under a new name.</description>
 <attribute name="NAME" x="50.927" y="20.066" size="0.6096" layer="25" rot="R270"/>
 </element>
 <element name="PRESSURE" library="pressure_sensor" package="FREESCALE_CASE_1317" value="MPXH6250A6U" x="62.484" y="10.922" smashed="yes" rot="R90">
-<attribute name="PACKAGE" value="CASE 1317" x="95.504" y="69.342" size="1.778" layer="27" rot="R90" display="off"/>
-<attribute name="OC_NEWARK" value="47W3656" x="95.504" y="69.342" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="MPN" value="MPXH6250A6U" x="95.504" y="69.342" size="1.778" layer="27" rot="R90" display="off"/>
-<attribute name="SUPPLIER" value="FREESCALE SEMICONDUCTOR" x="95.504" y="69.342" size="1.778" layer="27" rot="R90" display="off"/>
-<attribute name="OC_FARNELL" value="2238140 " x="95.504" y="69.342" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="NAME" x="67.6148" y="9.0932" size="0.6096" layer="25" ratio="10" rot="SR90"/>
+<attribute name="OC_FARNELL" value="2238140 " x="95.504" y="69.342" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="OC_NEWARK" value="47W3656" x="95.504" y="69.342" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="PACKAGE" value="CASE 1317" x="95.504" y="69.342" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="SUPPLIER" value="FREESCALE SEMICONDUCTOR" x="95.504" y="69.342" size="1.778" layer="27" rot="R90" display="off"/>
 </element>
 <element name="C11" library="SparkFun-Capacitors" package="0805" value="1u" x="71.882" y="10.795" smashed="yes" rot="MR0">
 <attribute name="NAME" x="72.263" y="11.7475" size="0.3048" layer="26" rot="MR0"/>
@@ -4011,12 +4014,12 @@ design rules under a new name.</description>
 <attribute name="NAME" x="70.358" y="14.478" size="0.6096" layer="25" rot="R180"/>
 </element>
 <element name="TEMP" library="pressure_sensor(AD7414)" package="SOT95P280X145-6N" value="AD7414ARTZ-1500RL7" x="75.565" y="15.24" smashed="yes">
-<attribute name="PACKAGE" value="SOT-23-6" x="158.115" y="-59.69" size="1.778" layer="27" display="off"/>
-<attribute name="OC_NEWARK" value="12M8805" x="158.115" y="-59.69" size="1.778" layer="27" display="off"/>
 <attribute name="MPN" value="AD7414ARTZ-1500RL7" x="158.115" y="-59.69" size="1.778" layer="27" display="off"/>
-<attribute name="SUPPLIER" value="Analog Devices" x="158.115" y="-59.69" size="1.778" layer="27" display="off"/>
-<attribute name="OC_FARNELL" value="1699530" x="158.115" y="-59.69" size="1.778" layer="27" display="off"/>
 <attribute name="NAME" x="74.3966" y="12.7" size="0.6096" layer="25" ratio="10" rot="SR0"/>
+<attribute name="OC_FARNELL" value="1699530" x="158.115" y="-59.69" size="1.778" layer="27" display="off"/>
+<attribute name="OC_NEWARK" value="12M8805" x="158.115" y="-59.69" size="1.778" layer="27" display="off"/>
+<attribute name="PACKAGE" value="SOT-23-6" x="158.115" y="-59.69" size="1.778" layer="27" display="off"/>
+<attribute name="SUPPLIER" value="Analog Devices" x="158.115" y="-59.69" size="1.778" layer="27" display="off"/>
 </element>
 <element name="C13" library="SparkFun-Capacitors" package="0805" value="10u" x="76.962" y="6.604" smashed="yes" rot="R90">
 <attribute name="NAME" x="76.0095" y="5.588" size="0.4064" layer="25" rot="R90"/>
@@ -4028,19 +4031,19 @@ design rules under a new name.</description>
 <attribute name="NAME" x="84.328" y="7.747" size="0.6096" layer="25" rot="R270"/>
 </element>
 <element name="EEPROM" library="eeprom" package="SOIC127P794X200-8N" value="24AA1026-I/SM" x="88.9" y="9.906" smashed="yes" rot="R90">
-<attribute name="PACKAGE" value="SOIC-8" x="120.65" y="107.696" size="1.778" layer="27" rot="R90" display="off"/>
-<attribute name="OC_NEWARK" value="59T0229" x="120.65" y="107.696" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="MPN" value="24AA1026-I/SM" x="120.65" y="107.696" size="1.778" layer="27" rot="R90" display="off"/>
-<attribute name="SUPPLIER" value="MICROCHIP" x="120.65" y="107.696" size="1.778" layer="27" rot="R90" display="off"/>
-<attribute name="OC_FARNELL" value="1971893" x="120.65" y="107.696" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="NAME" x="92.8878" y="4.9784" size="0.6096" layer="25" ratio="10" rot="SR90"/>
+<attribute name="OC_FARNELL" value="1971893" x="120.65" y="107.696" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="OC_NEWARK" value="59T0229" x="120.65" y="107.696" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="PACKAGE" value="SOIC-8" x="120.65" y="107.696" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="SUPPLIER" value="MICROCHIP" x="120.65" y="107.696" size="1.778" layer="27" rot="R90" display="off"/>
 </element>
 <element name="ADC" library="ADS1115" package="SOP50P490X110-10N" value="ADS1115IDGST" x="60.706" y="24.384" smashed="yes" rot="MR180">
-<attribute name="PACKAGE" value="MSOP-10" x="166.116" y="99.314" size="1.778" layer="28" rot="MR180" display="off"/>
-<attribute name="OC_NEWARK" value="25R1241" x="166.116" y="99.314" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="MPN" value="ADS1115IDGST" x="166.116" y="99.314" size="1.778" layer="28" rot="MR180" display="off"/>
-<attribute name="SUPPLIER" value="Texas Instruments" x="166.116" y="99.314" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="OC_FARNELL" value="1762981" x="166.116" y="99.314" size="1.778" layer="28" rot="MR180" display="off"/>
+<attribute name="OC_NEWARK" value="25R1241" x="166.116" y="99.314" size="1.778" layer="28" rot="MR180" display="off"/>
+<attribute name="PACKAGE" value="MSOP-10" x="166.116" y="99.314" size="1.778" layer="28" rot="MR180" display="off"/>
+<attribute name="SUPPLIER" value="Texas Instruments" x="166.116" y="99.314" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="VALUE" x="58.5216" y="26.924" size="0.6096" layer="28" ratio="10" rot="SMR180"/>
 </element>
 <element name="JP4" library="jst-xh(5circuit)" package="B5B-XH-A" value="B5B-XH-A" x="100.076" y="14.986" smashed="yes" rot="R180">
@@ -4073,12 +4076,12 @@ design rules under a new name.</description>
 <attribute name="NAME" x="68.326" y="35.56" size="0.6096" layer="25" rot="R90"/>
 </element>
 <element name="CAN_TRANSIVER" library="CAN-Controller-Library" package="SOIC254P1040X485-8N" value="ISO1050DUBR" x="105.156" y="31.242" smashed="yes">
-<attribute name="PACKAGE" value="DIP-8" x="140.716" y="-3.048" size="1.778" layer="27" display="off"/>
-<attribute name="OC_NEWARK" value="14R9899" x="140.716" y="-3.048" size="1.778" layer="27" display="off"/>
 <attribute name="MPN" value="ISO1050DUBR" x="140.716" y="-3.048" size="1.778" layer="27" display="off"/>
-<attribute name="SUPPLIER" value="TEXAS INSTRUMENTS" x="140.716" y="-3.048" size="1.778" layer="27" display="off"/>
-<attribute name="OC_FARNELL" value="2118645" x="140.716" y="-3.048" size="1.778" layer="27" display="off"/>
 <attribute name="NAME" x="101.9556" y="25.4" size="0.6096" layer="25" ratio="10" rot="SR0"/>
+<attribute name="OC_FARNELL" value="2118645" x="140.716" y="-3.048" size="1.778" layer="27" display="off"/>
+<attribute name="OC_NEWARK" value="14R9899" x="140.716" y="-3.048" size="1.778" layer="27" display="off"/>
+<attribute name="PACKAGE" value="DIP-8" x="140.716" y="-3.048" size="1.778" layer="27" display="off"/>
+<attribute name="SUPPLIER" value="TEXAS INSTRUMENTS" x="140.716" y="-3.048" size="1.778" layer="27" display="off"/>
 </element>
 <element name="CAN_POWER" library="bbauv" package="DCR01-SOIC28" value="DCR01SO" x="101.092" y="39.878" smashed="yes" rot="MR180">
 <attribute name="NAME" x="102.941" y="44.091" size="0.6096" layer="52" rot="MR0"/>
@@ -4087,20 +4090,20 @@ design rules under a new name.</description>
 <attribute name="NAME" x="95.504" y="50.292" size="0.6096" layer="26" font="vector" rot="MR270"/>
 </element>
 <element name="C15" library="SparkFun-Capacitors" package="0805" value="100n" x="108.458" y="47.498" smashed="yes" rot="MR180">
-<attribute name="PROD_ID" value="CAP-08064" x="131.318" y="170.688" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="NAME" x="109.22" y="48.4505" size="0.6096" layer="26" rot="MR0"/>
+<attribute name="PROD_ID" value="CAP-08064" x="131.318" y="170.688" size="1.778" layer="28" rot="MR180" display="off"/>
 </element>
 <element name="C16" library="SparkFun-Passives" package="EIA6032" value="1u" x="114.046" y="40.64" smashed="yes" rot="MR180"/>
 <element name="R33" library="resistor" package="R0805W" value="10k" x="108.839" y="30.988" smashed="yes" rot="MR0">
 <attribute name="NAME" x="111.633" y="31.75" size="0.6096" layer="26" rot="MR270"/>
 </element>
 <element name="U$2" library="CAN-Controller-Library" package="SOIC127P1030X265-18N" value="MCP2515-E/SO" x="96.774" y="45.974" smashed="yes" rot="R180">
-<attribute name="PACKAGE" value="SOIC-18" x="18.034" y="56.134" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="OC_NEWARK" value="29H7134" x="18.034" y="56.134" size="1.778" layer="27" rot="R180" display="off"/>
 <attribute name="DESCRIPTION" value="IC CAN CONTROLLER" x="18.034" y="56.134" size="1.778" layer="27" rot="R180" display="off"/>
 <attribute name="MPN" value="MCP2515-E/SO" x="18.034" y="56.134" size="1.778" layer="27" rot="R180" display="off"/>
-<attribute name="SUPPLIER" value="Microchip" x="18.034" y="56.134" size="1.778" layer="27" rot="R180" display="off"/>
 <attribute name="OC_FARNELL" value="1605565" x="18.034" y="56.134" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="OC_NEWARK" value="29H7134" x="18.034" y="56.134" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="PACKAGE" value="SOIC-18" x="18.034" y="56.134" size="1.778" layer="27" rot="R180" display="off"/>
+<attribute name="SUPPLIER" value="Microchip" x="18.034" y="56.134" size="1.778" layer="27" rot="R180" display="off"/>
 <attribute name="VALUE" x="94.2086" y="52.4764" size="0.6096" layer="27" ratio="10" rot="SR0"/>
 </element>
 <element name="R34" library="resistor" package="R0805W" value="10k" x="93.218" y="37.846" smashed="yes" rot="R180">
@@ -4113,11 +4116,11 @@ design rules under a new name.</description>
 <attribute name="NAME" x="118.042" y="25.082" size="0.6096" layer="25"/>
 </element>
 <element name="U6" library="atmel-atmega328p-au" package="QFP80P900X900X120-32N" value="ATMEGA328P-AU" x="81.534" y="30.734" smashed="yes" rot="MR180">
-<attribute name="PACKAGE" value="TQFP-32" x="136.144" y="39.624" size="1.778" layer="28" rot="MR180" display="off"/>
-<attribute name="OC_NEWARK" value="14R4631" x="136.144" y="39.624" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="MPN" value="ATMEGA328P-AU" x="136.144" y="39.624" size="1.778" layer="28" rot="MR180" display="off"/>
-<attribute name="SUPPLIER" value="Atmel" x="136.144" y="39.624" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="OC_FARNELL" value="1715486" x="136.144" y="39.624" size="1.778" layer="28" rot="MR180" display="off"/>
+<attribute name="OC_NEWARK" value="14R4631" x="136.144" y="39.624" size="1.778" layer="28" rot="MR180" display="off"/>
+<attribute name="PACKAGE" value="TQFP-32" x="136.144" y="39.624" size="1.778" layer="28" rot="MR180" display="off"/>
+<attribute name="SUPPLIER" value="Atmel" x="136.144" y="39.624" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="VALUE" x="78.0796" y="22.6314" size="0.6096" layer="28" ratio="10" rot="SMR180"/>
 </element>
 <element name="R38" library="resistor" package="R0805W" value="10k" x="84.328" y="15.748" smashed="yes" rot="MR270">

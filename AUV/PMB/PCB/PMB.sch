@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="6.6.0">
+<eagle version="8.1.0">
 <drawing>
 <settings>
 <setting alwaysvectorfont="no"/>
@@ -11723,7 +11723,7 @@ These are standard SMD and PTH capacitors. Normally 10uF, 47uF, and 100uF in ele
 <part name="JP3" library="pinhead" deviceset="PINHD-2X3" device=""/>
 <part name="SW1" library="mc32829(pb_sw)" deviceset="MC32829" device=""/>
 <part name="GND7" library="supply1" deviceset="GND" device=""/>
-<part name="C3" library="SparkFun-Capacitors" deviceset="CAP" device="0805" value="100p"/>
+<part name="C3" library="SparkFun-Capacitors" deviceset="CAP" device="0805" value="100n"/>
 <part name="R4" library="resistor" deviceset="R-EU_" device="R0805W" value="10k"/>
 <part name="P+8" library="supply1" deviceset="+5V" device=""/>
 <part name="P+9" library="supply1" deviceset="+5V" device=""/>

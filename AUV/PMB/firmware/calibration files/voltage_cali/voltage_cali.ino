@@ -1,4 +1,5 @@
-
+#include <SSD1306_text.h>
+SSD1306_text display(7);
 int value = 0;
 
 void setup() {
@@ -6,7 +7,8 @@ void setup() {
 
   Serial.begin(9600);
   analogReference(EXTERNAL);
-
+  display.init();
+  display.clear();
 }
 
 void loop() {
@@ -14,8 +16,9 @@ void loop() {
 
   value = analogRead(A7);
 
-  Serial.println(value);
-  
+  display.setTextSize(1, 1);
+  display.setCursor(4, 0);
+  display.print(value);
   delay (500);
 
 }
