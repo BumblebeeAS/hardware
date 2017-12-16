@@ -1,0 +1,76 @@
+\hypertarget{class_at_command_response}{}\section{At\+Command\+Response Class Reference}
+\label{class_at_command_response}\index{At\+Command\+Response@{At\+Command\+Response}}
+
+
+{\ttfamily \#include $<$X\+Bee.\+h$>$}
+
+
+
+Inheritance diagram for At\+Command\+Response\+:
+% FIG 0
+
+
+Collaboration diagram for At\+Command\+Response\+:
+% FIG 1
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+uint8\+\_\+t $\ast$ \hyperlink{class_at_command_response_a20f1bf08ba77f2bc74f009318a6fd133}{get\+Command} ()
+\item 
+uint8\+\_\+t \hyperlink{class_at_command_response_a340822cacf6eed3ef29955dc9610c09f}{get\+Status} ()
+\item 
+uint8\+\_\+t $\ast$ \hyperlink{class_at_command_response_ad1e2a0b6f8988536c570b116f103e7f9}{get\+Value} ()
+\item 
+uint8\+\_\+t \hyperlink{class_at_command_response_ad7d6159fa1777144e94a9ccfeaf83662}{get\+Value\+Length} ()
+\item 
+bool \hyperlink{class_at_command_response_ab606b3dc93f809b828b54e98a79711d8}{is\+Ok} ()
+\end{DoxyCompactItemize}
+\subsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_at_command_response_a2be7d0749cc45a77b53bb254f6fb91c5}{}\label{class_at_command_response_a2be7d0749cc45a77b53bb254f6fb91c5} 
+static const uint8\+\_\+t {\bfseries A\+P\+I\+\_\+\+ID} = A\+T\+\_\+\+C\+O\+M\+M\+A\+N\+D\+\_\+\+R\+E\+S\+P\+O\+N\+SE
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+Represents an AT Command RX packet 
+
+\subsection{Member Function Documentation}
+\hypertarget{class_at_command_response_a20f1bf08ba77f2bc74f009318a6fd133}{}\label{class_at_command_response_a20f1bf08ba77f2bc74f009318a6fd133} 
+\index{At\+Command\+Response@{At\+Command\+Response}!get\+Command@{get\+Command}}
+\index{get\+Command@{get\+Command}!At\+Command\+Response@{At\+Command\+Response}}
+\subsubsection{\texorpdfstring{get\+Command()}{getCommand()}}
+{\footnotesize\ttfamily uint8\+\_\+t $\ast$ At\+Command\+Response\+::get\+Command (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Returns an array containing the two character command \hypertarget{class_at_command_response_a340822cacf6eed3ef29955dc9610c09f}{}\label{class_at_command_response_a340822cacf6eed3ef29955dc9610c09f} 
+\index{At\+Command\+Response@{At\+Command\+Response}!get\+Status@{get\+Status}}
+\index{get\+Status@{get\+Status}!At\+Command\+Response@{At\+Command\+Response}}
+\subsubsection{\texorpdfstring{get\+Status()}{getStatus()}}
+{\footnotesize\ttfamily uint8\+\_\+t At\+Command\+Response\+::get\+Status (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Returns the command status code. Zero represents a successful command \hypertarget{class_at_command_response_ad1e2a0b6f8988536c570b116f103e7f9}{}\label{class_at_command_response_ad1e2a0b6f8988536c570b116f103e7f9} 
+\index{At\+Command\+Response@{At\+Command\+Response}!get\+Value@{get\+Value}}
+\index{get\+Value@{get\+Value}!At\+Command\+Response@{At\+Command\+Response}}
+\subsubsection{\texorpdfstring{get\+Value()}{getValue()}}
+{\footnotesize\ttfamily uint8\+\_\+t $\ast$ At\+Command\+Response\+::get\+Value (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Returns an array containing the command value. This is only applicable to query commands. \hypertarget{class_at_command_response_ad7d6159fa1777144e94a9ccfeaf83662}{}\label{class_at_command_response_ad7d6159fa1777144e94a9ccfeaf83662} 
+\index{At\+Command\+Response@{At\+Command\+Response}!get\+Value\+Length@{get\+Value\+Length}}
+\index{get\+Value\+Length@{get\+Value\+Length}!At\+Command\+Response@{At\+Command\+Response}}
+\subsubsection{\texorpdfstring{get\+Value\+Length()}{getValueLength()}}
+{\footnotesize\ttfamily uint8\+\_\+t At\+Command\+Response\+::get\+Value\+Length (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Returns the length of the command value array. \hypertarget{class_at_command_response_ab606b3dc93f809b828b54e98a79711d8}{}\label{class_at_command_response_ab606b3dc93f809b828b54e98a79711d8} 
+\index{At\+Command\+Response@{At\+Command\+Response}!is\+Ok@{is\+Ok}}
+\index{is\+Ok@{is\+Ok}!At\+Command\+Response@{At\+Command\+Response}}
+\subsubsection{\texorpdfstring{is\+Ok()}{isOk()}}
+{\footnotesize\ttfamily bool At\+Command\+Response\+::is\+Ok (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Returns true if status equals A\+T\+\_\+\+OK 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+C\+:/\+Users/\+Goh Eng Wei/\+Documents/\+Arduino/libraries/\+X\+Bee/X\+Bee.\+h\item 
+C\+:/\+Users/\+Goh Eng Wei/\+Documents/\+Arduino/libraries/\+X\+Bee/X\+Bee.\+cpp\end{DoxyCompactItemize}

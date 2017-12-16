@@ -1,0 +1,87 @@
+\hypertarget{class_rx_io_sample_base_response}{}\section{Rx\+Io\+Sample\+Base\+Response Class Reference}
+\label{class_rx_io_sample_base_response}\index{Rx\+Io\+Sample\+Base\+Response@{Rx\+Io\+Sample\+Base\+Response}}
+
+
+{\ttfamily \#include $<$X\+Bee.\+h$>$}
+
+
+
+Inheritance diagram for Rx\+Io\+Sample\+Base\+Response\+:
+% FIG 0
+
+
+Collaboration diagram for Rx\+Io\+Sample\+Base\+Response\+:
+% FIG 1
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+uint8\+\_\+t \hyperlink{class_rx_io_sample_base_response_a44ce66a6751e7e39c8908fe179a21d24}{get\+Sample\+Size} ()
+\item 
+\hypertarget{class_rx_io_sample_base_response_a9c6f6e1b7b8659ea086084ca35f9f83b}{}\label{class_rx_io_sample_base_response_a9c6f6e1b7b8659ea086084ca35f9f83b} 
+bool {\bfseries contains\+Analog} ()
+\item 
+\hypertarget{class_rx_io_sample_base_response_ae70a93197c9e2fa6cfd5d64e189f0690}{}\label{class_rx_io_sample_base_response_ae70a93197c9e2fa6cfd5d64e189f0690} 
+bool {\bfseries contains\+Digital} ()
+\item 
+bool \hyperlink{class_rx_io_sample_base_response_ad8fc07932c2e011b83814082b1d82400}{is\+Analog\+Enabled} (uint8\+\_\+t pin)
+\item 
+bool \hyperlink{class_rx_io_sample_base_response_aa897267985b5b8c02abd68b50f954de7}{is\+Digital\+Enabled} (uint8\+\_\+t pin)
+\item 
+uint16\+\_\+t \hyperlink{class_rx_io_sample_base_response_a81e98b2eab33f62e6af6b3b4014e841a}{get\+Analog} (uint8\+\_\+t pin, uint8\+\_\+t sample)
+\item 
+bool \hyperlink{class_rx_io_sample_base_response_ad4ffc0eb84c685fe45618d6b73a20ce2}{is\+Digital\+On} (uint8\+\_\+t pin, uint8\+\_\+t sample)
+\item 
+\hypertarget{class_rx_io_sample_base_response_a78098028dec69c655a190fb8d3cee333}{}\label{class_rx_io_sample_base_response_a78098028dec69c655a190fb8d3cee333} 
+uint8\+\_\+t {\bfseries get\+Sample\+Offset} ()
+\item 
+uint8\+\_\+t \hyperlink{class_rx_io_sample_base_response_a303145668b9624e07868d0a1a835c4b4}{get\+Sample\+Start} (uint8\+\_\+t sample)
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+Represents a Series 1 RX I/O Sample packet 
+
+\subsection{Member Function Documentation}
+\hypertarget{class_rx_io_sample_base_response_a81e98b2eab33f62e6af6b3b4014e841a}{}\label{class_rx_io_sample_base_response_a81e98b2eab33f62e6af6b3b4014e841a} 
+\index{Rx\+Io\+Sample\+Base\+Response@{Rx\+Io\+Sample\+Base\+Response}!get\+Analog@{get\+Analog}}
+\index{get\+Analog@{get\+Analog}!Rx\+Io\+Sample\+Base\+Response@{Rx\+Io\+Sample\+Base\+Response}}
+\subsubsection{\texorpdfstring{get\+Analog()}{getAnalog()}}
+{\footnotesize\ttfamily uint16\+\_\+t Rx\+Io\+Sample\+Base\+Response\+::get\+Analog (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{pin,  }\item[{uint8\+\_\+t}]{sample }\end{DoxyParamCaption})}
+
+Returns the 10-\/bit analog reading of the specified pin. Valid pins include A\+DC\+:0-\/5. Sample index starts at 0 \hypertarget{class_rx_io_sample_base_response_a44ce66a6751e7e39c8908fe179a21d24}{}\label{class_rx_io_sample_base_response_a44ce66a6751e7e39c8908fe179a21d24} 
+\index{Rx\+Io\+Sample\+Base\+Response@{Rx\+Io\+Sample\+Base\+Response}!get\+Sample\+Size@{get\+Sample\+Size}}
+\index{get\+Sample\+Size@{get\+Sample\+Size}!Rx\+Io\+Sample\+Base\+Response@{Rx\+Io\+Sample\+Base\+Response}}
+\subsubsection{\texorpdfstring{get\+Sample\+Size()}{getSampleSize()}}
+{\footnotesize\ttfamily uint8\+\_\+t Rx\+Io\+Sample\+Base\+Response\+::get\+Sample\+Size (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Returns the number of samples in this packet \hypertarget{class_rx_io_sample_base_response_a303145668b9624e07868d0a1a835c4b4}{}\label{class_rx_io_sample_base_response_a303145668b9624e07868d0a1a835c4b4} 
+\index{Rx\+Io\+Sample\+Base\+Response@{Rx\+Io\+Sample\+Base\+Response}!get\+Sample\+Start@{get\+Sample\+Start}}
+\index{get\+Sample\+Start@{get\+Sample\+Start}!Rx\+Io\+Sample\+Base\+Response@{Rx\+Io\+Sample\+Base\+Response}}
+\subsubsection{\texorpdfstring{get\+Sample\+Start()}{getSampleStart()}}
+{\footnotesize\ttfamily uint8\+\_\+t Rx\+Io\+Sample\+Base\+Response\+::get\+Sample\+Start (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{sample }\end{DoxyParamCaption})}
+
+Gets the offset of the start of the given sample. \hypertarget{class_rx_io_sample_base_response_ad8fc07932c2e011b83814082b1d82400}{}\label{class_rx_io_sample_base_response_ad8fc07932c2e011b83814082b1d82400} 
+\index{Rx\+Io\+Sample\+Base\+Response@{Rx\+Io\+Sample\+Base\+Response}!is\+Analog\+Enabled@{is\+Analog\+Enabled}}
+\index{is\+Analog\+Enabled@{is\+Analog\+Enabled}!Rx\+Io\+Sample\+Base\+Response@{Rx\+Io\+Sample\+Base\+Response}}
+\subsubsection{\texorpdfstring{is\+Analog\+Enabled()}{isAnalogEnabled()}}
+{\footnotesize\ttfamily bool Rx\+Io\+Sample\+Base\+Response\+::is\+Analog\+Enabled (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{pin }\end{DoxyParamCaption})}
+
+Returns true if the specified analog pin is enabled \hypertarget{class_rx_io_sample_base_response_aa897267985b5b8c02abd68b50f954de7}{}\label{class_rx_io_sample_base_response_aa897267985b5b8c02abd68b50f954de7} 
+\index{Rx\+Io\+Sample\+Base\+Response@{Rx\+Io\+Sample\+Base\+Response}!is\+Digital\+Enabled@{is\+Digital\+Enabled}}
+\index{is\+Digital\+Enabled@{is\+Digital\+Enabled}!Rx\+Io\+Sample\+Base\+Response@{Rx\+Io\+Sample\+Base\+Response}}
+\subsubsection{\texorpdfstring{is\+Digital\+Enabled()}{isDigitalEnabled()}}
+{\footnotesize\ttfamily bool Rx\+Io\+Sample\+Base\+Response\+::is\+Digital\+Enabled (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{pin }\end{DoxyParamCaption})}
+
+Returns true if the specified digital pin is enabled \hypertarget{class_rx_io_sample_base_response_ad4ffc0eb84c685fe45618d6b73a20ce2}{}\label{class_rx_io_sample_base_response_ad4ffc0eb84c685fe45618d6b73a20ce2} 
+\index{Rx\+Io\+Sample\+Base\+Response@{Rx\+Io\+Sample\+Base\+Response}!is\+Digital\+On@{is\+Digital\+On}}
+\index{is\+Digital\+On@{is\+Digital\+On}!Rx\+Io\+Sample\+Base\+Response@{Rx\+Io\+Sample\+Base\+Response}}
+\subsubsection{\texorpdfstring{is\+Digital\+On()}{isDigitalOn()}}
+{\footnotesize\ttfamily bool Rx\+Io\+Sample\+Base\+Response\+::is\+Digital\+On (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{pin,  }\item[{uint8\+\_\+t}]{sample }\end{DoxyParamCaption})}
+
+Returns true if the specified pin is high/on. Valid pins include D\+IO\+:0-\/8. Sample index starts at 0 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+C\+:/\+Users/\+Goh Eng Wei/\+Documents/\+Arduino/libraries/\+X\+Bee/X\+Bee.\+h\item 
+C\+:/\+Users/\+Goh Eng Wei/\+Documents/\+Arduino/libraries/\+X\+Bee/X\+Bee.\+cpp\end{DoxyCompactItemize}

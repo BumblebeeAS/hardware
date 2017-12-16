@@ -1,0 +1,90 @@
+\hypertarget{class_tx64_request}{}\section{Tx64\+Request Class Reference}
+\label{class_tx64_request}\index{Tx64\+Request@{Tx64\+Request}}
+
+
+{\ttfamily \#include $<$X\+Bee.\+h$>$}
+
+
+
+Inheritance diagram for Tx64\+Request\+:
+% FIG 0
+
+
+Collaboration diagram for Tx64\+Request\+:
+% FIG 1
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_tx64_request_a7670fd44d8765d8215a3e5cfcf605c1e}{}\label{class_tx64_request_a7670fd44d8765d8215a3e5cfcf605c1e} 
+{\bfseries Tx64\+Request} (\hyperlink{class_x_bee_address64}{X\+Bee\+Address64} \&addr64, uint8\+\_\+t option, uint8\+\_\+t $\ast$payload, uint8\+\_\+t payload\+Length, uint8\+\_\+t frame\+Id)
+\item 
+\hyperlink{class_tx64_request_a7c9d830fa804daaf39ed368894cf9691}{Tx64\+Request} (\hyperlink{class_x_bee_address64}{X\+Bee\+Address64} \&addr64, uint8\+\_\+t $\ast$payload, uint8\+\_\+t payload\+Length)
+\item 
+\hyperlink{class_tx64_request_a49bd84b4aa5478c27e6da5581b2e1d3c}{Tx64\+Request} ()
+\item 
+\hypertarget{class_tx64_request_a8f6970aa54b8504be65e05ce1f52e8e4}{}\label{class_tx64_request_a8f6970aa54b8504be65e05ce1f52e8e4} 
+\hyperlink{class_x_bee_address64}{X\+Bee\+Address64} \& {\bfseries get\+Address64} ()
+\item 
+\hypertarget{class_tx64_request_a863a993ad01c08b5c9835e9d7288bedd}{}\label{class_tx64_request_a863a993ad01c08b5c9835e9d7288bedd} 
+void {\bfseries set\+Address64} (\hyperlink{class_x_bee_address64}{X\+Bee\+Address64} \&addr64)
+\item 
+\hypertarget{class_tx64_request_aac90589d46191868f19713aea49a421f}{}\label{class_tx64_request_aac90589d46191868f19713aea49a421f} 
+uint8\+\_\+t {\bfseries get\+Option} ()
+\item 
+\hypertarget{class_tx64_request_a7f6987e3910d97dd8f77f58184dc17c9}{}\label{class_tx64_request_a7f6987e3910d97dd8f77f58184dc17c9} 
+void {\bfseries set\+Option} (uint8\+\_\+t option)
+\item 
+uint8\+\_\+t \hyperlink{class_tx64_request_afe3662433da85acd21f8a3d90844a084}{get\+Frame\+Data} (uint8\+\_\+t pos)
+\item 
+uint8\+\_\+t \hyperlink{class_tx64_request_afadc1e07718a62d6c5a75a4bb07dfaae}{get\+Frame\+Data\+Length} ()
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+Represents a Series 1 TX packet that corresponds to Api Id\+: T\+X\+\_\+64\+\_\+\+R\+E\+Q\+U\+E\+ST
+
+Be careful not to send a data array larger than the max packet size of your radio. This class does not perform any validation of packet size and there will be no indication if the packet is too large, other than you will not get a TX Status response. The datasheet says 100 bytes is the maximum, although that could change in future firmware. 
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{class_tx64_request_a7c9d830fa804daaf39ed368894cf9691}{}\label{class_tx64_request_a7c9d830fa804daaf39ed368894cf9691} 
+\index{Tx64\+Request@{Tx64\+Request}!Tx64\+Request@{Tx64\+Request}}
+\index{Tx64\+Request@{Tx64\+Request}!Tx64\+Request@{Tx64\+Request}}
+\subsubsection{\texorpdfstring{Tx64\+Request()}{Tx64Request()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily Tx64\+Request\+::\+Tx64\+Request (\begin{DoxyParamCaption}\item[{\hyperlink{class_x_bee_address64}{X\+Bee\+Address64} \&}]{addr64,  }\item[{uint8\+\_\+t $\ast$}]{payload,  }\item[{uint8\+\_\+t}]{payload\+Length }\end{DoxyParamCaption})}
+
+Creates a unicast \hyperlink{class_tx64_request}{Tx64\+Request} with the A\+CK option and D\+E\+F\+A\+U\+L\+T\+\_\+\+F\+R\+A\+M\+E\+\_\+\+ID \hypertarget{class_tx64_request_a49bd84b4aa5478c27e6da5581b2e1d3c}{}\label{class_tx64_request_a49bd84b4aa5478c27e6da5581b2e1d3c} 
+\index{Tx64\+Request@{Tx64\+Request}!Tx64\+Request@{Tx64\+Request}}
+\index{Tx64\+Request@{Tx64\+Request}!Tx64\+Request@{Tx64\+Request}}
+\subsubsection{\texorpdfstring{Tx64\+Request()}{Tx64Request()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily Tx64\+Request\+::\+Tx64\+Request (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Creates a default instance of this class. At a minimum you must specify a payload, payload length and a destination address before sending this request. 
+
+\subsection{Member Function Documentation}
+\hypertarget{class_tx64_request_afe3662433da85acd21f8a3d90844a084}{}\label{class_tx64_request_afe3662433da85acd21f8a3d90844a084} 
+\index{Tx64\+Request@{Tx64\+Request}!get\+Frame\+Data@{get\+Frame\+Data}}
+\index{get\+Frame\+Data@{get\+Frame\+Data}!Tx64\+Request@{Tx64\+Request}}
+\subsubsection{\texorpdfstring{get\+Frame\+Data()}{getFrameData()}}
+{\footnotesize\ttfamily uint8\+\_\+t Tx64\+Request\+::get\+Frame\+Data (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{pos }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+Starting after the frame id (pos = 0) and up to but not including the checksum Note\+: Unlike Digi\textquotesingle{}s definition of the frame data, this does not start with the A\+PI ID. The reason for this is the A\+PI ID and Frame ID are common to all requests, whereas my definition of frame data is only the A\+PI specific data. 
+
+Implements \hyperlink{class_x_bee_request_ad5b998cd95a570bdaa4d74c6c8790d94}{X\+Bee\+Request}.
+
+\hypertarget{class_tx64_request_afadc1e07718a62d6c5a75a4bb07dfaae}{}\label{class_tx64_request_afadc1e07718a62d6c5a75a4bb07dfaae} 
+\index{Tx64\+Request@{Tx64\+Request}!get\+Frame\+Data\+Length@{get\+Frame\+Data\+Length}}
+\index{get\+Frame\+Data\+Length@{get\+Frame\+Data\+Length}!Tx64\+Request@{Tx64\+Request}}
+\subsubsection{\texorpdfstring{get\+Frame\+Data\+Length()}{getFrameDataLength()}}
+{\footnotesize\ttfamily uint8\+\_\+t Tx64\+Request\+::get\+Frame\+Data\+Length (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+Returns the size of the api frame (not including frame id or api id or checksum). 
+
+Implements \hyperlink{class_x_bee_request_a03b6c558db5836fa7167c0fba7405642}{X\+Bee\+Request}.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+C\+:/\+Users/\+Goh Eng Wei/\+Documents/\+Arduino/libraries/\+X\+Bee/X\+Bee.\+h\item 
+C\+:/\+Users/\+Goh Eng Wei/\+Documents/\+Arduino/libraries/\+X\+Bee/X\+Bee.\+cpp\end{DoxyCompactItemize}

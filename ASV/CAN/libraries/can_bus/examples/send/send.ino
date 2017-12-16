@@ -1,5 +1,5 @@
 // demo: CAN-BUS Shield, send data
-#include <mcp_can.h>
+#include "mcp_can.h"
 #include <SPI.h>
 
 MCP_CAN CAN(8);                                      // Set CS to pin 8

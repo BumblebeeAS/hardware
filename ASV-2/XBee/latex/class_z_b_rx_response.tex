@@ -1,0 +1,77 @@
+\hypertarget{class_z_b_rx_response}{}\section{Z\+B\+Rx\+Response Class Reference}
+\label{class_z_b_rx_response}\index{Z\+B\+Rx\+Response@{Z\+B\+Rx\+Response}}
+
+
+{\ttfamily \#include $<$X\+Bee.\+h$>$}
+
+
+
+Inheritance diagram for Z\+B\+Rx\+Response\+:
+% FIG 0
+
+
+Collaboration diagram for Z\+B\+Rx\+Response\+:
+% FIG 1
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_z_b_rx_response_a9af7b74ef6596f17312d7db042ba7e18}{}\label{class_z_b_rx_response_a9af7b74ef6596f17312d7db042ba7e18} 
+\hyperlink{class_x_bee_address64}{X\+Bee\+Address64} \& {\bfseries get\+Remote\+Address64} ()
+\item 
+\hypertarget{class_z_b_rx_response_a5f7c9237a72e7f0107f2baf962ded78b}{}\label{class_z_b_rx_response_a5f7c9237a72e7f0107f2baf962ded78b} 
+uint16\+\_\+t {\bfseries get\+Remote\+Address16} ()
+\item 
+\hypertarget{class_z_b_rx_response_a39ed277ac12274d7ae143a7cb27b219b}{}\label{class_z_b_rx_response_a39ed277ac12274d7ae143a7cb27b219b} 
+uint8\+\_\+t {\bfseries get\+Option} ()
+\item 
+uint8\+\_\+t \hyperlink{class_z_b_rx_response_a9d2b73060d611bbdd581e0ceb195fd31}{get\+Data\+Length} ()
+\item 
+uint8\+\_\+t \hyperlink{class_z_b_rx_response_ad54e6ff3008f79d0ed32a78cc3d69151}{get\+Data\+Offset} ()
+\end{DoxyCompactItemize}
+\subsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_z_b_rx_response_a13b587296c6bb555f2c73a48e5ac4893}{}\label{class_z_b_rx_response_a13b587296c6bb555f2c73a48e5ac4893} 
+static const uint8\+\_\+t {\bfseries A\+P\+I\+\_\+\+ID} = Z\+B\+\_\+\+R\+X\+\_\+\+R\+E\+S\+P\+O\+N\+SE
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+Represents a Series 2 RX packet 
+
+\subsection{Member Function Documentation}
+\hypertarget{class_z_b_rx_response_a9d2b73060d611bbdd581e0ceb195fd31}{}\label{class_z_b_rx_response_a9d2b73060d611bbdd581e0ceb195fd31} 
+\index{Z\+B\+Rx\+Response@{Z\+B\+Rx\+Response}!get\+Data\+Length@{get\+Data\+Length}}
+\index{get\+Data\+Length@{get\+Data\+Length}!Z\+B\+Rx\+Response@{Z\+B\+Rx\+Response}}
+\subsubsection{\texorpdfstring{get\+Data\+Length()}{getDataLength()}}
+{\footnotesize\ttfamily uint8\+\_\+t Z\+B\+Rx\+Response\+::get\+Data\+Length (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+Returns the length of the payload 
+
+Implements \hyperlink{class_rx_data_response_a5845e6a0719fd0bf52675e47053a704e}{Rx\+Data\+Response}.
+
+
+
+Reimplemented in \hyperlink{class_z_b_explicit_rx_response_af0f29cd6d76215f50224547ef8201cb7}{Z\+B\+Explicit\+Rx\+Response}.
+
+\hypertarget{class_z_b_rx_response_ad54e6ff3008f79d0ed32a78cc3d69151}{}\label{class_z_b_rx_response_ad54e6ff3008f79d0ed32a78cc3d69151} 
+\index{Z\+B\+Rx\+Response@{Z\+B\+Rx\+Response}!get\+Data\+Offset@{get\+Data\+Offset}}
+\index{get\+Data\+Offset@{get\+Data\+Offset}!Z\+B\+Rx\+Response@{Z\+B\+Rx\+Response}}
+\subsubsection{\texorpdfstring{get\+Data\+Offset()}{getDataOffset()}}
+{\footnotesize\ttfamily uint8\+\_\+t Z\+B\+Rx\+Response\+::get\+Data\+Offset (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+Returns the position in the frame data where the data begins 
+
+Implements \hyperlink{class_rx_data_response_a9e4b6bf4f1bfd9ccec45d190a204f61a}{Rx\+Data\+Response}.
+
+
+
+Reimplemented in \hyperlink{class_z_b_explicit_rx_response_aac859574ace86ba08f6abb9d865fec17}{Z\+B\+Explicit\+Rx\+Response}.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+C\+:/\+Users/\+Goh Eng Wei/\+Documents/\+Arduino/libraries/\+X\+Bee/X\+Bee.\+h\item 
+C\+:/\+Users/\+Goh Eng Wei/\+Documents/\+Arduino/libraries/\+X\+Bee/X\+Bee.\+cpp\end{DoxyCompactItemize}
