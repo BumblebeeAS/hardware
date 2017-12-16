@@ -1,0 +1,92 @@
+\hypertarget{class_x_bee_request}{}\section{X\+Bee\+Request Class Reference}
+\label{class_x_bee_request}\index{X\+Bee\+Request@{X\+Bee\+Request}}
+
+
+{\ttfamily \#include $<$X\+Bee.\+h$>$}
+
+
+
+Inheritance diagram for X\+Bee\+Request\+:
+% FIG 0
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{class_x_bee_request_af80fd559cab746ab8573087cddda71a2}{X\+Bee\+Request} (uint8\+\_\+t api\+Id, uint8\+\_\+t frame\+Id)
+\item 
+void \hyperlink{class_x_bee_request_aed1724c11e710217807c971e40105c86}{set\+Frame\+Id} (uint8\+\_\+t frame\+Id)
+\item 
+uint8\+\_\+t \hyperlink{class_x_bee_request_a20394c7ea4666224c50bef25cc0cd836}{get\+Frame\+Id} ()
+\item 
+uint8\+\_\+t \hyperlink{class_x_bee_request_a746d0373c9fb6ed0ff8b7e04f5fb12c9}{get\+Api\+Id} ()
+\item 
+virtual uint8\+\_\+t \hyperlink{class_x_bee_request_ad5b998cd95a570bdaa4d74c6c8790d94}{get\+Frame\+Data} (uint8\+\_\+t pos)=0
+\item 
+virtual uint8\+\_\+t \hyperlink{class_x_bee_request_a03b6c558db5836fa7167c0fba7405642}{get\+Frame\+Data\+Length} ()=0
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_x_bee_request_aee756672e79dbb05358187cb53f61b1a}{}\label{class_x_bee_request_aee756672e79dbb05358187cb53f61b1a} 
+void {\bfseries set\+Api\+Id} (uint8\+\_\+t api\+Id)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Super class of all \hyperlink{class_x_bee}{X\+Bee} requests (TX packets) Users should never create an instance of this class; instead use an subclass of this class It is recommended to reuse Subclasses of the class to conserve memory 
+
+This class allocates a buffer to 
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{class_x_bee_request_af80fd559cab746ab8573087cddda71a2}{}\label{class_x_bee_request_af80fd559cab746ab8573087cddda71a2} 
+\index{X\+Bee\+Request@{X\+Bee\+Request}!X\+Bee\+Request@{X\+Bee\+Request}}
+\index{X\+Bee\+Request@{X\+Bee\+Request}!X\+Bee\+Request@{X\+Bee\+Request}}
+\subsubsection{\texorpdfstring{X\+Bee\+Request()}{XBeeRequest()}}
+{\footnotesize\ttfamily X\+Bee\+Request\+::\+X\+Bee\+Request (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{api\+Id,  }\item[{uint8\+\_\+t}]{frame\+Id }\end{DoxyParamCaption})}
+
+Constructor T\+O\+DO make protected 
+
+\subsection{Member Function Documentation}
+\hypertarget{class_x_bee_request_a746d0373c9fb6ed0ff8b7e04f5fb12c9}{}\label{class_x_bee_request_a746d0373c9fb6ed0ff8b7e04f5fb12c9} 
+\index{X\+Bee\+Request@{X\+Bee\+Request}!get\+Api\+Id@{get\+Api\+Id}}
+\index{get\+Api\+Id@{get\+Api\+Id}!X\+Bee\+Request@{X\+Bee\+Request}}
+\subsubsection{\texorpdfstring{get\+Api\+Id()}{getApiId()}}
+{\footnotesize\ttfamily uint8\+\_\+t X\+Bee\+Request\+::get\+Api\+Id (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Returns the A\+PI id \hypertarget{class_x_bee_request_ad5b998cd95a570bdaa4d74c6c8790d94}{}\label{class_x_bee_request_ad5b998cd95a570bdaa4d74c6c8790d94} 
+\index{X\+Bee\+Request@{X\+Bee\+Request}!get\+Frame\+Data@{get\+Frame\+Data}}
+\index{get\+Frame\+Data@{get\+Frame\+Data}!X\+Bee\+Request@{X\+Bee\+Request}}
+\subsubsection{\texorpdfstring{get\+Frame\+Data()}{getFrameData()}}
+{\footnotesize\ttfamily virtual uint8\+\_\+t X\+Bee\+Request\+::get\+Frame\+Data (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{pos }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [pure virtual]}}
+
+Starting after the frame id (pos = 0) and up to but not including the checksum Note\+: Unlike Digi\textquotesingle{}s definition of the frame data, this does not start with the A\+PI ID. The reason for this is the A\+PI ID and Frame ID are common to all requests, whereas my definition of frame data is only the A\+PI specific data. 
+
+Implemented in \hyperlink{class_remote_at_command_request_a0e576cf564ebd5a82cb2ed05239a856a}{Remote\+At\+Command\+Request}, \hyperlink{class_at_command_request_aa4fc8f0c8404172cd5532f3d8e5564f2}{At\+Command\+Request}, \hyperlink{class_z_b_explicit_tx_request_a3d961e023bcf422543f65ed04da2240a}{Z\+B\+Explicit\+Tx\+Request}, \hyperlink{class_z_b_tx_request_ac81e09dfbf7aefbdf7f8b4838b643c5c}{Z\+B\+Tx\+Request}, \hyperlink{class_tx64_request_afe3662433da85acd21f8a3d90844a084}{Tx64\+Request}, and \hyperlink{class_tx16_request_af5ffbc2164e766d96f54c723996fd389}{Tx16\+Request}.
+
+\hypertarget{class_x_bee_request_a03b6c558db5836fa7167c0fba7405642}{}\label{class_x_bee_request_a03b6c558db5836fa7167c0fba7405642} 
+\index{X\+Bee\+Request@{X\+Bee\+Request}!get\+Frame\+Data\+Length@{get\+Frame\+Data\+Length}}
+\index{get\+Frame\+Data\+Length@{get\+Frame\+Data\+Length}!X\+Bee\+Request@{X\+Bee\+Request}}
+\subsubsection{\texorpdfstring{get\+Frame\+Data\+Length()}{getFrameDataLength()}}
+{\footnotesize\ttfamily virtual uint8\+\_\+t X\+Bee\+Request\+::get\+Frame\+Data\+Length (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [pure virtual]}}
+
+Returns the size of the api frame (not including frame id or api id or checksum). 
+
+Implemented in \hyperlink{class_remote_at_command_request_a1d78334a8924b0a0e06de6ef3a09c24f}{Remote\+At\+Command\+Request}, \hyperlink{class_at_command_request_aad12b8357e63fca9e95b6731a4bfda0d}{At\+Command\+Request}, \hyperlink{class_z_b_explicit_tx_request_a2dfcaf9ec7520f129b68966f814e318f}{Z\+B\+Explicit\+Tx\+Request}, \hyperlink{class_z_b_tx_request_a8e6914c1f556981a0f863c57c57d053b}{Z\+B\+Tx\+Request}, \hyperlink{class_tx64_request_afadc1e07718a62d6c5a75a4bb07dfaae}{Tx64\+Request}, and \hyperlink{class_tx16_request_a9a1ddfb380e72ecc09a024c6de6cdf8e}{Tx16\+Request}.
+
+\hypertarget{class_x_bee_request_a20394c7ea4666224c50bef25cc0cd836}{}\label{class_x_bee_request_a20394c7ea4666224c50bef25cc0cd836} 
+\index{X\+Bee\+Request@{X\+Bee\+Request}!get\+Frame\+Id@{get\+Frame\+Id}}
+\index{get\+Frame\+Id@{get\+Frame\+Id}!X\+Bee\+Request@{X\+Bee\+Request}}
+\subsubsection{\texorpdfstring{get\+Frame\+Id()}{getFrameId()}}
+{\footnotesize\ttfamily uint8\+\_\+t X\+Bee\+Request\+::get\+Frame\+Id (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Returns the frame id \hypertarget{class_x_bee_request_aed1724c11e710217807c971e40105c86}{}\label{class_x_bee_request_aed1724c11e710217807c971e40105c86} 
+\index{X\+Bee\+Request@{X\+Bee\+Request}!set\+Frame\+Id@{set\+Frame\+Id}}
+\index{set\+Frame\+Id@{set\+Frame\+Id}!X\+Bee\+Request@{X\+Bee\+Request}}
+\subsubsection{\texorpdfstring{set\+Frame\+Id()}{setFrameId()}}
+{\footnotesize\ttfamily void X\+Bee\+Request\+::set\+Frame\+Id (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{frame\+Id }\end{DoxyParamCaption})}
+
+Sets the frame id. Must be between 1 and 255 inclusive to get a TX status response. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+C\+:/\+Users/\+Goh Eng Wei/\+Documents/\+Arduino/libraries/\+X\+Bee/X\+Bee.\+h\item 
+C\+:/\+Users/\+Goh Eng Wei/\+Documents/\+Arduino/libraries/\+X\+Bee/X\+Bee.\+cpp\end{DoxyCompactItemize}

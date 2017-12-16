@@ -1,0 +1,116 @@
+\hypertarget{class_z_b_explicit_tx_request}{}\section{Z\+B\+Explicit\+Tx\+Request Class Reference}
+\label{class_z_b_explicit_tx_request}\index{Z\+B\+Explicit\+Tx\+Request@{Z\+B\+Explicit\+Tx\+Request}}
+
+
+{\ttfamily \#include $<$X\+Bee.\+h$>$}
+
+
+
+Inheritance diagram for Z\+B\+Explicit\+Tx\+Request\+:
+% FIG 0
+
+
+Collaboration diagram for Z\+B\+Explicit\+Tx\+Request\+:
+% FIG 1
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{class_z_b_explicit_tx_request_af3070c2fb34934aa3c4cdeb3d0c96429}{Z\+B\+Explicit\+Tx\+Request} (\hyperlink{class_x_bee_address64}{X\+Bee\+Address64} \&addr64, uint8\+\_\+t $\ast$payload, uint8\+\_\+t payload\+Length)
+\item 
+\hyperlink{class_z_b_explicit_tx_request_ab7c5910a9655e897cf4534091f368e17}{Z\+B\+Explicit\+Tx\+Request} (\hyperlink{class_x_bee_address64}{X\+Bee\+Address64} \&addr64, uint16\+\_\+t addr16, uint8\+\_\+t broadcast\+Radius, uint8\+\_\+t option, uint8\+\_\+t $\ast$payload, uint8\+\_\+t payload\+Length, uint8\+\_\+t frame\+Id, uint8\+\_\+t src\+Endpoint, uint8\+\_\+t dst\+Endpoint, uint16\+\_\+t cluster\+Id, uint16\+\_\+t profile\+Id)
+\item 
+\hyperlink{class_z_b_explicit_tx_request_a5bcc41ae8c0506c80a0b670e6f032f2a}{Z\+B\+Explicit\+Tx\+Request} ()
+\item 
+\hypertarget{class_z_b_explicit_tx_request_a1e79a2687c7c1a4daed9a943c3ebdb28}{}\label{class_z_b_explicit_tx_request_a1e79a2687c7c1a4daed9a943c3ebdb28} 
+uint8\+\_\+t {\bfseries get\+Src\+Endpoint} ()
+\item 
+\hypertarget{class_z_b_explicit_tx_request_a58c0045b003cc0f2dd0ecc08cfe13f40}{}\label{class_z_b_explicit_tx_request_a58c0045b003cc0f2dd0ecc08cfe13f40} 
+uint8\+\_\+t {\bfseries get\+Dst\+Endpoint} ()
+\item 
+\hypertarget{class_z_b_explicit_tx_request_a385d5ffebbaf09ddc1f6d6469dac7dd4}{}\label{class_z_b_explicit_tx_request_a385d5ffebbaf09ddc1f6d6469dac7dd4} 
+uint16\+\_\+t {\bfseries get\+Cluster\+Id} ()
+\item 
+\hypertarget{class_z_b_explicit_tx_request_aaf86a4b561d355999258e71f6cf70f61}{}\label{class_z_b_explicit_tx_request_aaf86a4b561d355999258e71f6cf70f61} 
+uint16\+\_\+t {\bfseries get\+Profile\+Id} ()
+\item 
+\hypertarget{class_z_b_explicit_tx_request_ab276c6344b8db881a382f732a981f028}{}\label{class_z_b_explicit_tx_request_ab276c6344b8db881a382f732a981f028} 
+void {\bfseries set\+Src\+Endpoint} (uint8\+\_\+t endpoint)
+\item 
+\hypertarget{class_z_b_explicit_tx_request_ab14b61df0eedb2983972d0a88d58dfa7}{}\label{class_z_b_explicit_tx_request_ab14b61df0eedb2983972d0a88d58dfa7} 
+void {\bfseries set\+Dst\+Endpoint} (uint8\+\_\+t endpoint)
+\item 
+\hypertarget{class_z_b_explicit_tx_request_ac0e96227a092df7d167bd2c58cf614dc}{}\label{class_z_b_explicit_tx_request_ac0e96227a092df7d167bd2c58cf614dc} 
+void {\bfseries set\+Cluster\+Id} (uint16\+\_\+t cluster\+Id)
+\item 
+\hypertarget{class_z_b_explicit_tx_request_afa6ab48faa13a7e5a7bbd41982200bfb}{}\label{class_z_b_explicit_tx_request_afa6ab48faa13a7e5a7bbd41982200bfb} 
+void {\bfseries set\+Profile\+Id} (uint16\+\_\+t profile\+Id)
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+uint8\+\_\+t \hyperlink{class_z_b_explicit_tx_request_a3d961e023bcf422543f65ed04da2240a}{get\+Frame\+Data} (uint8\+\_\+t pos)
+\item 
+uint8\+\_\+t \hyperlink{class_z_b_explicit_tx_request_a2dfcaf9ec7520f129b68966f814e318f}{get\+Frame\+Data\+Length} ()
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+Represents a Series 2 TX packet that corresponds to Api Id\+: Z\+B\+\_\+\+E\+X\+P\+L\+I\+C\+I\+T\+\_\+\+T\+X\+\_\+\+R\+E\+Q\+U\+E\+ST
+
+See the warning about maximum packet size for \hyperlink{class_z_b_tx_request}{Z\+B\+Tx\+Request} above, which probably also applies here as well.
+
+Note that to distinguish reply packets from non-\/\+X\+Bee devices, set AO=1 to enable reception of \hyperlink{class_z_b_explicit_rx_response}{Z\+B\+Explicit\+Rx\+Response} packets. 
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{class_z_b_explicit_tx_request_af3070c2fb34934aa3c4cdeb3d0c96429}{}\label{class_z_b_explicit_tx_request_af3070c2fb34934aa3c4cdeb3d0c96429} 
+\index{Z\+B\+Explicit\+Tx\+Request@{Z\+B\+Explicit\+Tx\+Request}!Z\+B\+Explicit\+Tx\+Request@{Z\+B\+Explicit\+Tx\+Request}}
+\index{Z\+B\+Explicit\+Tx\+Request@{Z\+B\+Explicit\+Tx\+Request}!Z\+B\+Explicit\+Tx\+Request@{Z\+B\+Explicit\+Tx\+Request}}
+\subsubsection{\texorpdfstring{Z\+B\+Explicit\+Tx\+Request()}{ZBExplicitTxRequest()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily Z\+B\+Explicit\+Tx\+Request\+::\+Z\+B\+Explicit\+Tx\+Request (\begin{DoxyParamCaption}\item[{\hyperlink{class_x_bee_address64}{X\+Bee\+Address64} \&}]{addr64,  }\item[{uint8\+\_\+t $\ast$}]{payload,  }\item[{uint8\+\_\+t}]{payload\+Length }\end{DoxyParamCaption})}
+
+Creates a unicast \hyperlink{class_z_b_explicit_tx_request}{Z\+B\+Explicit\+Tx\+Request} with the A\+CK option and D\+E\+F\+A\+U\+L\+T\+\_\+\+F\+R\+A\+M\+E\+\_\+\+ID.
+
+It uses the Maxstream profile (0xc105), both endpoints 232 and cluster 0x0011, resulting in the same packet as sent by a normal \hyperlink{class_z_b_tx_request}{Z\+B\+Tx\+Request}. \hypertarget{class_z_b_explicit_tx_request_ab7c5910a9655e897cf4534091f368e17}{}\label{class_z_b_explicit_tx_request_ab7c5910a9655e897cf4534091f368e17} 
+\index{Z\+B\+Explicit\+Tx\+Request@{Z\+B\+Explicit\+Tx\+Request}!Z\+B\+Explicit\+Tx\+Request@{Z\+B\+Explicit\+Tx\+Request}}
+\index{Z\+B\+Explicit\+Tx\+Request@{Z\+B\+Explicit\+Tx\+Request}!Z\+B\+Explicit\+Tx\+Request@{Z\+B\+Explicit\+Tx\+Request}}
+\subsubsection{\texorpdfstring{Z\+B\+Explicit\+Tx\+Request()}{ZBExplicitTxRequest()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily Z\+B\+Explicit\+Tx\+Request\+::\+Z\+B\+Explicit\+Tx\+Request (\begin{DoxyParamCaption}\item[{\hyperlink{class_x_bee_address64}{X\+Bee\+Address64} \&}]{addr64,  }\item[{uint16\+\_\+t}]{addr16,  }\item[{uint8\+\_\+t}]{broadcast\+Radius,  }\item[{uint8\+\_\+t}]{option,  }\item[{uint8\+\_\+t $\ast$}]{payload,  }\item[{uint8\+\_\+t}]{payload\+Length,  }\item[{uint8\+\_\+t}]{frame\+Id,  }\item[{uint8\+\_\+t}]{src\+Endpoint,  }\item[{uint8\+\_\+t}]{dst\+Endpoint,  }\item[{uint16\+\_\+t}]{cluster\+Id,  }\item[{uint16\+\_\+t}]{profile\+Id }\end{DoxyParamCaption})}
+
+Create a \hyperlink{class_z_b_explicit_tx_request}{Z\+B\+Explicit\+Tx\+Request}, specifying all fields. \hypertarget{class_z_b_explicit_tx_request_a5bcc41ae8c0506c80a0b670e6f032f2a}{}\label{class_z_b_explicit_tx_request_a5bcc41ae8c0506c80a0b670e6f032f2a} 
+\index{Z\+B\+Explicit\+Tx\+Request@{Z\+B\+Explicit\+Tx\+Request}!Z\+B\+Explicit\+Tx\+Request@{Z\+B\+Explicit\+Tx\+Request}}
+\index{Z\+B\+Explicit\+Tx\+Request@{Z\+B\+Explicit\+Tx\+Request}!Z\+B\+Explicit\+Tx\+Request@{Z\+B\+Explicit\+Tx\+Request}}
+\subsubsection{\texorpdfstring{Z\+B\+Explicit\+Tx\+Request()}{ZBExplicitTxRequest()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily Z\+B\+Explicit\+Tx\+Request\+::\+Z\+B\+Explicit\+Tx\+Request (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Creates a default instance of this class. At a minimum you must specify a payload, payload length and a destination address before sending this request.
+
+Furthermore, it uses the Maxstream profile (0xc105), both endpoints 232 and cluster 0x0011, resulting in the same packet as sent by a normal \hyperlink{class_z_b_explicit_tx_request}{Z\+B\+Explicit\+Tx\+Request}. 
+
+\subsection{Member Function Documentation}
+\hypertarget{class_z_b_explicit_tx_request_a3d961e023bcf422543f65ed04da2240a}{}\label{class_z_b_explicit_tx_request_a3d961e023bcf422543f65ed04da2240a} 
+\index{Z\+B\+Explicit\+Tx\+Request@{Z\+B\+Explicit\+Tx\+Request}!get\+Frame\+Data@{get\+Frame\+Data}}
+\index{get\+Frame\+Data@{get\+Frame\+Data}!Z\+B\+Explicit\+Tx\+Request@{Z\+B\+Explicit\+Tx\+Request}}
+\subsubsection{\texorpdfstring{get\+Frame\+Data()}{getFrameData()}}
+{\footnotesize\ttfamily uint8\+\_\+t Z\+B\+Explicit\+Tx\+Request\+::get\+Frame\+Data (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{pos }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+Starting after the frame id (pos = 0) and up to but not including the checksum Note\+: Unlike Digi\textquotesingle{}s definition of the frame data, this does not start with the A\+PI ID. The reason for this is the A\+PI ID and Frame ID are common to all requests, whereas my definition of frame data is only the A\+PI specific data. 
+
+Reimplemented from \hyperlink{class_z_b_tx_request_ac81e09dfbf7aefbdf7f8b4838b643c5c}{Z\+B\+Tx\+Request}.
+
+\hypertarget{class_z_b_explicit_tx_request_a2dfcaf9ec7520f129b68966f814e318f}{}\label{class_z_b_explicit_tx_request_a2dfcaf9ec7520f129b68966f814e318f} 
+\index{Z\+B\+Explicit\+Tx\+Request@{Z\+B\+Explicit\+Tx\+Request}!get\+Frame\+Data\+Length@{get\+Frame\+Data\+Length}}
+\index{get\+Frame\+Data\+Length@{get\+Frame\+Data\+Length}!Z\+B\+Explicit\+Tx\+Request@{Z\+B\+Explicit\+Tx\+Request}}
+\subsubsection{\texorpdfstring{get\+Frame\+Data\+Length()}{getFrameDataLength()}}
+{\footnotesize\ttfamily uint8\+\_\+t Z\+B\+Explicit\+Tx\+Request\+::get\+Frame\+Data\+Length (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}, {\ttfamily [virtual]}}
+
+Returns the size of the api frame (not including frame id or api id or checksum). 
+
+Reimplemented from \hyperlink{class_z_b_tx_request_a8e6914c1f556981a0f863c57c57d053b}{Z\+B\+Tx\+Request}.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+C\+:/\+Users/\+Goh Eng Wei/\+Documents/\+Arduino/libraries/\+X\+Bee/X\+Bee.\+h\item 
+C\+:/\+Users/\+Goh Eng Wei/\+Documents/\+Arduino/libraries/\+X\+Bee/X\+Bee.\+cpp\end{DoxyCompactItemize}

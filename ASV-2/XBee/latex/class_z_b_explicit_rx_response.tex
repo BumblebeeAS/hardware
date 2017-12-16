@@ -1,0 +1,77 @@
+\hypertarget{class_z_b_explicit_rx_response}{}\section{Z\+B\+Explicit\+Rx\+Response Class Reference}
+\label{class_z_b_explicit_rx_response}\index{Z\+B\+Explicit\+Rx\+Response@{Z\+B\+Explicit\+Rx\+Response}}
+
+
+{\ttfamily \#include $<$X\+Bee.\+h$>$}
+
+
+
+Inheritance diagram for Z\+B\+Explicit\+Rx\+Response\+:
+% FIG 0
+
+
+Collaboration diagram for Z\+B\+Explicit\+Rx\+Response\+:
+% FIG 1
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_z_b_explicit_rx_response_a60c762f7577fde5bafd1fa8301221aab}{}\label{class_z_b_explicit_rx_response_a60c762f7577fde5bafd1fa8301221aab} 
+uint8\+\_\+t {\bfseries get\+Src\+Endpoint} ()
+\item 
+\hypertarget{class_z_b_explicit_rx_response_a2d8cee53fe0efd60c22144d076dfe3d1}{}\label{class_z_b_explicit_rx_response_a2d8cee53fe0efd60c22144d076dfe3d1} 
+uint8\+\_\+t {\bfseries get\+Dst\+Endpoint} ()
+\item 
+\hypertarget{class_z_b_explicit_rx_response_a8010d8d76158a743496c08ecf0de4b4b}{}\label{class_z_b_explicit_rx_response_a8010d8d76158a743496c08ecf0de4b4b} 
+uint16\+\_\+t {\bfseries get\+Cluster\+Id} ()
+\item 
+\hypertarget{class_z_b_explicit_rx_response_a42a57794f31d532fce3380f8564143a1}{}\label{class_z_b_explicit_rx_response_a42a57794f31d532fce3380f8564143a1} 
+uint16\+\_\+t {\bfseries get\+Profile\+Id} ()
+\item 
+\hypertarget{class_z_b_explicit_rx_response_ad5483f4ff70821a8bf46421c4997ce76}{}\label{class_z_b_explicit_rx_response_ad5483f4ff70821a8bf46421c4997ce76} 
+uint8\+\_\+t {\bfseries get\+Option} ()
+\item 
+uint8\+\_\+t \hyperlink{class_z_b_explicit_rx_response_af0f29cd6d76215f50224547ef8201cb7}{get\+Data\+Length} ()
+\item 
+uint8\+\_\+t \hyperlink{class_z_b_explicit_rx_response_aac859574ace86ba08f6abb9d865fec17}{get\+Data\+Offset} ()
+\end{DoxyCompactItemize}
+\subsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_z_b_explicit_rx_response_a9a8ad6e291a04ba689472439e682f079}{}\label{class_z_b_explicit_rx_response_a9a8ad6e291a04ba689472439e682f079} 
+static const uint8\+\_\+t {\bfseries A\+P\+I\+\_\+\+ID} = Z\+B\+\_\+\+E\+X\+P\+L\+I\+C\+I\+T\+\_\+\+R\+X\+\_\+\+R\+E\+S\+P\+O\+N\+SE
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+Represents a Series 2 Explicit RX packet
+
+Note\+: The receive these responses, set AO=1. With the default AO=0, you will receive Z\+B\+Rx\+Responses, not knowing exact details. 
+
+\subsection{Member Function Documentation}
+\hypertarget{class_z_b_explicit_rx_response_af0f29cd6d76215f50224547ef8201cb7}{}\label{class_z_b_explicit_rx_response_af0f29cd6d76215f50224547ef8201cb7} 
+\index{Z\+B\+Explicit\+Rx\+Response@{Z\+B\+Explicit\+Rx\+Response}!get\+Data\+Length@{get\+Data\+Length}}
+\index{get\+Data\+Length@{get\+Data\+Length}!Z\+B\+Explicit\+Rx\+Response@{Z\+B\+Explicit\+Rx\+Response}}
+\subsubsection{\texorpdfstring{get\+Data\+Length()}{getDataLength()}}
+{\footnotesize\ttfamily uint8\+\_\+t Z\+B\+Explicit\+Rx\+Response\+::get\+Data\+Length (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+Returns the length of the payload 
+
+Reimplemented from \hyperlink{class_z_b_rx_response_a9d2b73060d611bbdd581e0ceb195fd31}{Z\+B\+Rx\+Response}.
+
+\hypertarget{class_z_b_explicit_rx_response_aac859574ace86ba08f6abb9d865fec17}{}\label{class_z_b_explicit_rx_response_aac859574ace86ba08f6abb9d865fec17} 
+\index{Z\+B\+Explicit\+Rx\+Response@{Z\+B\+Explicit\+Rx\+Response}!get\+Data\+Offset@{get\+Data\+Offset}}
+\index{get\+Data\+Offset@{get\+Data\+Offset}!Z\+B\+Explicit\+Rx\+Response@{Z\+B\+Explicit\+Rx\+Response}}
+\subsubsection{\texorpdfstring{get\+Data\+Offset()}{getDataOffset()}}
+{\footnotesize\ttfamily uint8\+\_\+t Z\+B\+Explicit\+Rx\+Response\+::get\+Data\+Offset (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+Returns the position in the frame data where the data begins 
+
+Reimplemented from \hyperlink{class_z_b_rx_response_ad54e6ff3008f79d0ed32a78cc3d69151}{Z\+B\+Rx\+Response}.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+C\+:/\+Users/\+Goh Eng Wei/\+Documents/\+Arduino/libraries/\+X\+Bee/X\+Bee.\+h\item 
+C\+:/\+Users/\+Goh Eng Wei/\+Documents/\+Arduino/libraries/\+X\+Bee/X\+Bee.\+cpp\end{DoxyCompactItemize}

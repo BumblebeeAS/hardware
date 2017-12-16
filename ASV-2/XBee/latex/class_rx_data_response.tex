@@ -1,0 +1,70 @@
+\hypertarget{class_rx_data_response}{}\section{Rx\+Data\+Response Class Reference}
+\label{class_rx_data_response}\index{Rx\+Data\+Response@{Rx\+Data\+Response}}
+
+
+{\ttfamily \#include $<$X\+Bee.\+h$>$}
+
+
+
+Inheritance diagram for Rx\+Data\+Response\+:
+% FIG 0
+
+
+Collaboration diagram for Rx\+Data\+Response\+:
+% FIG 1
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+uint8\+\_\+t \hyperlink{class_rx_data_response_a28db0306283f4191e4fc8a5b049486f5}{get\+Data} (int index)
+\item 
+uint8\+\_\+t $\ast$ \hyperlink{class_rx_data_response_ae0f858fe479a07c7122a8d414c60517e}{get\+Data} ()
+\item 
+virtual uint8\+\_\+t \hyperlink{class_rx_data_response_a5845e6a0719fd0bf52675e47053a704e}{get\+Data\+Length} ()=0
+\item 
+virtual uint8\+\_\+t \hyperlink{class_rx_data_response_a9e4b6bf4f1bfd9ccec45d190a204f61a}{get\+Data\+Offset} ()=0
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+Common functionality for both Series 1 and 2 data RX data packets 
+
+\subsection{Member Function Documentation}
+\hypertarget{class_rx_data_response_a28db0306283f4191e4fc8a5b049486f5}{}\label{class_rx_data_response_a28db0306283f4191e4fc8a5b049486f5} 
+\index{Rx\+Data\+Response@{Rx\+Data\+Response}!get\+Data@{get\+Data}}
+\index{get\+Data@{get\+Data}!Rx\+Data\+Response@{Rx\+Data\+Response}}
+\subsubsection{\texorpdfstring{get\+Data()}{getData()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily uint8\+\_\+t Rx\+Data\+Response\+::get\+Data (\begin{DoxyParamCaption}\item[{int}]{index }\end{DoxyParamCaption})}
+
+Returns the specified index of the payload. The index may be 0 to \hyperlink{class_rx_data_response_a5845e6a0719fd0bf52675e47053a704e}{get\+Data\+Length()} -\/ 1 This method is deprecated; use uint8\+\_\+t$\ast$ \hyperlink{class_rx_data_response_ae0f858fe479a07c7122a8d414c60517e}{get\+Data()} \hypertarget{class_rx_data_response_ae0f858fe479a07c7122a8d414c60517e}{}\label{class_rx_data_response_ae0f858fe479a07c7122a8d414c60517e} 
+\index{Rx\+Data\+Response@{Rx\+Data\+Response}!get\+Data@{get\+Data}}
+\index{get\+Data@{get\+Data}!Rx\+Data\+Response@{Rx\+Data\+Response}}
+\subsubsection{\texorpdfstring{get\+Data()}{getData()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily uint8\+\_\+t $\ast$ Rx\+Data\+Response\+::get\+Data (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Returns the payload array. This may be accessed from index 0 to \hyperlink{class_rx_data_response_a5845e6a0719fd0bf52675e47053a704e}{get\+Data\+Length()} -\/ 1 \hypertarget{class_rx_data_response_a5845e6a0719fd0bf52675e47053a704e}{}\label{class_rx_data_response_a5845e6a0719fd0bf52675e47053a704e} 
+\index{Rx\+Data\+Response@{Rx\+Data\+Response}!get\+Data\+Length@{get\+Data\+Length}}
+\index{get\+Data\+Length@{get\+Data\+Length}!Rx\+Data\+Response@{Rx\+Data\+Response}}
+\subsubsection{\texorpdfstring{get\+Data\+Length()}{getDataLength()}}
+{\footnotesize\ttfamily virtual uint8\+\_\+t Rx\+Data\+Response\+::get\+Data\+Length (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [pure virtual]}}
+
+Returns the length of the payload 
+
+Implemented in \hyperlink{class_rx_response_add3478a1ce5667aad315f6a6c218011a}{Rx\+Response}, \hyperlink{class_z_b_explicit_rx_response_af0f29cd6d76215f50224547ef8201cb7}{Z\+B\+Explicit\+Rx\+Response}, and \hyperlink{class_z_b_rx_response_a9d2b73060d611bbdd581e0ceb195fd31}{Z\+B\+Rx\+Response}.
+
+\hypertarget{class_rx_data_response_a9e4b6bf4f1bfd9ccec45d190a204f61a}{}\label{class_rx_data_response_a9e4b6bf4f1bfd9ccec45d190a204f61a} 
+\index{Rx\+Data\+Response@{Rx\+Data\+Response}!get\+Data\+Offset@{get\+Data\+Offset}}
+\index{get\+Data\+Offset@{get\+Data\+Offset}!Rx\+Data\+Response@{Rx\+Data\+Response}}
+\subsubsection{\texorpdfstring{get\+Data\+Offset()}{getDataOffset()}}
+{\footnotesize\ttfamily virtual uint8\+\_\+t Rx\+Data\+Response\+::get\+Data\+Offset (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [pure virtual]}}
+
+Returns the position in the frame data where the data begins 
+
+Implemented in \hyperlink{class_rx_response_a37fd3ee455f2157fa3894e710e668409}{Rx\+Response}, \hyperlink{class_z_b_explicit_rx_response_aac859574ace86ba08f6abb9d865fec17}{Z\+B\+Explicit\+Rx\+Response}, and \hyperlink{class_z_b_rx_response_ad54e6ff3008f79d0ed32a78cc3d69151}{Z\+B\+Rx\+Response}.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+C\+:/\+Users/\+Goh Eng Wei/\+Documents/\+Arduino/libraries/\+X\+Bee/X\+Bee.\+h\item 
+C\+:/\+Users/\+Goh Eng Wei/\+Documents/\+Arduino/libraries/\+X\+Bee/X\+Bee.\+cpp\end{DoxyCompactItemize}

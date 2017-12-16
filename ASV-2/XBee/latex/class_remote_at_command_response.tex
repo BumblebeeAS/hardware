@@ -1,0 +1,92 @@
+\hypertarget{class_remote_at_command_response}{}\section{Remote\+At\+Command\+Response Class Reference}
+\label{class_remote_at_command_response}\index{Remote\+At\+Command\+Response@{Remote\+At\+Command\+Response}}
+
+
+{\ttfamily \#include $<$X\+Bee.\+h$>$}
+
+
+
+Inheritance diagram for Remote\+At\+Command\+Response\+:
+% FIG 0
+
+
+Collaboration diagram for Remote\+At\+Command\+Response\+:
+% FIG 1
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+uint8\+\_\+t $\ast$ \hyperlink{class_remote_at_command_response_a6d26d626de8b8d0eaf8241b92ff39f28}{get\+Command} ()
+\item 
+uint8\+\_\+t \hyperlink{class_remote_at_command_response_afc1b15612ea780c10dc1f33754868548}{get\+Status} ()
+\item 
+uint8\+\_\+t $\ast$ \hyperlink{class_remote_at_command_response_a3d72d768131c63271a62f75530efda29}{get\+Value} ()
+\item 
+uint8\+\_\+t \hyperlink{class_remote_at_command_response_a55cf17381e461b8de4a2d5459bfc964a}{get\+Value\+Length} ()
+\item 
+uint16\+\_\+t \hyperlink{class_remote_at_command_response_a2bea13bca12330a2eb1da3e3f0224bde}{get\+Remote\+Address16} ()
+\item 
+\hyperlink{class_x_bee_address64}{X\+Bee\+Address64} \& \hyperlink{class_remote_at_command_response_ab87802214e04a7058ed0dc9668e70e73}{get\+Remote\+Address64} ()
+\item 
+bool \hyperlink{class_remote_at_command_response_a0cef7b3846d9c208ebd7ce4473aa90d3}{is\+Ok} ()
+\end{DoxyCompactItemize}
+\subsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_remote_at_command_response_ac89adc1476ef59d7b9837f26099c53c3}{}\label{class_remote_at_command_response_ac89adc1476ef59d7b9837f26099c53c3} 
+static const uint8\+\_\+t {\bfseries A\+P\+I\+\_\+\+ID} = R\+E\+M\+O\+T\+E\+\_\+\+A\+T\+\_\+\+C\+O\+M\+M\+A\+N\+D\+\_\+\+R\+E\+S\+P\+O\+N\+SE
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+Represents a Remote AT Command RX packet 
+
+\subsection{Member Function Documentation}
+\hypertarget{class_remote_at_command_response_a6d26d626de8b8d0eaf8241b92ff39f28}{}\label{class_remote_at_command_response_a6d26d626de8b8d0eaf8241b92ff39f28} 
+\index{Remote\+At\+Command\+Response@{Remote\+At\+Command\+Response}!get\+Command@{get\+Command}}
+\index{get\+Command@{get\+Command}!Remote\+At\+Command\+Response@{Remote\+At\+Command\+Response}}
+\subsubsection{\texorpdfstring{get\+Command()}{getCommand()}}
+{\footnotesize\ttfamily uint8\+\_\+t $\ast$ Remote\+At\+Command\+Response\+::get\+Command (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Returns an array containing the two character command \hypertarget{class_remote_at_command_response_a2bea13bca12330a2eb1da3e3f0224bde}{}\label{class_remote_at_command_response_a2bea13bca12330a2eb1da3e3f0224bde} 
+\index{Remote\+At\+Command\+Response@{Remote\+At\+Command\+Response}!get\+Remote\+Address16@{get\+Remote\+Address16}}
+\index{get\+Remote\+Address16@{get\+Remote\+Address16}!Remote\+At\+Command\+Response@{Remote\+At\+Command\+Response}}
+\subsubsection{\texorpdfstring{get\+Remote\+Address16()}{getRemoteAddress16()}}
+{\footnotesize\ttfamily uint16\+\_\+t Remote\+At\+Command\+Response\+::get\+Remote\+Address16 (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Returns the 16-\/bit address of the remote radio \hypertarget{class_remote_at_command_response_ab87802214e04a7058ed0dc9668e70e73}{}\label{class_remote_at_command_response_ab87802214e04a7058ed0dc9668e70e73} 
+\index{Remote\+At\+Command\+Response@{Remote\+At\+Command\+Response}!get\+Remote\+Address64@{get\+Remote\+Address64}}
+\index{get\+Remote\+Address64@{get\+Remote\+Address64}!Remote\+At\+Command\+Response@{Remote\+At\+Command\+Response}}
+\subsubsection{\texorpdfstring{get\+Remote\+Address64()}{getRemoteAddress64()}}
+{\footnotesize\ttfamily \hyperlink{class_x_bee_address64}{X\+Bee\+Address64} \& Remote\+At\+Command\+Response\+::get\+Remote\+Address64 (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Returns the 64-\/bit address of the remote radio \hypertarget{class_remote_at_command_response_afc1b15612ea780c10dc1f33754868548}{}\label{class_remote_at_command_response_afc1b15612ea780c10dc1f33754868548} 
+\index{Remote\+At\+Command\+Response@{Remote\+At\+Command\+Response}!get\+Status@{get\+Status}}
+\index{get\+Status@{get\+Status}!Remote\+At\+Command\+Response@{Remote\+At\+Command\+Response}}
+\subsubsection{\texorpdfstring{get\+Status()}{getStatus()}}
+{\footnotesize\ttfamily uint8\+\_\+t Remote\+At\+Command\+Response\+::get\+Status (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Returns the command status code. Zero represents a successful command \hypertarget{class_remote_at_command_response_a3d72d768131c63271a62f75530efda29}{}\label{class_remote_at_command_response_a3d72d768131c63271a62f75530efda29} 
+\index{Remote\+At\+Command\+Response@{Remote\+At\+Command\+Response}!get\+Value@{get\+Value}}
+\index{get\+Value@{get\+Value}!Remote\+At\+Command\+Response@{Remote\+At\+Command\+Response}}
+\subsubsection{\texorpdfstring{get\+Value()}{getValue()}}
+{\footnotesize\ttfamily uint8\+\_\+t $\ast$ Remote\+At\+Command\+Response\+::get\+Value (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Returns an array containing the command value. This is only applicable to query commands. \hypertarget{class_remote_at_command_response_a55cf17381e461b8de4a2d5459bfc964a}{}\label{class_remote_at_command_response_a55cf17381e461b8de4a2d5459bfc964a} 
+\index{Remote\+At\+Command\+Response@{Remote\+At\+Command\+Response}!get\+Value\+Length@{get\+Value\+Length}}
+\index{get\+Value\+Length@{get\+Value\+Length}!Remote\+At\+Command\+Response@{Remote\+At\+Command\+Response}}
+\subsubsection{\texorpdfstring{get\+Value\+Length()}{getValueLength()}}
+{\footnotesize\ttfamily uint8\+\_\+t Remote\+At\+Command\+Response\+::get\+Value\+Length (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Returns the length of the command value array. \hypertarget{class_remote_at_command_response_a0cef7b3846d9c208ebd7ce4473aa90d3}{}\label{class_remote_at_command_response_a0cef7b3846d9c208ebd7ce4473aa90d3} 
+\index{Remote\+At\+Command\+Response@{Remote\+At\+Command\+Response}!is\+Ok@{is\+Ok}}
+\index{is\+Ok@{is\+Ok}!Remote\+At\+Command\+Response@{Remote\+At\+Command\+Response}}
+\subsubsection{\texorpdfstring{is\+Ok()}{isOk()}}
+{\footnotesize\ttfamily bool Remote\+At\+Command\+Response\+::is\+Ok (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Returns true if command was successful 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+C\+:/\+Users/\+Goh Eng Wei/\+Documents/\+Arduino/libraries/\+X\+Bee/X\+Bee.\+h\item 
+C\+:/\+Users/\+Goh Eng Wei/\+Documents/\+Arduino/libraries/\+X\+Bee/X\+Bee.\+cpp\end{DoxyCompactItemize}
