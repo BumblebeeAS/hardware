@@ -1,6 +1,6 @@
 int ppm[5] ={0}; 
 
-const int cppm = 3; // pin in for cppm
+const int cppm = 19; // pin in for cppm
 
 unsigned long prev = 1000000;  // to always discard first frame
 unsigned long delta = 0;

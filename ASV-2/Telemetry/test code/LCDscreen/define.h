@@ -3,7 +3,7 @@
 
 //SCREEN
 #define SCREEN_INT 3
-#define SCREEN_CS 7
+#define SCREEN_CS 22
 #define SCREEN_RESET 9
 
 #define SD_CS 10
