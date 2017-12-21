@@ -1,7 +1,6 @@
 #ifndef _LCD_
 #define _LCD_
 
-#include <stdlib.h>
 #include <Arduino.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_RA8875.h>  //screen
@@ -14,7 +13,9 @@ class LCD
 {
 private:
 	Adafruit_RA8875* screen;
-	
+	int _x;
+	int _y;
+
 #ifdef _SD_
 	// Draw bmp img
 	uint16_t read16(File f);
@@ -23,13 +24,18 @@ private:
 	byte decToBcd(byte val);
 #endif
 
+	void increment_row();
+
 public:
 	LCD(int screen_cs, int screen_reset);
 	//~LCD();
 	void screen_init();
 	
-	void screen_write(uint32_t x, uint32_t y, uint32_t var);
-	void screen_write_string(uint32_t x, uint32_t y, const char* var);
+	void set_cursor(uint32_t x, uint32_t y);
+	
+	void write_string(const char* var);
+	void write_value_int(uint32_t var);
+	void write_value_string(const char* var);
 
 	void screen_clear();
 	
