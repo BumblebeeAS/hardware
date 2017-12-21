@@ -23,6 +23,7 @@
 //###################################################
 //###################################################
 
+#include <XBee.h>
 #include <Adafruit_RA8875.h>
 #include <Adafruit_GFX.h>
 #include "LCD_Driver.h"
@@ -40,8 +41,9 @@ Frisky rc = Frisky(RC_INT);
 
 MCP_CAN CAN(CAN_Chip_Select); 
 
-unsigned char len = 0; //length of CAN message, taken care by library
-unsigned char buf[8];  //Buffer for CAN message
+uint8_t id = 0;
+uint8_t len = 0; //length of CAN message, taken care by library
+uint8_t buf[8];  //Buffer for CAN message
 
 
 //static means the variable is only accessible within this file
@@ -61,17 +63,47 @@ static uint32_t logTime;
 static uint32_t currentTime;
 static uint32_t canStatsTime;
 
+static uint32_t heartbeat_loop = 0;
+static uint32_t thruster_loop = 0;
+
+int control_mode = AUTONOMOUS;
+int32_t dir_forward = 0;
+int32_t dir_side = 0;
+int32_t dir_yaw = 0;
+int32_t speed1 = 0;
+int32_t speed2 = 0;
+int32_t speed3 = 0;
+int32_t speed4 = 0;
+
+bool manualOperationMode = false;
+XBeeResponse response = XBeeResponse();
+ZBRxResponse rx = ZBRxResponse();
+XBee xbee = XBee();
+uint8_t *payload;
+uint8_t cmd[] = { 'D','B' };
+AtCommandRequest atRequest = AtCommandRequest();
+AtCommandResponse atResponse = AtCommandResponse();
+
 void setup(){
 	Serial.begin(115200);
-	Serial1.begin(9600); //xbee serial
+
+	// CAN INIT
 	CAN_init();
 	Serial.println("CAN OK");
+
+	// LCD INIT
 	screen.screen_init();
 	Serial.println("Screen OK");
-	rc.init();
-	currentTime = loopTime = millis();
-
 	screen_prepare();
+
+	// FRISKY INIT
+	rc.init();
+
+	// XBEE INIT
+	Serial2.begin(XBEE_BAUDRATE);
+	xbee.setSerial(Serial2);
+
+	currentTime = loopTime = millis();
 }
 
 
@@ -79,13 +111,7 @@ int32_t test_time = 0;
 void loop(){
 	//******* LCD SCREEN **********/
 
-	/*CHECK FOR CONNECTION*/
-	update_posb_stats();
-	update_ocs_stats();
-	update_rc_stats();
-	update_sbc_stats();
-	update_batt1_stats();
-	update_batt2_stats();
+	reset_stats();
 
 	if((millis() - loopTime) > 1000){
 		screen_update();
@@ -93,13 +119,91 @@ void loop(){
 		update_heartbeat();
 	}
 
-	//******* RC RX **********/
+	/*************************************************/
+	/*					RC RX					     */
+	/* Read Frisky CPPM for Manual Thruster override */
+	/*************************************************/
+	get_directions();
+	get_controlmode();
+	convert_thruster_values();
 
-	//******* RC TX **********/
+	Serial.print(" 1: ");
+	Serial.print(speed1);
+	Serial.print(" 2: ");
+	Serial.print(speed2);
+	Serial.print(" 3: ");
+	Serial.print(speed3);
+	Serial.print(" 4: ");
+	Serial.println(speed4);
 
-	//******* OCS RX **********/
+	/********************************************/
+	/*					RC TX				    */
+	/* Send ASV Batt value to Frisky Controller */
+	/********************************************/
 
-	//******* OCS TX **********/
+	/**********************************************/
+	/*					OCS RX					  */
+	/* Read OCS XBEE for Manual Thruster override */
+	/**********************************************/
+
+	xbee.readPacket();
+	if (xbee.getResponse().isAvailable())
+	{
+		if (xbee.getResponse().getApiId() == ZB_RX_RESPONSE)
+		{
+			xbee.getResponse().getZBRxResponse(rx);
+			payload = rx.getData();
+			switch (payload[2])
+			{
+			case CAN_control_link:				
+				if (payload[3]) manualOperationMode = true;
+				else manualOperationMode = false;
+			case CAN_manual_thruster:
+				/*
+				if(manualOperationMode)//Manual mode activated, overrides CAN data
+				{
+				speed1 = int16_t(CAN.parseCANFrame(payload, 4, 2)) - 1000;
+				speed2 = int16_t(CAN.parseCANFrame(payload, 6, 2)) - 1000;
+				}
+				else if (!manualOperationMode && !autonomous) //When system is not in autonomous mode, to reset speed for joystick release
+				{
+				speed1 = 0;
+				speed2 = 0;
+				}
+				*/
+				/*
+				Serial.print("Mode: ");
+				Serial.print(payload[8], HEX);
+				Serial.print(" Speed1: ");
+				Serial.print(speed1);
+				Serial.print(" Speed2: ");
+				Serial.print(speed2);
+				Serial.println();
+				*/
+				break;
+			case CAN_heartbeat:/*
+							   id = CAN_heartbeat;
+							   len = 1;
+							   buf[0] = HEARTBEAT_OCS;
+							   ocsHeartbeatTimeout = millis();
+							   forwardCANtoSerial(buf);*/
+				break;
+			default:
+				break;
+			}
+		}
+
+	}
+
+	/**********************************************/
+	/*					OCS TX					  */
+	/*	Send Telemetry Data via control link	  */
+	/**********************************************/
+
+	/**********************************************/
+	/*			Transmit Thruster commands		  */
+	/**********************************************/
+
 
 	//******* CAN RX **********/
 	checkCANmsg();
@@ -136,8 +240,20 @@ INS
 GPS
 */
 
-//========= Update Data ==========
-void update_posb_stats()
+
+//==========================================
+//          UPDATE DATA
+//==========================================
+void reset_stats()
+{
+	reset_posb_stats();
+	reset_ocs_stats();
+	reset_rc_stats();
+	reset_sbc_stats();
+	reset_batt1_stats();
+	reset_batt2_stats();
+}
+void reset_posb_stats()
 {
 	if (millis() - posb_timeout > HB_TIMEOUT){
 		internalStats[INT_PRESS] = 255;
@@ -146,39 +262,40 @@ void update_posb_stats()
 		posb_timeout = millis();
 	}
 }
-void update_ocs_stats()
+void reset_ocs_stats()
 {
-	if (millis() - posb_timeout > HB_TIMEOUT){
-		internalStats[RSSI_OCS] = 255;
+	if (millis() - ocs_timeout > HB_TIMEOUT){
+		internalStats[RSSI_OCS] = 0;
 		ocs_timeout = millis();
 	}
 }
-void update_rc_stats()
+void reset_rc_stats()
 {
-	if (millis() - posb_timeout > HB_TIMEOUT){
-		internalStats[RSSI_RC] = 255;
+	rc_timeout = rc.get_last_int_time();
+	if (millis() - rc_timeout > HB_TIMEOUT){
+		internalStats[RSSI_RC] = 0;
 		rc_timeout = millis();
 	}
 }
-void update_sbc_stats()
+void reset_sbc_stats()
 {
 	if (millis() - sbc_timeout > HB_TIMEOUT){
 		internalStats[CPU_TEMP] = 255;
 		sbc_timeout = millis();
 	}
 }
-void update_batt1_stats()
+void reset_batt1_stats()
 {
-	if (millis() - sbc_timeout > HB_TIMEOUT){
+	if (millis() - batt1_timeout > HB_TIMEOUT){
 		powerStats[BATT1_CAPACITY] = 255;
 		powerStats[BATT1_CURRENT] = 255;
 		powerStats[BATT1_VOLTAGE] = 255;
 		batt1_timeout = millis();
 	}
 }
-void update_batt2_stats()
+void reset_batt2_stats()
 {
-	if (millis() - sbc_timeout > HB_TIMEOUT){
+	if (millis() - batt2_timeout > HB_TIMEOUT){
 		powerStats[BATT2_CAPACITY] = 255;
 		powerStats[BATT2_CURRENT] = 255;
 		powerStats[BATT2_VOLTAGE] = 255;
@@ -186,7 +303,9 @@ void update_batt2_stats()
 	}
 }
 
-//========= LCD ==========
+//==========================================
+//          LCD FUNCTIONS
+//==========================================
 
 void screen_prepare(){
 	screen.set_cursor(0, 0);
@@ -252,7 +371,61 @@ void update_heartbeat()
 	}
 }
 
-//========= CAN ==========
+//==========================================
+//          THRUSTER FUNCTIONS
+//==========================================
+
+// Map CPPM values to thruster values
+// CPPM: 980 to 2020 (neutral: 1500) (with deadzone from -20 to 20)
+// Thruster: -3200 to 3200 (neutral: 0)
+int32_t map_cppm(int value)
+{
+	if(value >= 1500)
+	{
+		value = constrain(value,1520,2020); // Remove deadzone
+		value = map(value, 1520, 2020, 0, 3200);	// Map values
+	}
+	else
+	{
+		value = constrain(value,900,1480);
+		value = map(value, 980, 1480, -3200, 0);
+	}
+	return value;
+}
+
+void get_directions()
+{	
+	dir_forward = map_cppm(rc.get_ch(FRISKY_FORWARD));
+	dir_side = map_cppm(rc.get_ch(FRISKY_SIDE));
+	dir_yaw = map_cppm(rc.get_ch(FRISKY_YAW));
+}
+
+void get_controlmode()
+{
+	if(rc.get_ch(FRISKY_ARM))
+	{
+		//TODO: resolve ocs arm also
+		control_mode = MANUAL_RC;
+	}
+	else
+	{
+		control_mode = AUTONOMOUS;
+	}
+}
+
+// Resolve vector thrust &
+// Cap thrust at -3200 and 3200
+void convert_thruster_values()
+{
+	speed1 = constrain(dir_forward - dir_side - dir_yaw, -3200, 3200);
+	speed2 = constrain(dir_forward + dir_side + dir_yaw, -3200, 3200);
+	speed3 = constrain(dir_forward + dir_side - dir_yaw, -3200, 3200);
+	speed4 = constrain(dir_forward - dir_side + dir_yaw, -3200, 3200);
+}
+
+//==========================================
+//          CAN FUNCTIONS
+//==========================================
 
 void CAN_init(){
 START_INIT:
@@ -284,16 +457,18 @@ START_INIT:
 118: Humidity, Temp(POSB)
 */
 
+//========== CAN Receive ==============//
+
 void checkCANmsg(){
 	if (CAN_MSGAVAIL == CAN.checkReceive()){
 		CAN.readMsgBuf(&len, buf);    // read data,  len: data length, buf: data buf
 		switch(CAN.getCanId()){
 		case CAN_heartbeat:
 			{
-			uint32_t device = CAN.parseCANFrame(buf, 0, 1);
-			Serial.print("heartbeat: ");
-			heartbeat_timeout[device] = millis();
-			break;
+				uint32_t device = CAN.parseCANFrame(buf, 0, 1);
+				Serial.print("heartbeat: ");
+				heartbeat_timeout[device] = millis();
+				break;
 			}
 
 		case CAN_battery1_motor_stats:
@@ -334,4 +509,44 @@ void checkCANmsg(){
 
 		CAN.clearMsg();
 	}
+}
+
+//========== CAN Transmit ==============//
+
+void publishCAN()
+{
+	if ((millis() - thruster_loop) > THRUSTER_TIMEOUT)
+	{
+		publishCAN_manualthruster();
+		thruster_loop = millis();
+	}
+	if ((millis() - heartbeat_loop) > HEARTBEAT_TIMEOUT)
+	{
+		publishCAN_controllink();
+		publishCAN_heartbeat();
+		heartbeat_loop = millis();
+	}
+}
+
+void publishCAN_heartbeat()
+{	
+	buf[0] = HEARTBEAT_Tele;
+	CAN.sendMsgBuf(CAN_heartbeat, 0, 1, buf);
+}
+
+void publishCAN_manualthruster()
+{
+	CAN.setupCANFrame(buf, 0, 2, (uint32_t)(speed1+3200));
+	CAN.setupCANFrame(buf, 2, 2, (uint32_t)(speed2+3200));
+	CAN.setupCANFrame(buf, 4, 2, (uint32_t)(speed3+3200));
+	CAN.setupCANFrame(buf, 6, 2, (uint32_t)(speed4+3200));
+	CAN.sendMsgBuf(CAN_manual_thruster, 0, 8, buf);
+}
+
+void publishCAN_controllink()
+{	
+	id = CAN_control_link;
+	len = 1;
+	buf[0] = control_mode;
+	CAN.sendMsgBuf(CAN_control_link, 0, 1, buf);
 }

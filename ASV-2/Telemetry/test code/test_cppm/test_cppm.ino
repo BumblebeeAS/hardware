@@ -1,4 +1,4 @@
-int ppm[5] ={0}; 
+int ppm[6] ={0}; 
 
 const int cppm = 19; // pin in for cppm
 
@@ -14,7 +14,7 @@ void setup() {
 }
 
 void printppm() {
-  for (int i=1; i<=5; i++) {
+  for (int i=1; i<=6; i++) {
     Serial.print("CH ");
     Serial.print(i);
     Serial.print(": ");

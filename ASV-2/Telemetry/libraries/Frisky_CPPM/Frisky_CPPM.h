@@ -6,7 +6,7 @@
 class Frisky
 {
 private:
-	static int ppm[5]; 
+	static int ppm[6]; 
 
 	int _cppm_pin; // pin in for cppm
 
@@ -22,6 +22,7 @@ public:
 	void init();
 
 	uint32_t get_ch(int ch);
+	uint32_t get_last_int_time();
 };
 
 #endif

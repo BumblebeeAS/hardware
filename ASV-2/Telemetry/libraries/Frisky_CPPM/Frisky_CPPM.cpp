@@ -1,19 +1,27 @@
 #include <Arduino.h>
 #include "Frisky_CPPM.h"
 
+// Initialise static members
+int Frisky::ppm[6] = {0};
+uint32_t Frisky::prev = 0xFFFF;  // to always discard first frame
+uint32_t Frisky::delta = 0;
+bool Frisky::sync = false;
+int Frisky::_ch = 0;
+
 Frisky::Frisky(int cppm_pin)
 {
 	_cppm_pin = cppm_pin;
-	prev = 0xFFFF;  // to always discard first frame
-	delta = 0;
-	sync = false;
-	ch = 0;
 }
 
 void Frisky::init()
 {
 	pinMode(_cppm_pin,INPUT);
 	attachInterrupt(digitalPinToInterrupt(_cppm_pin), readppm, RISING); 
+}
+
+uint32_t Frisky::get_last_int_time()
+{
+	return prev;
 }
 
 void Frisky::readppm() {

@@ -3,6 +3,12 @@
 
 #define CAN_Chip_Select 54
 
+//CONTROL MODE
+#define AUTONOMOUS 0
+#define MANUAL_OCS 1
+#define MANUAL_RC 2
+#define STATION_KEEP 3
+
 //SCREEN
 #define SCREEN_INT 25
 #define SCREEN_CS 22
@@ -12,6 +18,15 @@
 
 //FRISKY
 #define RC_INT 19
+
+#define FRISKY_FORWARD 0
+#define FRISKY_SIDE 3
+#define FRISKY_YAW 1
+#define FRISKY_ARM 4
+#define FRISKY_RSSI 5
+
+//OCS
+#define XBEE_BAUDRATE 9600
 
 //Internal stats
 #define INT_STAT_COUNT 6
@@ -46,5 +61,9 @@
 #define BATT2 7
 #define ESC1 8
 #define ESC2 9
+
+//TIMEOUTS
+#define HEARTBEAT_TIMEOUT 500
+#define THRUSTER_TIMEOUT 100
 
 #endif // _DEFINES_H

@@ -59,7 +59,7 @@ void LCD::set_cursor(uint32_t x, uint32_t y)
 }
 void LCD::increment_row()
 {
-	_x += 35;
+	_y += 35;
 	screen->textSetCursor(_x, _y);
 }
 
