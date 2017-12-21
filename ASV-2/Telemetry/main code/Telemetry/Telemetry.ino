@@ -26,6 +26,7 @@
 #include <Adafruit_RA8875.h>
 #include <Adafruit_GFX.h>
 #include "LCD_Driver.h"
+#include "Frisky_CPPM.h"
 //#include "Telemetry.h"
 #include "define.h"
 #include "can_defines.h"
@@ -35,10 +36,7 @@
 #include <can.h>
 
 LCD screen = LCD(SCREEN_CS, SCREEN_RESET);  //screen
-int test;
-char string[200] = "Lorem ipsum dolor sit amet, consectetur adipiscing";
-char u;
-
+Frisky rc = Frisky(RC_INT);
 
 MCP_CAN CAN(CAN_Chip_Select); 
 
@@ -70,6 +68,7 @@ void setup(){
 	Serial.println("CAN OK");
 	screen.screen_init();
 	Serial.println("Screen OK");
+	rc.init();
 	currentTime = loopTime = millis();
 
 	screen_prepare();

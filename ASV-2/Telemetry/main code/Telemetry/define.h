@@ -10,6 +10,9 @@
 
 #define SD_CS 10
 
+//FRISKY
+#define RC_INT 19
+
 //Internal stats
 #define INT_STAT_COUNT 6
 
