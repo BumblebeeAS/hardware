@@ -4,7 +4,7 @@
 // create the XBee object
 XBee xbee = XBee();
 uint8_t payload[] = { 0, 0 };
-XBeeAddress64 addr64 = XBeeAddress64(0x0013A200, 0x416B9779);
+XBeeAddress64 addr64 = XBeeAddress64(0x0013A200, 0x416B9775);
 
 ZBTxRequest zbTx = ZBTxRequest(addr64, payload, sizeof(payload));
 ZBTxStatusResponse txStatus = ZBTxStatusResponse();
@@ -17,8 +17,8 @@ SoftwareSerial mySerial(6, 7); // RX, TX
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600);
-  mySerial.begin(9600);
+  Serial.begin(115200);
+  mySerial.begin(115200);
   xbee.setSerial(mySerial);
 
   pinMode(3, INPUT);
@@ -27,7 +27,7 @@ void setup() {
 
 void loop() {
 
-  if ((millis() - xbee_loop) > 1000){
+  if ((millis() - xbee_loop) > 500){
   
     if (digitalRead(3)== HIGH){
       sentByte = 0x15;

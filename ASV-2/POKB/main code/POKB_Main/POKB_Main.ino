@@ -25,6 +25,12 @@ void setup() {
 	Serial1.begin(XBEE_BAUDRATE);
 	xbee.setSerial(Serial1);
 	pinMode(11, OUTPUT);
+	digitalWrite(11, LOW);
+
+	pinMode(5, OUTPUT);
+	digitalWrite(5, LOW);
+
+	Serial.println("reset");
 
 	xbee_loop = millis();
 }
@@ -38,6 +44,7 @@ void loop() {
 
 void On_Contactor() {
 	digitalWrite(11, HIGH);
+	digitalWrite(5, HIGH);
 	Serial.println("normal");
 	software_kill = 0;
 	no_data = 0;
@@ -45,6 +52,7 @@ void On_Contactor() {
 
 void Kill_Contactor() {
 	digitalWrite(11, LOW);
+	digitalWrite(5, LOW);
 	Serial.println("KILL!");
 	software_kill = 1;
 	no_data = 0;
