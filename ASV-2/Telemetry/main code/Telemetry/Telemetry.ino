@@ -1,17 +1,16 @@
 //###################################################
 //###################################################
-//####     ####
-//#  #     #  #      ######  ######## ########
-//#  ####  #  ####   #    ## #  ##  # #  ##  #
-//#     ## #     ##  ####  # #  ##  # #  ##  #
-//#  ##  # #  ##  # ##     # #  ##  # #  ##  #
-//#  ##  # #  ##  # #  ##  # #  ##  # ##    ##
-//#     ## #     ## ##     # ##     #  ##  ##
-// # ####   # ####   #######  #######   ####
 //
-//POSB for BBASV 2.0
+//___.  ___.                         
+//\_ |__\_ |__ _____    _________  __
+// | __ \| __ \\__  \  /  ___/\  \/ /
+// | \_\ \ \_\ \/ __ \_\___ \  \   / 
+// |___  /___  (____  /____  >  \_/  
+//     \/    \/     \/     \/        
+//
+//Telemetry for BBASV 2.0
 //Firmware Version :             v1.0
-//POSB Firmware for ASV 2.0
+//Telemetry Firmware for ASV 2.0
 //		Telemetry LCD Display
 //		Frisky Receiver (CPPM & DAC)
 //		XBee
@@ -23,6 +22,7 @@
 //###################################################
 //###################################################
 
+#include <Wire.h>
 #include <XBee.h>
 #include <Adafruit_RA8875.h>
 #include <Adafruit_GFX.h>
@@ -65,15 +65,20 @@ static uint32_t canStatsTime;
 
 static uint32_t heartbeat_loop = 0;
 static uint32_t thruster_loop = 0;
+static uint32_t rc_loop = 0;
 
 int control_mode = AUTONOMOUS;
-int32_t dir_forward = 0;
-int32_t dir_side = 0;
-int32_t dir_yaw = 0;
-int32_t speed1 = 0;
-int32_t speed2 = 0;
-int32_t speed3 = 0;
-int32_t speed4 = 0;
+int control_mode_rc = AUTONOMOUS;
+int control_mode_ocs = AUTONOMOUS;
+int16_t dir_forward = 0;
+int16_t dir_side = 0;
+int16_t dir_yaw = 0;
+int16_t speed1 = 0;
+int16_t speed2 = 0;
+int16_t speed3 = 0;
+int16_t speed4 = 0;
+int16_t rc_rssi = 0;
+int16_t ocs_rssi = 0;
 
 bool manualOperationMode = false;
 XBeeResponse response = XBeeResponse();
@@ -103,6 +108,9 @@ void setup(){
 	Serial2.begin(XBEE_BAUDRATE);
 	xbee.setSerial(Serial2);
 
+	// DAC INIT
+	Wire.begin();
+
 	currentTime = loopTime = millis();
 }
 
@@ -123,23 +131,33 @@ void loop(){
 	/*					RC RX					     */
 	/* Read Frisky CPPM for Manual Thruster override */
 	/*************************************************/
-	get_directions();
-	get_controlmode();
-	convert_thruster_values();
+	get_controlmode_rc();
+	get_rssi();
+	if(control_mode == MANUAL_RC)
+	{
+		get_directions();
+		convert_thruster_values();
 
-	Serial.print(" 1: ");
-	Serial.print(speed1);
-	Serial.print(" 2: ");
-	Serial.print(speed2);
-	Serial.print(" 3: ");
-	Serial.print(speed3);
-	Serial.print(" 4: ");
-	Serial.println(speed4);
+		Serial.print("MANUAL RC -");
+		Serial.print(" 1: ");
+		Serial.print(speed1);
+		Serial.print(" 2: ");
+		Serial.print(speed2);
+		Serial.print(" 3: ");
+		Serial.print(speed3);
+		Serial.print(" 4: ");
+		Serial.println(speed4);
+	}
+
 
 	/********************************************/
 	/*					RC TX				    */
 	/* Send ASV Batt value to Frisky Controller */
 	/********************************************/
+	//TODO: put timer
+	uint16_t lower_batt = min(powerStats[BATT1_CAPACITY], powerStats[BATT2_CAPACITY]);
+	uint16_t DAC_input = convert_batt_capacity(lower_batt);
+	set_DAC(DAC_input);
 
 	/**********************************************/
 	/*					OCS RX					  */
@@ -153,24 +171,24 @@ void loop(){
 		{
 			xbee.getResponse().getZBRxResponse(rx);
 			payload = rx.getData();
+			//ocs_rssi = rx.getRssi();
+			//TODO: Get RSSI (ZB??)
+			internalStats[RSSI_OCS] = ocs_rssi;
+			if(ocs_rssi > RSSI_THRESHOLD)
+				heartbeat_timeout[OCS] = millis();
 			switch (payload[2])
 			{
-			case CAN_control_link:				
-				if (payload[3]) manualOperationMode = true;
-				else manualOperationMode = false;
+			case CAN_control_link:			
+				// TODO: who gets priority? rc or ocs?
+				control_mode_ocs = payload[3];
+				break;
 			case CAN_manual_thruster:
-				/*
-				if(manualOperationMode)//Manual mode activated, overrides CAN data
+				if (control_mode == MANUAL_OCS)
 				{
-				speed1 = int16_t(CAN.parseCANFrame(payload, 4, 2)) - 1000;
-				speed2 = int16_t(CAN.parseCANFrame(payload, 6, 2)) - 1000;
-				}
-				else if (!manualOperationMode && !autonomous) //When system is not in autonomous mode, to reset speed for joystick release
-				{
-				speed1 = 0;
-				speed2 = 0;
-				}
-				*/
+					speed1 = uint16_t(CAN.parseCANFrame(payload, 4, 2));
+					speed2 = uint16_t(CAN.parseCANFrame(payload, 6, 2));
+					speed3 = uint16_t(CAN.parseCANFrame(payload, 8, 2));
+					speed4 = uint16_t(CAN.parseCANFrame(payload, 10, 2));
 				/*
 				Serial.print("Mode: ");
 				Serial.print(payload[8], HEX);
@@ -180,13 +198,10 @@ void loop(){
 				Serial.print(speed2);
 				Serial.println();
 				*/
+				}
 				break;
-			case CAN_heartbeat:/*
-							   id = CAN_heartbeat;
-							   len = 1;
-							   buf[0] = HEARTBEAT_OCS;
-							   ocsHeartbeatTimeout = millis();
-							   forwardCANtoSerial(buf);*/
+			case CAN_heartbeat:
+				publishCAN_heartbeat(HEARTBEAT_OCS);
 				break;
 			default:
 				break;
@@ -200,15 +215,18 @@ void loop(){
 	/*	Send Telemetry Data via control link	  */
 	/**********************************************/
 
+	// TODO: Send data to control link
+
 	/**********************************************/
 	/*			Transmit Thruster commands		  */
 	/**********************************************/
-
+	get_controlmode();
 
 	//******* CAN RX **********/
 	checkCANmsg();
 
 	//******* CAN TX **********/
+	publishCAN();
 
 	//  if((millis() - canStatsTime) > 1000){
 	//    test_time = millis();
@@ -400,19 +418,6 @@ void get_directions()
 	dir_yaw = map_cppm(rc.get_ch(FRISKY_YAW));
 }
 
-void get_controlmode()
-{
-	if(rc.get_ch(FRISKY_ARM))
-	{
-		//TODO: resolve ocs arm also
-		control_mode = MANUAL_RC;
-	}
-	else
-	{
-		control_mode = AUTONOMOUS;
-	}
-}
-
 // Resolve vector thrust &
 // Cap thrust at -3200 and 3200
 void convert_thruster_values()
@@ -421,6 +426,70 @@ void convert_thruster_values()
 	speed2 = constrain(dir_forward + dir_side + dir_yaw, -3200, 3200);
 	speed3 = constrain(dir_forward + dir_side - dir_yaw, -3200, 3200);
 	speed4 = constrain(dir_forward - dir_side + dir_yaw, -3200, 3200);
+}
+
+
+//==========================================
+//          FRISKY FUNCTIONS
+//==========================================
+
+void get_rssi()
+{
+	rc_rssi = rc.get_ch(FRISKY_RSSI);
+	if(rc_rssi > RSSI_THRESHOLD)
+	{
+		heartbeat_timeout[RC] = millis();
+	}
+}
+
+void get_controlmode()
+{
+	if(((millis() - heartbeat_timeout[RC]) > COMMLINK_TIMEOUT) &&
+		((millis() - heartbeat_timeout[OCS]) > COMMLINK_TIMEOUT)) // Both rc & ocs loss comms
+	{
+		control_mode = STATION_KEEP;
+	}
+	else if (control_mode_rc != AUTONOMOUS) // rc overrides ocs
+	{
+		control_mode = control_mode_rc;
+	}
+	else if (control_mode_ocs != AUTONOMOUS)
+	{
+		control_mode = control_mode_ocs;
+	}
+}
+
+void get_controlmode_rc()
+{
+	if(rc.get_ch(FRISKY_ARM) > 1800)
+	{
+		//TODO: resolve ocs arm also
+		control_mode_rc = MANUAL_RC;
+	}
+	else if(rc.get_ch(FRISKY_ARM) > 1200)
+	{
+		control_mode_rc = STATION_KEEP;
+	}
+	else
+	{
+		control_mode_rc = AUTONOMOUS;
+	}
+}
+
+uint16_t convert_batt_capacity(uint32_t capacity)
+{
+	float scaled_capacity = capacity * 3.3 / 100;
+	uint16_t DAC_input = scaled_capacity * 4096 / 5;
+	return DAC_input;
+}
+
+// Write 12-bit input to DAC 
+void set_DAC(uint16_t DACinput)
+{
+  Wire.beginTransmission(I2C_ADDR_DAC);
+  Wire.write(DACinput >> 8);     // top 4 bit of the 12bit voltage
+  Wire.write(DACinput & 0xFF);    // bot 8 bit of the 12bit voltage
+  Wire.endTransmission(true);
 }
 
 //==========================================
@@ -515,7 +584,8 @@ void checkCANmsg(){
 
 void publishCAN()
 {
-	if ((millis() - thruster_loop) > THRUSTER_TIMEOUT)
+	if (((control_mode == MANUAL_RC) || (control_mode == MANUAL_OCS)) &&
+		((millis() - thruster_loop) > THRUSTER_TIMEOUT))
 	{
 		publishCAN_manualthruster();
 		thruster_loop = millis();
@@ -523,14 +593,20 @@ void publishCAN()
 	if ((millis() - heartbeat_loop) > HEARTBEAT_TIMEOUT)
 	{
 		publishCAN_controllink();
-		publishCAN_heartbeat();
+		publishCAN_heartbeat(HEARTBEAT_Tele);
 		heartbeat_loop = millis();
+	}
+	if ((rc_rssi > RSSI_THRESHOLD) &&	// If no rc link (low rssi), don't send heartbeat
+		((millis() - rc_loop) > HEARTBEAT_TIMEOUT))
+	{
+		publishCAN_heartbeat(HEARTBEAT_RC);
+		rc_loop = millis();
 	}
 }
 
-void publishCAN_heartbeat()
+void publishCAN_heartbeat(int device_id)
 {	
-	buf[0] = HEARTBEAT_Tele;
+	buf[0] = device_id;
 	CAN.sendMsgBuf(CAN_heartbeat, 0, 1, buf);
 }
 

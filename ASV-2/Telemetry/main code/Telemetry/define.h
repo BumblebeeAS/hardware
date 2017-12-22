@@ -18,12 +18,15 @@
 
 //FRISKY
 #define RC_INT 19
+#define RSSI_THRESHOLD 50
 
 #define FRISKY_FORWARD 0
 #define FRISKY_SIDE 3
 #define FRISKY_YAW 1
 #define FRISKY_ARM 4
 #define FRISKY_RSSI 5
+
+#define I2C_ADDR_DAC 0x4C
 
 //OCS
 #define XBEE_BAUDRATE 9600
@@ -65,5 +68,6 @@
 //TIMEOUTS
 #define HEARTBEAT_TIMEOUT 500
 #define THRUSTER_TIMEOUT 100
+#define COMMLINK_TIMEOUT 4000
 
 #endif // _DEFINES_H
