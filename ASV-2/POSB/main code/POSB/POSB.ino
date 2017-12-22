@@ -30,9 +30,12 @@
 #include "can_asv_defines.h"
 #include "defines.h"
 #include "Arduino.h"
+#include "Roboteq.h"
 
 MCP_CAN CAN(8);
 uint8_t buf[8];
+
+Roboteq roboteq(&CAN);
 
 uint8_t posb_stat_buf[2];
 
@@ -45,6 +48,9 @@ void setup()
 	// CAN BUS INIT
 	Serial.begin(115200);
 	CAN_init();
+	
+	// ESC INIT
+	roboteq.init();
 	
 	Temp_Humid_loop = millis();
 }
