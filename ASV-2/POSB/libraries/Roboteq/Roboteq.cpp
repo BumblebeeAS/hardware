@@ -3,8 +3,20 @@
 
 #include "Arduino.h"
 
-Roboteq::Roboteq(MCP_CAN *canptr) : CAN(canptr)
+Roboteq::Roboteq(MCP_CAN *canptr, uint16_t can_send) : CAN(canptr)
 {
+	id = 0;
+	len = 0;
+	if (can_send == 1)
+	{
+		can_send_idx = ROBOTEQ_CAN1_SEND_INDEX;
+		can_reply_idx = ROBOTEQ_CAN1_REPLY_INDEX;
+	}
+	else
+	{
+		can_send_idx = ROBOTEQ_CAN2_SEND_INDEX;
+		can_reply_idx = ROBOTEQ_CAN2_REPLY_INDEX;
+	}
 }
 
 void Roboteq::init()
@@ -73,7 +85,7 @@ void Roboteq::sendCANmsg(uint16_t index, INT8U subidx, INT8U ccs, INT8U len, INT
 	}
 	Serial.println("");*/
 	
-	CAN->sendMsgBuf(ROBOTEQ_CAN1_SEND_INDEX, 0, len+4, buf);
+	CAN->sendMsgBuf(can_send_idx, 0, len+4, buf);
 }
 
 
@@ -136,7 +148,7 @@ void Roboteq::readRoboteqReply()
 	Serial.print(" | ");
   }*/
 
-	if (id == ROBOTEQ_CAN1_REPLY_INDEX)
+	if (id == can_reply_idx)
 	{
 		index = getReplyIndex();
 		decodeReply(index);

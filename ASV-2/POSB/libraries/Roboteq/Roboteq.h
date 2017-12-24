@@ -40,8 +40,8 @@ class Roboteq
 private:
 	MCP_CAN* CAN;
 	uint8_t buf[8];
-	uint32_t id = 0;
-	uint8_t len = 0;
+	uint32_t id;
+	uint8_t len;
 	RobteqStats stats;
 	uint16_t can_send_idx;
 	uint16_t can_reply_idx;
