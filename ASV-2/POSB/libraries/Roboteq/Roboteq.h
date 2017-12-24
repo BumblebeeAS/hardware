@@ -20,6 +20,8 @@
 
 // QUERIES
 #define INDEX_READ_MOTOR_AMPS 0x2100
+#define INDEX_READ_FAULT_FLAGS 0x2112
+#define INDEX_READ_MOTOR_STATUS_FLAGS 0x2122
 #define INDEX_READ_ACTUAL_MOTOR_COMMAND 0x2101
 #define INDEX_READ_BATTERY_AMPS 0x210C
 #define INDEX_READ_BATTERY_VOLTS 0x210D
@@ -27,22 +29,28 @@
 #define ESC1_ID 1
 #define ESC2_ID 1
 
-typedef struct {
-	int16_t motor_current;
+typedef struct RoboteqStats{
+	int16_t motor_current1;
+	int16_t motor_current2;
 	int16_t battery_current;
   int16_t battery_volt;
 	int16_t motor_comand1;
 	int16_t motor_comand2;
-} RobteqStats;
+	uint8_t fault_flags;
+	uint8_t motor_status_flags1;
+	uint8_t motor_status_flags2;
+} RoboteqStats;
 
 class Roboteq
 {
 private:
 	MCP_CAN* CAN;
-	uint8_t buf[8];
-	uint32_t id;
-	uint8_t len;
-	RobteqStats stats;
+	uint8_t _buf[8];
+	uint32_t _id;
+	uint8_t _len;
+	RoboteqStats stats;
+
+	uint8_t _ch;
 	uint16_t can_send_idx;
 	uint16_t can_reply_idx;
 
@@ -55,14 +63,21 @@ private:
 	Roboteq(MCP_CAN *canptr, uint16_t can_send);
 	void init();
 
+	RoboteqStats getRoboteqStats();
+
 	void setMotorSpeed(int32_t speed, uint8_t channel);
+	void requestMotorAmps();
+	void requestFaultFlags();
+	void requestMotorStatusFlags(uint8_t ch);
+	void readRoboteqReply(uint32_t id, uint8_t len, uint8_t *buf);
+	void readRoboteqReply_fromCAN();
+
+	// Unused
 	void kill();
 	void unkill();
 	void requestBatteryAmps();
 	void requestBatteryVolts();
-	void requestMotorAmps();
 	void requestMotorCommand();
-	void readRoboteqReply();
 };
 
 
