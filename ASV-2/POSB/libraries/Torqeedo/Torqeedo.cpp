@@ -27,7 +27,7 @@ void Torqeedo::init()
 	}
 	else
 	{
-		Serial2.begin(BAUDRATE);
+		Serial3.begin(BAUDRATE);
 		_write = write2;
 		_available = available2;
 		_read = read2;
@@ -37,6 +37,13 @@ void Torqeedo::init()
 	pinMode(RX_ENABLE, OUTPUT);
 	pinMode(DX_ENABLE, OUTPUT);
 	pinMode(ON_PIN, OUTPUT);
+	
+	{
+		delay(2000);
+		digitalWrite(ON_PIN, LOW);
+		delay(1000);
+		digitalWrite(ON_PIN, HIGH);
+	}
 	digitalWrite(DX_ENABLE, LOW);  // disable sending
 	digitalWrite(RX_ENABLE, LOW);  // enable receiving
 	//digitalWrite(ON_PIN, LOW);  // on pin float
@@ -59,6 +66,9 @@ void Torqeedo::onBattery(bool on_status)
 	powerSeq = true;
 	//Serial.println("ON");
 }
+
+// Check if on pin is being pulled up
+// Pull back down when time is up
 bool Torqeedo::checkBatteryOnOff()
 {
 	if (powerSeq && (millis() - onTime > onPinPeriod))
@@ -75,9 +85,11 @@ bool Torqeedo::checkBatteryOnOff()
 	return false;
 }
 
+// Re-trigger startup if no response received for BATT_RESET_COUNT times
 void Torqeedo::checkBatteryConnected()
 {
 	if (requestCount > BATT_RESET_COUNT){
+		Serial.println("START");
 		requestCount = 0;
 		onBattery(true);
 	}
@@ -90,7 +102,8 @@ void Torqeedo::requestUpdate(){
 	body[2] = END_MARKER;
 	msg_type++; //change message type
 	msg_type %= 3;
-	/*switch (msg_type){
+	//Serial.println("UPDATE");
+	switch (msg_type){
 	case MSG_STATUS:
 		body[1] = BATTERY_STATUS_ID;
 		break;
@@ -106,10 +119,10 @@ void Torqeedo::requestUpdate(){
 	default:
 		//Error
 		break;
-	}*/
+	}
 
 	//Hard coded for testing
-	body[1] = BATTERY_STATUS_ID;
+	//body[1] = BATTERY_STATUS_ID;
 
 	sendMessage(body);
 }

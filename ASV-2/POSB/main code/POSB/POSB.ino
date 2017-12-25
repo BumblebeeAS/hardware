@@ -31,6 +31,7 @@
 #include "defines.h"
 #include "Arduino.h"
 #include "Roboteq.h"
+#include "Torqeedo.h"
 
 MCP_CAN CAN(8);
 uint8_t buf[8];
@@ -43,6 +44,10 @@ int16_t speed1 = 0;
 int16_t speed2 = 0;
 int16_t speed3 = 0;
 int16_t speed4 = 0;
+int control_mode = AUTONOMOUS;
+
+Torqeedo Battery1(TORQEEDO1_RXEN, TORQEEDO1_DXEN, TORQEEDO1_ON, 1);
+Torqeedo Battery2(TORQEEDO2_RXEN, TORQEEDO2_DXEN, TORQEEDO2_ON, 1);
 
 uint8_t posb_stat_buf[2] = {128,256};
 uint8_t esc1_stat_buf[7] = {0x2C, 0x1, 0x14, 0x0, 0, 0, 0}; // 0, 0, 0, 200, 300
@@ -54,7 +59,9 @@ uint32_t batt_loop;
 uint32_t windspeed_loop;
 uint32_t esc1_loop;
 uint32_t esc2_loop;
-uint8_t batt_ctr = 0;
+uint32_t power_loop;
+uint8_t power_ctr = 0;
+uint32_t thruster_loop;
 
 bool heartbeat_esc1 = false;
 bool heartbeat_esc2 = false;
@@ -79,9 +86,13 @@ void setup()
 	Serial.begin(115200);
 	CAN_init();
 
+	// BATT INIT	
+	Battery1.init();
+	Serial.flush();
+
 	// ESC INIT
 	roboteq1.init();
-	roboteq2.init();
+	//roboteq2.init();
 
 	Temp_Humid_loop = millis();
 	heartbeat_loop = millis();
@@ -89,6 +100,8 @@ void setup()
 	windspeed_loop = millis();
 	esc1_loop = millis();
 	esc2_loop = millis();
+	power_loop = millis();
+	thruster_loop = millis();
 }
 
 void loop()
@@ -96,7 +109,7 @@ void loop()
 	/************************************/
 	/*			Test					*/
 	/************************************/
-
+	//Serial.println("RANDOM");
 #ifdef _TEST_
 	if (Serial.available()) {
 		byte input = Serial.read();
@@ -110,6 +123,12 @@ void loop()
 			{
 			case 'a':
 				roboteq1.requestMotorAmps();
+				break;
+			case 'v':
+				roboteq1.requestBatteryVolts();
+				break;
+			case 'b':
+				roboteq1.requestBatteryAmps();
 				break;
 			case 'k':
 				roboteq1.kill();
@@ -128,15 +147,19 @@ void loop()
 				break;
 			case 'p':
 				speed1 = atoi(inputstr + 1);
+				Serial.print("Set speed1: ");
+				Serial.println(speed1);
 				break;
 			case 'q':
 				speed2 = atoi(inputstr + 1);
+				Serial.print("Set speed2: ");
+				Serial.println(speed2);
 				break;
 			}
 			serialidx = -1;
-			Serial.println("(a) amps (k) kill (u) unkill");
-			Serial.println("(f) fault flags (m) motor flag 1 (n) motor flag 2");
-			Serial.println("(p[num]) thruster1 (q[num]) thruster2");
+			//Serial.println("(a) amps (k) kill (u) unkill");
+			//Serial.println("(f) fault flags (m) motor flag 1 (n) motor flag 2");
+			//Serial.println("(p[num]) thruster1 (q[num]) thruster2");
 		}
 		serialidx++;
 	}
@@ -146,17 +169,37 @@ void loop()
 	/*			Thruster Control		*/
 	/************************************/
 	// TODO: Decide which thruster command to follow
-	/*
-	roboteq1.setMotorSpeed(speed1, 1);
-	roboteq1.setMotorSpeed(speed2, 2);
-	roboteq2.setMotorSpeed(speed3, 1);
-	roboteq2.setMotorSpeed(speed4, 2);
-	*/
+
+	if((millis() - thruster_loop) > THRUSTER_TIMEOUT)
+	{
+		roboteq1.setMotorSpeed(speed1, 1);
+		roboteq1.setMotorSpeed(speed2, 2);
+		thruster_loop = millis();
+	}/*
+	 roboteq2.setMotorSpeed(speed3, 1);
+	 roboteq2.setMotorSpeed(speed4, 2);
+	 */
 
 	/************************************/
 	/*			Battery Monitoring		*/
 	/************************************/
+	
+	Battery1.checkBatteryOnOff();
+	//Battery2.checkBatteryOnOff();
+	Battery1.readMessage();
+	//Battery2.readMessage();
 
+	// Cycles through status flags, voltage, current
+	if((millis() - batt_loop) > BATT_TIMEOUT)
+	{
+		//Serial.print("REQUEST");
+	Battery1.checkBatteryConnected();
+	//Battery2.checkBatteryConnected();
+	Battery1.requestUpdate();
+	//Battery2.requestUpdate();
+	batt_loop = millis();
+	}
+	
 	/************************************/
 	/*	Humidity & Temperature Sensor	*/
 	/************************************/
@@ -192,41 +235,51 @@ void loop()
 		publishCAN_windspeed();
 		windspeed_loop = millis();
 	}
-	// Batt + ESC
-	if ((millis() - batt_loop) > BATT_TIMEOUT)
+	// POWER: Batt + ESC
+	// Cycle btw batt1,2,esc1,2 at 250ms
+	if ((millis() - power_loop) > POWER_TIMEOUT)
 	{
-		switch (batt_ctr)
+		switch (power_ctr)
 		{
 		case 0:
-			{
-				RoboteqStats esc1_stats = roboteq1.getRoboteqStats();
-				CAN.setupCANFrame(buf,0,2, esc1_stats.motor_current1);
-				CAN.setupCANFrame(buf,2,2, esc1_stats.motor_current2);
-				publishCAN_esc1_stats();
-			}
+			publishCAN_esc1_stats();
 			break;
 		case 1:
-			{
-				RoboteqStats esc2_stats = roboteq2.getRoboteqStats();
-				CAN.setupCANFrame(buf,0,2, esc2_stats.motor_current1);
-				CAN.setupCANFrame(buf,2,2, esc2_stats.motor_current2);
-				publishCAN_esc2_stats();
-			}
+			publishCAN_esc2_stats();
 			break;
 		case 2:
 			publishCAN_batt1_stats();
+			power_ctr = -1;
 			break;
 		case 3:
-			publishCAN_batt2_stats();
-			batt_ctr = -1;
+			//publishCAN_batt2_stats();
+			power_ctr = -1;
 			break;
 		}
-		batt_ctr++;
-		batt_loop = millis();
+		power_ctr++;
+		power_loop = millis();
 	}
 
 	// CAN RX
 	checkCANmsg();
+}
+
+//========== THRUSTER ====================//
+
+void getThrusterSpeed()
+{
+	speed1 = CAN.parseCANFrame(buf,0,2) - 3200;
+	speed2 = CAN.parseCANFrame(buf,2,2) - 3200;
+	speed3 = CAN.parseCANFrame(buf,4,2) - 3200;
+	speed4 = CAN.parseCANFrame(buf,6,2) - 3200;
+	Serial.print(" 1: ");
+	Serial.print(speed1);
+	Serial.print(" 2: ");
+	Serial.print(speed2);
+	Serial.print(" 3: ");
+	Serial.print(speed3);
+	Serial.print(" 4: ");
+	Serial.println(speed4);
 }
 
 //======== TEMP HUMID SENSOR =============//
@@ -299,18 +352,46 @@ void publishCAN_windspeed()
 }
 void publishCAN_esc1_stats()
 {
+	RoboteqStats esc1_stats = roboteq1.getRoboteqStats();
+	CAN.setupCANFrame(esc1_stat_buf,0,2, esc1_stats.motor_current1);
+	CAN.setupCANFrame(esc1_stat_buf,2,2, esc1_stats.motor_current2);
+	CAN.setupCANFrame(esc1_stat_buf,3,1, esc1_stats.motor_status_flags1);
+	CAN.setupCANFrame(esc1_stat_buf,4,1, esc1_stats.motor_status_flags2);
+	CAN.setupCANFrame(esc1_stat_buf,5,1, esc1_stats.fault_flags);
 	CAN.sendMsgBuf(CAN_esc1_motor_stats, 0, 7, esc1_stat_buf);
 }
 void publishCAN_esc2_stats()
 {
+	RoboteqStats esc2_stats = roboteq2.getRoboteqStats();
+	CAN.setupCANFrame(esc2_stat_buf,0,2, esc2_stats.motor_current1);
+	CAN.setupCANFrame(esc2_stat_buf,2,2, esc2_stats.motor_current2);
+	CAN.setupCANFrame(esc2_stat_buf,3,1, esc2_stats.motor_status_flags1);
+	CAN.setupCANFrame(esc2_stat_buf,4,1, esc2_stats.motor_status_flags2);
+	CAN.setupCANFrame(esc2_stat_buf,5,1, esc2_stats.fault_flags);
 	CAN.sendMsgBuf(CAN_esc2_motor_stats, 0, 7, esc2_stat_buf);
 }
 void publishCAN_batt1_stats()
 {
+	Serial.print("Capacity(%): ");
+	Serial.print(Battery1.getCapacity());
+	Serial.print(" Voltage(V): ");
+	Serial.print(Battery1.getVoltage());
+	Serial.print(" Current(A): ");
+	Serial.print(Battery1.getCurrent());
+	Serial.print(" Temp(C): ");
+	Serial.println(Battery1.getTemperature());
+	CAN.setupCANFrame(batt1_stat_buf,0,2, Battery1.getCapacity());
+	CAN.setupCANFrame(batt1_stat_buf,1,2, Battery1.getVoltage());
+	CAN.setupCANFrame(batt1_stat_buf,3,2, Battery1.getCurrent());
+	CAN.setupCANFrame(batt1_stat_buf,5,1, Battery1.getTemperature());
 	CAN.sendMsgBuf(CAN_battery1_motor_stats, 0, 6, batt1_stat_buf);
 }
 void publishCAN_batt2_stats()
 {
+	CAN.setupCANFrame(batt2_stat_buf,0,2, Battery2.getCapacity());
+	CAN.setupCANFrame(batt2_stat_buf,1,2, Battery2.getVoltage());
+	CAN.setupCANFrame(batt2_stat_buf,3,2, Battery2.getCurrent());
+	CAN.setupCANFrame(batt2_stat_buf,5,1, Battery2.getTemperature());
 	CAN.sendMsgBuf(CAN_battery2_motor_stats, 0, 6, batt2_stat_buf);
 }
 void checkCANmsg(){
@@ -318,20 +399,22 @@ void checkCANmsg(){
 		CAN.readMsgBufID(&id, &len, buf);    // read data,  len: data length, buf: data buf
 		switch(id){
 		case CAN_thruster:
-			speed1 = CAN.parseCANFrame(buf,0,2) - 3200;
-			speed2 = CAN.parseCANFrame(buf,2,2) - 3200;
-			speed3 = CAN.parseCANFrame(buf,4,2) - 3200;
-			speed4 = CAN.parseCANFrame(buf,6,2) - 3200;
-			Serial.print(" 1: ");
-			Serial.print(speed1);
-			Serial.print(" 2: ");
-			Serial.print(speed2);
-			Serial.print(" 3: ");
-			Serial.print(speed3);
-			Serial.print(" 4: ");
-			Serial.println(speed4);
+			if((control_mode == AUTONOMOUS) || (control_mode == STATION_KEEP))
+			{
+				getThrusterSpeed();
+			}
+			break;
+		case CAN_manual_thruster:
+			if((control_mode == MANUAL_OCS) || (control_mode == MANUAL_RC))
+			{
+				getThrusterSpeed();
+			}
+			break;
+		case CAN_control_link:
+			control_mode = CAN.parseCANFrame(buf,0,1);
 			break;
 		case ROBOTEQ_CAN1_REPLY_INDEX:
+			//Serial.println("RECEIVE");
 			roboteq1.readRoboteqReply(id, len, buf);
 			heartbeat_esc1 = true;
 			esc1_loop = millis();

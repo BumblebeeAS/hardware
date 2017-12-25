@@ -121,17 +121,18 @@ void Roboteq::sendCANmsg(uint16_t index, INT8U subidx, INT8U ccs, INT8U len, INT
 
 void Roboteq::setMotorSpeed(int32_t speed, uint8_t channel)
 {
+	/*
 	Serial.print("Set speed (");
 	Serial.print(channel);
 	Serial.print("): ");
-	Serial.println(speed);
+	Serial.println(speed);*/
 	sendCANmsg(INDEX_SET_MOTOR, channel, CCS_COMMAND, 4, speed);
 }
 
 void Roboteq::requestMotorAmps()
 {
 	Serial.println("Request Motor Amps...");
-	sendCANmsg(INDEX_READ_MOTOR_AMPS, 1, CCS_QUERY, 2, 0x0);
+	sendCANmsg(INDEX_READ_MOTOR_AMPS, 1, CCS_QUERY, 4, 0x0);
 }
 
 void Roboteq::requestFaultFlags()
@@ -177,7 +178,15 @@ void Roboteq::readRoboteqReply(uint32_t id, uint8_t len, uint8_t *buf)
 	for(int i = 0; i < len; i++)
 	{
 		_buf[i] = buf[i];
+		if(buf[0] != 0x60)
+		{
+		Serial.print(buf[i],HEX);
+		Serial.print(" ");
+		}
 	}
+	
+		if(buf[0] != 0x60)
+			Serial.println("");
 
 	index = getReplyIndex();
 	decodeReply(index);
@@ -202,7 +211,7 @@ void Roboteq::unkill()
 void Roboteq::requestBatteryVolts()
 {
 	Serial.println("Request Battery Volts...");
-	sendCANmsg(INDEX_READ_BATTERY_VOLTS, 2, CCS_QUERY, 2, 0x0);
+	sendCANmsg(INDEX_READ_BATTERY_VOLTS, 2, CCS_QUERY, 0, 0x0);
 }
 
 void Roboteq::requestBatteryAmps()

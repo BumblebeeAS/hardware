@@ -13,13 +13,13 @@
 #define TORQEEDO1_DXEN 24
 #define TORQEEDO2_RXEN 26
 #define TORQEEDO2_DXEN 28
-#define TORQEEDO1_ON 40
-#define TORQEEDO2_ON 38
+#define TORQEEDO1_ON 12
+#define TORQEEDO2_ON 12
 
 #define BATTERY_ON_DURATION 600	// At least 0.5 sec
 #define BATTERY_OFF_DURATION 5000	// At least 3 sec
 
-#define BATT_RESET_COUNT 150 // number of request before re-trigger start up.
+#define BATT_RESET_COUNT 15 // number of request before re-trigger start up.
 
 #define BAUDRATE 19200
 
