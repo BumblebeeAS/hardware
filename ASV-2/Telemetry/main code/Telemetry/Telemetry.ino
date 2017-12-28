@@ -77,8 +77,6 @@ int16_t speed1 = 0;
 int16_t speed2 = 0;
 int16_t speed3 = 0;
 int16_t speed4 = 0;
-int16_t rc_rssi = 0;
-int16_t ocs_rssi = 0;
 
 bool manualOperationMode = false;
 XBeeResponse response = XBeeResponse();
@@ -112,6 +110,10 @@ void setup(){
 	Wire.begin();
 
 	currentTime = loopTime = millis();
+	for(int i = 0; i < HB_COUNT; i++)
+	{
+		heartbeat_timeout[i] = millis();
+	}
 }
 
 
@@ -148,6 +150,14 @@ void loop(){
 		Serial.print(" 4: ");
 		Serial.println(speed4);
 	}
+	else if (control_mode == AUTONOMOUS)
+	{
+		Serial.println("AUTONOMOUS");
+	}
+	else
+	{
+		Serial.println("STATION KEEP");
+	}
 
 
 	/********************************************/
@@ -171,10 +181,9 @@ void loop(){
 		{
 			xbee.getResponse().getZBRxResponse(rx);
 			payload = rx.getData();
-			//ocs_rssi = rx.getRssi();
+			//internalStats[RSSI_OCS] = rx.getRssi();
 			//TODO: Get RSSI (ZB??)
-			internalStats[RSSI_OCS] = ocs_rssi;
-			if(ocs_rssi > RSSI_THRESHOLD)
+			if(internalStats[RSSI_OCS] > RSSI_THRESHOLD)
 				heartbeat_timeout[OCS] = millis();
 			switch (payload[2])
 			{
@@ -273,7 +282,7 @@ void reset_stats()
 }
 void reset_posb_stats()
 {
-	if (millis() - posb_timeout > HB_TIMEOUT){
+	if ((millis() - posb_timeout) > HB_TIMEOUT){
 		internalStats[INT_PRESS] = 255;
 		internalStats[HUMIDITY] = 255;
 		internalStats[POSB_TEMP] = 255;
@@ -282,29 +291,30 @@ void reset_posb_stats()
 }
 void reset_ocs_stats()
 {
-	if (millis() - ocs_timeout > HB_TIMEOUT){
+	if ((millis() - ocs_timeout) > HB_TIMEOUT){
 		internalStats[RSSI_OCS] = 0;
 		ocs_timeout = millis();
 	}
 }
 void reset_rc_stats()
 {
-	rc_timeout = rc.get_last_int_time();
-	if (millis() - rc_timeout > HB_TIMEOUT){
+	rc_timeout = rc.get_last_int_time(); // rc_timeout is in micros
+	if ((micros() - rc_timeout) > HB_TIMEOUT*1000){
 		internalStats[RSSI_RC] = 0;
-		rc_timeout = millis();
+		rc.reset();
+		rc_timeout = micros();
 	}
 }
 void reset_sbc_stats()
 {
-	if (millis() - sbc_timeout > HB_TIMEOUT){
+	if ((millis() - sbc_timeout) > HB_TIMEOUT){
 		internalStats[CPU_TEMP] = 255;
 		sbc_timeout = millis();
 	}
 }
 void reset_batt1_stats()
 {
-	if (millis() - batt1_timeout > HB_TIMEOUT){
+	if ((millis() - batt1_timeout) > HB_TIMEOUT){
 		powerStats[BATT1_CAPACITY] = 255;
 		powerStats[BATT1_CURRENT] = 255;
 		powerStats[BATT1_VOLTAGE] = 255;
@@ -313,7 +323,7 @@ void reset_batt1_stats()
 }
 void reset_batt2_stats()
 {
-	if (millis() - batt2_timeout > HB_TIMEOUT){
+	if ((millis() - batt2_timeout) > HB_TIMEOUT){
 		powerStats[BATT2_CAPACITY] = 255;
 		powerStats[BATT2_CURRENT] = 255;
 		powerStats[BATT2_VOLTAGE] = 255;
@@ -334,9 +344,9 @@ void screen_prepare(){
 	screen.write_string("RSSI OCS:");
 	screen.write_string("RSSI RC:");
 	screen.write_string("SBC OK:");
-	screen.write_string("POKB OK:");
 	screen.write_string("POSB OK:");
 	screen.write_string("POPB OK:");
+	screen.write_string("POKB OK:");
 	screen.write_string("LARS OK:");
 	screen.write_string("OCS OK:");
 	screen.write_string("RC OK:");
@@ -394,21 +404,34 @@ void update_heartbeat()
 //==========================================
 
 // Map CPPM values to thruster values
-// CPPM: 980 to 2020 (neutral: 1500) (with deadzone from -20 to 20)
+// CPPM: 980 to 2020 (neutral: 1500) (with deadzone from -24 to 24)
 // Thruster: -3200 to 3200 (neutral: 0)
-int32_t map_cppm(int value)
+int32_t map_cppm(uint32_t value)
 {
+	value = remove_deadzone(value);
 	if(value >= 1500)
 	{
-		value = constrain(value,1520,2020); // Remove deadzone
-		value = map(value, 1520, 2020, 0, 3200);	// Map values
+		value = map(value, 1524, 2020, 0, 3200);	// Map values
 	}
 	else
 	{
-		value = constrain(value,900,1480);
-		value = map(value, 980, 1480, -3200, 0);
+		value = map(value, 980, 1476, -3200, 0);
 	}
 	return value;
+}
+
+// Remove deadzone around 1500 (from +24 to -24)
+uint32_t remove_deadzone(uint32_t value)
+{
+	if(value >= 1500)
+	{
+		return constrain(value,1524,2020);
+	}
+	else
+	{
+		return constrain(value,980,1476);
+	}
+	
 }
 
 void get_directions()
@@ -435,11 +458,20 @@ void convert_thruster_values()
 
 void get_rssi()
 {
-	rc_rssi = rc.get_ch(FRISKY_RSSI);
-	if(rc_rssi > RSSI_THRESHOLD)
+	// Map RSSI from 1500 to 2000 duty cycle to 0 to 100 dB
+	internalStats[RSSI_RC] = calculate_rssi();
+	if((internalStats[RSSI_RC] != 255) && (internalStats[RSSI_RC] > RSSI_THRESHOLD))
 	{
 		heartbeat_timeout[RC] = millis();
 	}
+}
+int calculate_rssi()
+{
+	// Remove deadzone, remove values below 1500
+	// and map from [1500 to 2000] to [0 to 100]
+	uint32_t dead = remove_deadzone(rc.get_ch(FRISKY_RSSI));
+	int cppm = constrain(dead, 1524, 2000);
+	return map(cppm, 1524, 2000, 0, 100);
 }
 
 void get_controlmode()
@@ -456,6 +488,10 @@ void get_controlmode()
 	else if (control_mode_ocs != AUTONOMOUS)
 	{
 		control_mode = control_mode_ocs;
+	}
+	else
+	{
+		control_mode = AUTONOMOUS;
 	}
 }
 
@@ -535,7 +571,8 @@ void checkCANmsg(){
 		case CAN_heartbeat:
 			{
 				uint32_t device = CAN.parseCANFrame(buf, 0, 1);
-				Serial.print("heartbeat: ");
+				Serial.print(" heartbeat: ");
+				Serial.println(device);
 				heartbeat_timeout[device] = millis();
 				break;
 			}
@@ -549,7 +586,7 @@ void checkCANmsg(){
 			break;
 
 		case CAN_battery2_motor_stats:
-			Serial.println("Batt1 stats");
+			Serial.println("Batt2 stats");
 			powerStats[BATT2_CAPACITY] = CAN.parseCANFrame(buf, 0, 1);
 			powerStats[BATT2_VOLTAGE] = CAN.parseCANFrame(buf, 1, 2);
 			powerStats[BATT2_CURRENT] = CAN.parseCANFrame(buf, 3, 2);
@@ -563,7 +600,7 @@ void checkCANmsg(){
 			break;
 
 		case CAN_POSB_stats:
-			Serial.println("sbc stats");
+			Serial.println("posb stats");
 			//internalStats[INT_PRESS] = CAN.parseCANFrame(buf, 2, 1);
 			internalStats[INT_PRESS] = 255;
 			internalStats[HUMIDITY] = CAN.parseCANFrame(buf, 1, 1);
@@ -572,7 +609,7 @@ void checkCANmsg(){
 			break;
 
 		default:
-			Serial.println("Others");
+			//Serial.println("Others");
 			break;
 		}
 
@@ -596,7 +633,7 @@ void publishCAN()
 		publishCAN_heartbeat(HEARTBEAT_Tele);
 		heartbeat_loop = millis();
 	}
-	if ((rc_rssi > RSSI_THRESHOLD) &&	// If no rc link (low rssi), don't send heartbeat
+	if ((internalStats[RSSI_RC] > RSSI_THRESHOLD) &&	// If no rc link (low rssi), don't send heartbeat
 		((millis() - rc_loop) > HEARTBEAT_TIMEOUT))
 	{
 		publishCAN_heartbeat(HEARTBEAT_RC);

@@ -23,6 +23,7 @@ public:
 
 	uint32_t get_ch(int ch);
 	uint32_t get_last_int_time();
+	void reset();
 };
 
 #endif

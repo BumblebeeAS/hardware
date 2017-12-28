@@ -20,9 +20,9 @@
 #define RC_INT 19
 #define RSSI_THRESHOLD 50
 
-#define FRISKY_FORWARD 0
-#define FRISKY_SIDE 3
-#define FRISKY_YAW 1
+#define FRISKY_FORWARD 2
+#define FRISKY_SIDE 1
+#define FRISKY_YAW 3
 #define FRISKY_ARM 4
 #define FRISKY_RSSI 5
 
@@ -52,18 +52,19 @@
 #define BATT2_VOLTAGE 5
 
 //Heartbeat
-#define HB_TIMEOUT 5000
-#define HB_COUNT 10
+#define HB_TIMEOUT 500
+#define HB_COUNT 11
 #define SBC 0
 #define POKB 1
 #define POSB 2
 #define POPB 3
-#define OCS 4
-#define RC 5
-#define BATT1 6
-#define BATT2 7
-#define ESC1 8
-#define ESC2 9
+#define LARS 4
+#define OCS 5
+#define RC 6
+#define BATT1 7
+#define BATT2 8
+#define ESC1 9
+#define ESC2 10
 
 //TIMEOUTS
 #define HEARTBEAT_TIMEOUT 500

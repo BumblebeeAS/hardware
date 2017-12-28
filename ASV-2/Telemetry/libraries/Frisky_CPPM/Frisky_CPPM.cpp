@@ -78,3 +78,14 @@ uint32_t Frisky::get_ch(int ch)
 {
 	return ppm[ch];
 }
+
+void Frisky::reset()
+{
+	// Failsafe settings
+	for(int i = 0; i < 4; i++)
+	{
+		ppm[i] = 1500;	// NEUTRAL
+	}
+	ppm[4] = 988;	// AUTONOMOUS
+	ppm[5] = 1500;	// 0dB
+}
