@@ -184,7 +184,7 @@ void loop(){
 			//internalStats[RSSI_OCS] = rx.getRssi();
 			//TODO: Get RSSI (ZB??)
 			if(internalStats[RSSI_OCS] > RSSI_THRESHOLD)
-				heartbeat_timeout[OCS] = millis();
+				heartbeat_timeout[HEARTBEAT_OCS] = millis();
 			switch (payload[2])
 			{
 			case CAN_control_link:			
@@ -343,11 +343,11 @@ void screen_prepare(){
 	screen.write_string("POSB temp:");
 	screen.write_string("RSSI OCS:");
 	screen.write_string("RSSI RC:");
-	screen.write_string("SBC OK:");
 	screen.write_string("POSB OK:");
 	screen.write_string("POPB OK:");
 	screen.write_string("POKB OK:");
 	screen.write_string("LARS OK:");
+	screen.write_string("SBC OK:");
 	screen.write_string("OCS OK:");
 	screen.write_string("RC OK:");
 
@@ -384,14 +384,22 @@ void update_heartbeat()
 	int i;
 	/* CHECK FOR HEARTBEAT */
 	screen.set_cursor(150, 210);
-	for (i = 0; i < 7; i++){
-		if((millis() - heartbeat_timeout[i]) > HB_TIMEOUT){
+	for (i = 1; i < 4; i++){
+		if((millis() - heartbeat_timeout[i-1]) > HB_TIMEOUT){
 			screen.write_value_string("NO");
 		}else
 			screen.write_value_string("YES");
 	}
+	i++; // Skip HEARTBEAT_Tele
+	for (; i < 9; i++) {
+		if ((millis() - heartbeat_timeout[i-2]) > HB_TIMEOUT) {
+			screen.write_value_string("NO");
+		}
+		else
+			screen.write_value_string("YES");
+	}
 	screen.set_cursor(550, 210);
-	for (; i < 11; i++){
+	for (; i < 12; i++){
 		if((millis() - heartbeat_timeout[i]) > HB_TIMEOUT){
 			screen.write_value_string("NO");
 		}else
@@ -462,7 +470,7 @@ void get_rssi()
 	internalStats[RSSI_RC] = calculate_rssi();
 	if((internalStats[RSSI_RC] != 255) && (internalStats[RSSI_RC] > RSSI_THRESHOLD))
 	{
-		heartbeat_timeout[RC] = millis();
+		heartbeat_timeout[HEARTBEAT_RC] = millis();
 	}
 }
 int calculate_rssi()
@@ -476,8 +484,8 @@ int calculate_rssi()
 
 void get_controlmode()
 {
-	if(((millis() - heartbeat_timeout[RC]) > COMMLINK_TIMEOUT) &&
-		((millis() - heartbeat_timeout[OCS]) > COMMLINK_TIMEOUT)) // Both rc & ocs loss comms
+	if(((millis() - heartbeat_timeout[HEARTBEAT_RC]) > COMMLINK_TIMEOUT) &&
+		((millis() - heartbeat_timeout[HEARTBEAT_OCS]) > COMMLINK_TIMEOUT)) // Both rc & ocs loss comms
 	{
 		control_mode = STATION_KEEP;
 	}
@@ -488,6 +496,10 @@ void get_controlmode()
 	else if (control_mode_ocs != AUTONOMOUS)
 	{
 		control_mode = control_mode_ocs;
+	}
+	else if ((millis() - heartbeat_timeout[HEARTBEAT_Cogswell]) > SBC_TIMEOUT) // Lost SBC heartbeat
+	{
+		control_mode = MANUAL_OCS;
 	}
 	else
 	{
@@ -574,6 +586,7 @@ void checkCANmsg(){
 				Serial.print(" heartbeat: ");
 				Serial.println(device);
 				heartbeat_timeout[device] = millis();
+				get_thruster_batt_heartbeat();
 				break;
 			}
 
@@ -614,6 +627,23 @@ void checkCANmsg(){
 		}
 
 		CAN.clearMsg();
+	}
+}
+
+// Extract ESC and battery heartbeats
+void get_thruster_batt_heartbeat()
+{
+	if (len == 2) // if is POSB heartbeat
+	{
+		uint8_t thruster_heartbeat = CAN.parseCANFrame(buf, 1, 1);
+		for (int i = 0; i < 4; i++)
+		{
+			if (thruster_heartbeat & 1) // Check first bit
+			{
+				heartbeat_timeout[BATT1 + i] = millis();
+			}
+			thruster_heartbeat = thruster_heartbeat >> 1; // Move to next bit
+		}
 	}
 }
 

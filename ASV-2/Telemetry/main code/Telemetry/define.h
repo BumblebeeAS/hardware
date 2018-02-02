@@ -53,22 +53,16 @@
 
 //Heartbeat
 #define HB_TIMEOUT 500
-#define HB_COUNT 11
-#define SBC 0
-#define POKB 1
-#define POSB 2
-#define POPB 3
-#define LARS 4
-#define OCS 5
-#define RC 6
-#define BATT1 7
-#define BATT2 8
-#define ESC1 9
-#define ESC2 10
+#define HB_COUNT 12
+#define BATT1 9
+#define BATT2 10
+#define ESC1 11
+#define ESC2 12
 
 //TIMEOUTS
-#define HEARTBEAT_TIMEOUT 500
+#define HEARTBEAT_TIMEOUT 501
 #define THRUSTER_TIMEOUT 100
 #define COMMLINK_TIMEOUT 4000
+#define SBC_TIMEOUT 3000
 
 #endif // _DEFINES_H
