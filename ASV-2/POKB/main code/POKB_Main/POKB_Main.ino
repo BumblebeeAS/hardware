@@ -43,11 +43,15 @@ void setup() {
 
 	xbee_loop = millis();
 	heartbeat_loop = millis();
+
+  pinMode(5, INPUT);
 }
 
 void loop() {
 	if ((millis() - xbee_loop) > XBEE_TIMEOUT){
 		xbee_receive();
+    //Serial.print("Button: ");
+    //Serial.println(digitalRead(5));
 		xbee_loop = millis();
 	}
 

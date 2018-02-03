@@ -1,5 +1,6 @@
 #include <XBee.h>
 #include <SoftwareSerial.h>
+#include "defines.h"
 
 // create the XBee object
 XBee xbee = XBee();
@@ -15,6 +16,19 @@ uint8_t inByte;
 
 SoftwareSerial mySerial(6, 7); // RX, TX
 
+void batteryCheck() {
+  double batteryBit = analogRead(BATTERY_READ);
+  double batteryVoltage = (batteryBit - 13.3) / 227.5;
+  Serial.print("Battery voltage: ");
+  Serial.println(batteryVoltage);
+
+  if(batteryVoltage < 3.8) {
+    digitalWrite(LED_LOW_BATT, HIGH);
+  } else {
+    digitalWrite(LED_LOW_BATT, LOW);
+  }
+}
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
@@ -23,6 +37,9 @@ void setup() {
 
   pinMode(3, INPUT);
   xbee_loop = millis();
+
+  pinMode(BATTERY_READ, INPUT);
+  pinMode(LED_LOW_BATT, OUTPUT);
 }
 
 void loop() {
@@ -78,4 +95,6 @@ void loop() {
      }
      xbee_loop = millis();
   }
+
+  batteryCheck();
 }
