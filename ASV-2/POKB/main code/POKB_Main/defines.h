@@ -6,7 +6,7 @@
 
 // KILL
 #define NMOS_CONTACTOR 11
-
+#define HARDKILL_IN 5
 
 // XBEE
 #define XBEE_BAUDRATE 115200
@@ -15,5 +15,6 @@
 // TIMEOUT
 #define XBEE_TIMEOUT 500
 #define HEARTBEAT_TIMEOUT 500
+#define ESTOP_TIMEOUT 1000
 
 #endif
