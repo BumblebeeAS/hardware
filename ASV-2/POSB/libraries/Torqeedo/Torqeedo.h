@@ -4,8 +4,6 @@
 
 #include "Arduino.h"
 
-#define _TEST_
-
 #define MAX_PACKET_SIZE 40 //in bytes
 #define END_MARKER 0xF6
 

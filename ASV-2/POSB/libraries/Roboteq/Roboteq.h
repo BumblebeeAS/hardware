@@ -50,13 +50,14 @@ private:
 	uint8_t _len;
 	RoboteqStats stats;
 
-	uint8_t _ch;
 	uint16_t can_send_idx;
 	uint16_t can_reply_idx;
+	uint8_t msg_type = 0;
 
 	void sendCANmsg(uint16_t index, INT8U subidx, INT8U ccs, INT8U len, INT32U data);
 	
 	uint16_t getReplyIndex();
+	uint8_t getSubindex();
 	void decodeReply(uint16_t index);
 
  public:
@@ -65,8 +66,9 @@ private:
 
 	RoboteqStats getRoboteqStats();
 
+	void requestUpdate();
 	void setMotorSpeed(int32_t speed, uint8_t channel);
-	void requestMotorAmps();
+	void requestMotorAmps(uint8_t ch);
 	void requestFaultFlags();
 	void requestMotorStatusFlags(uint8_t ch);
 	void readRoboteqReply(uint32_t id, uint8_t len, uint8_t *buf);

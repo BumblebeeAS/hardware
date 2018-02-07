@@ -39,35 +39,46 @@ uint16_t Roboteq::getReplyIndex()
 	return index;
 }
 
+uint8_t Roboteq::getSubindex()
+{
+	return CAN->parseCANFrame(_buf, 3, 1);
+}
+
 void Roboteq::decodeReply(uint16_t index)
 {
 	switch (index)
 	{
 	case INDEX_READ_MOTOR_AMPS:
-		stats.motor_current1 = CAN->parseCANFrame(_buf, 4, 2);
-		stats.motor_current2 = CAN->parseCANFrame(_buf, 6, 2);
-		Serial.print("Motor current1: "); 
-		Serial.print(stats.motor_current1);
-		Serial.print(" Motor current2: "); 
-		Serial.println(stats.motor_current2);
+		if (getSubindex() == 1)
+		{
+			stats.motor_current1 = CAN->parseCANFrame(_buf, 4, 2);
+		//Serial.print("Motor current1: "); 
+		//Serial.println(stats.motor_current1);
+		}
+		else
+		{
+			stats.motor_current2 = CAN->parseCANFrame(_buf, 4, 2);
+		//Serial.print("Motor current2: "); 
+		//Serial.println(stats.motor_current2);
+		}
 		break;
 	case INDEX_READ_FAULT_FLAGS:
 		stats.fault_flags = CAN->parseCANFrame(_buf, 4, 1);
-		Serial.print("Fault flags: ");
-		Serial.println(stats.fault_flags, BIN);
+		//Serial.print("Fault flags: ");
+		//Serial.println(stats.fault_flags, BIN);
 		break;
 	case INDEX_READ_MOTOR_STATUS_FLAGS:
-		if(_ch == 1)
+		if (getSubindex() == 1)
 		{
 			stats.motor_status_flags1 = CAN->parseCANFrame(_buf, 4, 1);
-			Serial.print("Motor status flag 1: ");
-			Serial.println(stats.motor_status_flags1, BIN);
+			//Serial.print("Motor status flag 1: ");
+			//Serial.println(stats.motor_status_flags1, BIN);
 		}
 		else
 		{
 			stats.motor_status_flags2 = CAN->parseCANFrame(_buf, 4, 1);
-			Serial.print("Motor status flag 2: ");
-			Serial.println(stats.motor_status_flags2, BIN);
+			//Serial.print("Motor status flag 2: ");
+			//Serial.println(stats.motor_status_flags2, BIN);
 		}
 		break;
 	case INDEX_READ_ACTUAL_MOTOR_COMMAND:
@@ -93,31 +104,34 @@ void Roboteq::decodeReply(uint16_t index)
 	}
 }
 
-void Roboteq::sendCANmsg(uint16_t index, INT8U subidx, INT8U ccs, INT8U len, INT32U data)
+//******** SEND QUERY ***********
+
+void Roboteq::requestUpdate()
 {
-	INT8U byte0;
-	INT8U lenempty;
-	lenempty = 4 - len;
-	byte0 = (lenempty << 2) + (ccs << 4);
-
-	CAN->setupCANFrame(_buf, 0, 1, byte0);	// Populate byte0 
-	CAN->setupCANFrame(_buf, 1, 2, index);	// Populate index
-	CAN->setupCANFrame(_buf, 3, 1, subidx);	// Populate subindex
-	CAN->setupCANFrame(_buf, 4, 4, data);	// Populate data
-	/*Serial.print("ID:");
-	Serial.print(ROBOTEQ_CAN1_SEND_INDEX,HEX);
-	Serial.print("LEN:");
-	Serial.println(len);
-	for (int i = 0; i < 8; i++)
-	{
-	Serial.print(buf[i],HEX);
-	Serial.print("|");
+	msg_type++; //change message type
+	msg_type %= 5;
+	//Serial.println("UPDATE");
+	switch (msg_type) {
+	case 0:
+		requestMotorAmps(1);
+		break;
+	case 1:
+		requestMotorAmps(2);
+		break;
+	case 2:
+		requestMotorStatusFlags(1);
+		break;
+	case 3:
+		requestMotorStatusFlags(2);
+		break;
+	case 4:
+		requestFaultFlags();
+		break;
+	default:
+		//Error
+		break;
 	}
-	Serial.println("");*/
-
-	CAN->sendMsgBuf(can_send_idx, 0, len+4, _buf);
 }
-
 
 void Roboteq::setMotorSpeed(int32_t speed, uint8_t channel)
 {
@@ -129,25 +143,59 @@ void Roboteq::setMotorSpeed(int32_t speed, uint8_t channel)
 	sendCANmsg(INDEX_SET_MOTOR, channel, CCS_COMMAND, 4, speed);
 }
 
-void Roboteq::requestMotorAmps()
+void Roboteq::requestMotorAmps(uint8_t ch)
 {
+#ifdef _ESC_DEBUG_
 	Serial.println("Request Motor Amps...");
-	sendCANmsg(INDEX_READ_MOTOR_AMPS, 1, CCS_QUERY, 4, 0x0);
+#endif
+	sendCANmsg(INDEX_READ_MOTOR_AMPS, ch, CCS_QUERY, 4, 0x0);
 }
 
 void Roboteq::requestFaultFlags()
 {
+#ifdef _ESC_DEBUG_
 	Serial.println("Request Fault Flags...");
+#endif
 	sendCANmsg(INDEX_READ_FAULT_FLAGS, 0, CCS_QUERY, 2, 0x0);
 }
 
 void Roboteq::requestMotorStatusFlags(uint8_t ch)
 {
-	_ch = ch;
+#ifdef _ESC_DEBUG_
 	Serial.print("Request Motor Status Flags...");
-	Serial.println(_ch);
+	Serial.println(ch);
+#endif
 	sendCANmsg(INDEX_READ_MOTOR_STATUS_FLAGS, ch, CCS_QUERY, 2, 0x0);
 }
+
+
+//******** READ / SEND CAN ***********
+
+void Roboteq::sendCANmsg(uint16_t index, INT8U subidx, INT8U ccs, INT8U len, INT32U data)
+{
+	INT8U byte0;
+	INT8U lenempty;
+	lenempty = 4 - len;
+	byte0 = (lenempty << 2) + (ccs << 4);
+
+	CAN->setupCANFrame(_buf, 0, 1, byte0);	// Populate byte0 
+	CAN->setupCANFrame(_buf, 1, 2, index);	// Populate index
+	CAN->setupCANFrame(_buf, 3, 1, subidx);	// Populate subindex
+	CAN->setupCANFrame(_buf, 4, 4, data);	// Populate data
+											/*
+											Serial.print("ID:");
+											Serial.print(ROBOTEQ_CAN1_SEND_INDEX,HEX);
+											Serial.print("LEN:");
+											Serial.println(len);
+											for (int i = 0; i < 8; i++)
+											{
+											Serial.print(_buf[i],HEX);
+											Serial.print("|");
+											}
+											Serial.println("");*/
+	CAN->sendMsgBuf(can_send_idx, 0, len + 4, _buf);
+}
+
 
 void Roboteq::readRoboteqReply_fromCAN()
 {
@@ -178,15 +226,19 @@ void Roboteq::readRoboteqReply(uint32_t id, uint8_t len, uint8_t *buf)
 	for(int i = 0; i < len; i++)
 	{
 		_buf[i] = buf[i];
+#ifdef _ESC_DEBUG_
 		if(buf[0] != 0x60)
 		{
-		Serial.print(buf[i],HEX);
-		Serial.print(" ");
+			Serial.print(buf[i],HEX);
+			Serial.print(" ");
 		}
+#endif
 	}
-	
+
+#ifdef _ESC_DEBUG_
 		if(buf[0] != 0x60)
 			Serial.println("");
+#endif
 
 	index = getReplyIndex();
 	decodeReply(index);
@@ -211,7 +263,7 @@ void Roboteq::unkill()
 void Roboteq::requestBatteryVolts()
 {
 	Serial.println("Request Battery Volts...");
-	sendCANmsg(INDEX_READ_BATTERY_VOLTS, 2, CCS_QUERY, 0, 0x0);
+	sendCANmsg(INDEX_READ_BATTERY_VOLTS, 2, CCS_QUERY, 2, 0x0);
 }
 
 void Roboteq::requestBatteryAmps()
