@@ -135,6 +135,7 @@ public:
 	void requestUpdate();
 
 	void getData();
+	void resetData();
 	uint16_t getVoltage();
 	int16_t getCurrent();
 	uint16_t getCapacity();

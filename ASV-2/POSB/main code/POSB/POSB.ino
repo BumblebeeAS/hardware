@@ -59,6 +59,8 @@ uint32_t batt_loop;
 uint32_t windspeed_loop;
 uint32_t esc1_loop;
 uint32_t esc2_loop;
+uint32_t batt1_loop;
+uint32_t batt2_loop;
 uint32_t power_loop;
 uint8_t power_ctr = 0;
 uint32_t thruster_loop;
@@ -105,6 +107,8 @@ void setup()
 	windspeed_loop = millis();
 	esc1_loop = millis();
 	esc2_loop = millis();
+	batt1_loop = millis();
+	batt2_loop = millis();
 	power_loop = millis();
 	thruster_loop = millis();
 }
@@ -202,6 +206,18 @@ void loop()
 		heartbeat_esc2 = false;
 		esc2_loop = millis();
 	}
+	if ((millis() - batt1_loop) > INACTIVITY_TIMEOUT)
+	{
+		heartbeat_batt1 = false;
+		Battery1.resetData();
+		batt1_loop = millis();
+	}
+	if ((millis() - batt2_loop) > INACTIVITY_TIMEOUT)
+	{
+		heartbeat_batt2 = false;
+		Battery2.resetData();
+		batt2_loop = millis();
+	}
 
 	/************************************/
 	/*			Battery Monitoring		*/
@@ -209,8 +225,14 @@ void loop()
 	
 	Battery1.checkBatteryOnOff();
 	//Battery2.checkBatteryOnOff();
-	Battery1.readMessage();
-	//Battery2.readMessage();
+	if (Battery1.readMessage())
+	{
+		heartbeat_batt1 = millis();
+	}
+	/*if (Battery2.readMessage())
+	{
+		heartbeat_batt1 = millis();
+	}*/
 
 	// Cycles through status flags, voltage, current
 	if((millis() - batt_loop) > BATT_TIMEOUT)
@@ -370,7 +392,7 @@ void publishCAN_posbstats()
 void publishCAN_heartbeat()
 {
 	buf[0] = HEARTBEAT_POSB;
-	buf[1] = heartbeat_esc1 + (heartbeat_esc2 >> 1) + (heartbeat_batt1 >> 2) + (heartbeat_batt2 >> 3);
+	buf[1] = heartbeat_batt1 + (heartbeat_batt2 << 1) + (heartbeat_esc1 << 2) + (heartbeat_esc2 << 3);
 	CAN.sendMsgBuf(CAN_heartbeat,0,2,buf);
 }
 int wind_dir = 0;
@@ -464,7 +486,6 @@ void checkCANmsg(){
 			control_mode = CAN.parseCANFrame(buf,0,1);
 			break;
 		case ROBOTEQ_CAN1_REPLY_INDEX:
-			//Serial.println("RECEIVE");
 			roboteq1.readRoboteqReply(id, len, buf);
 			heartbeat_esc1 = true;
 			esc1_loop = millis();

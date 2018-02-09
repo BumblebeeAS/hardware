@@ -135,6 +135,13 @@ void Torqeedo::getData(){
 
 }
 
+void Torqeedo::resetData() {
+	battData.voltage = 255;
+	battData.battCurrent = -255;
+	battData.capPercent = 255;
+	battData.cellMaxTemp = 255;
+}
+
 uint16_t Torqeedo::getVoltage(){
 	return battData.voltage;
 }
