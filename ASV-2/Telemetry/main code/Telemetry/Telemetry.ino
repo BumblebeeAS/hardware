@@ -123,7 +123,7 @@ void loop(){
 
 	reset_stats();
 
-	if((millis() - loopTime) > 1000){
+	if((millis() - loopTime) > SCREEN_LOOP){
 		screen_update();
 		loopTime = millis();
 		update_heartbeat();
@@ -140,6 +140,7 @@ void loop(){
 		get_directions();
 		convert_thruster_values();
 
+#ifdef _DEBUG_
 		Serial.print("MANUAL RC -");
 		Serial.print(" 1: ");
 		Serial.print(speed1);
@@ -157,6 +158,7 @@ void loop(){
 	else
 	{
 		Serial.println("STATION KEEP");
+#endif
 	}
 
 
@@ -165,7 +167,7 @@ void loop(){
 	/* Send ASV Batt value to Frisky Controller */
 	/********************************************/
 	//TODO: put timer
-	uint16_t lower_batt = min(powerStats[BATT1_CAPACITY], powerStats[BATT2_CAPACITY]);
+	uint16_t lower_batt = min(powerStats[BATT1_CAPACITY], 100);//powerStats[BATT2_CAPACITY]);
 	uint16_t DAC_input = convert_batt_capacity(lower_batt);
 	set_DAC(DAC_input);
 
@@ -282,7 +284,7 @@ void reset_stats()
 }
 void reset_posb_stats()
 {
-	if ((millis() - posb_timeout) > HB_TIMEOUT){
+	if ((millis() - posb_timeout) > STAT_TIMEOUT){
 		internalStats[INT_PRESS] = 255;
 		internalStats[HUMIDITY] = 255;
 		internalStats[POSB_TEMP] = 255;
@@ -291,7 +293,7 @@ void reset_posb_stats()
 }
 void reset_ocs_stats()
 {
-	if ((millis() - ocs_timeout) > HB_TIMEOUT){
+	if ((millis() - ocs_timeout) > STAT_TIMEOUT){
 		internalStats[RSSI_OCS] = 0;
 		ocs_timeout = millis();
 	}
@@ -299,7 +301,7 @@ void reset_ocs_stats()
 void reset_rc_stats()
 {
 	rc_timeout = rc.get_last_int_time(); // rc_timeout is in micros
-	if ((micros() - rc_timeout) > HB_TIMEOUT*1000){
+	if ((micros() - rc_timeout) > STAT_TIMEOUT *1000){
 		internalStats[RSSI_RC] = 0;
 		rc.reset();
 		rc_timeout = micros();
@@ -307,14 +309,14 @@ void reset_rc_stats()
 }
 void reset_sbc_stats()
 {
-	if ((millis() - sbc_timeout) > HB_TIMEOUT){
+	if ((millis() - sbc_timeout) > STAT_TIMEOUT){
 		internalStats[CPU_TEMP] = 255;
 		sbc_timeout = millis();
 	}
 }
 void reset_batt1_stats()
 {
-	if ((millis() - batt1_timeout) > HB_TIMEOUT){
+	if ((millis() - batt1_timeout) > STAT_TIMEOUT){
 		powerStats[BATT1_CAPACITY] = 255;
 		powerStats[BATT1_CURRENT] = 255;
 		powerStats[BATT1_VOLTAGE] = 255;
@@ -323,7 +325,7 @@ void reset_batt1_stats()
 }
 void reset_batt2_stats()
 {
-	if ((millis() - batt2_timeout) > HB_TIMEOUT){
+	if ((millis() - batt2_timeout) > STAT_TIMEOUT){
 		powerStats[BATT2_CAPACITY] = 255;
 		powerStats[BATT2_CURRENT] = 255;
 		powerStats[BATT2_VOLTAGE] = 255;
@@ -362,7 +364,8 @@ void screen_prepare(){
 	screen.write_string("Batt2 OK:");
 	screen.write_string("ESC1 OK:");
 	screen.write_string("ESC2 OK:");
-	screen.write_value_string("CC buy us pineapple tart");
+	screen.write_value_string("Bossman give us angpao");
+	screen.write_value_string("(^-^)");
 }
 
 void screen_update(){
@@ -384,22 +387,26 @@ void update_heartbeat()
 	int i;
 	/* CHECK FOR HEARTBEAT */
 	screen.set_cursor(150, 210);
-	for (i = 1; i < 4; i++){
-		if((millis() - heartbeat_timeout[i-1]) > HB_TIMEOUT){
+	for (i = 1; i < 9; i++){
+		if (i != HEARTBEAT_Tele) // Skip Telemetry HB
+		{
+		if((millis() - heartbeat_timeout[i]) > HB_TIMEOUT){
 			screen.write_value_string("NO");
 		}else
 			screen.write_value_string("YES");
+		}
 	}
+	/*
 	i++; // Skip HEARTBEAT_Tele
 	for (; i < 9; i++) {
-		if ((millis() - heartbeat_timeout[i-2]) > HB_TIMEOUT) {
+		if ((millis() - heartbeat_timeout[i-1]) > HB_TIMEOUT) {
 			screen.write_value_string("NO");
 		}
 		else
 			screen.write_value_string("YES");
-	}
+	}*/
 	screen.set_cursor(550, 210);
-	for (; i < 12; i++){
+	for (; i < 13; i++){
 		if((millis() - heartbeat_timeout[i]) > HB_TIMEOUT){
 			screen.write_value_string("NO");
 		}else
@@ -475,6 +482,7 @@ void get_rssi()
 }
 int calculate_rssi()
 {
+	// WHY DEADZONE
 	// Remove deadzone, remove values below 1500
 	// and map from [1500 to 2000] to [0 to 100]
 	uint32_t dead = remove_deadzone(rc.get_ch(FRISKY_RSSI));
@@ -583,8 +591,8 @@ void checkCANmsg(){
 		case CAN_heartbeat:
 			{
 				uint32_t device = CAN.parseCANFrame(buf, 0, 1);
-				Serial.print(" heartbeat: ");
-				Serial.println(device);
+				//Serial.print(" heartbeat: ");
+				//Serial.println(device);
 				heartbeat_timeout[device] = millis();
 				get_thruster_batt_heartbeat();
 				break;
@@ -636,6 +644,8 @@ void get_thruster_batt_heartbeat()
 	if (len == 2) // if is POSB heartbeat
 	{
 		uint8_t thruster_heartbeat = CAN.parseCANFrame(buf, 1, 1);
+		Serial.print("ESC HB: ");
+		Serial.println(thruster_heartbeat, HEX);
 		for (int i = 0; i < 4; i++)
 		{
 			if (thruster_heartbeat & 1) // Check first bit
@@ -657,14 +667,14 @@ void publishCAN()
 		publishCAN_manualthruster();
 		thruster_loop = millis();
 	}
-	if ((millis() - heartbeat_loop) > HEARTBEAT_TIMEOUT)
+	if ((millis() - heartbeat_loop) > HEARTBEAT_LOOP)
 	{
 		publishCAN_controllink();
 		publishCAN_heartbeat(HEARTBEAT_Tele);
 		heartbeat_loop = millis();
 	}
 	if ((internalStats[RSSI_RC] > RSSI_THRESHOLD) &&	// If no rc link (low rssi), don't send heartbeat
-		((millis() - rc_loop) > HEARTBEAT_TIMEOUT))
+		((millis() - rc_loop) > HB_TIMEOUT))
 	{
 		publishCAN_heartbeat(HEARTBEAT_RC);
 		rc_loop = millis();

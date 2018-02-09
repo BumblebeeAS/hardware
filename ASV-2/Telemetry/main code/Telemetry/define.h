@@ -4,10 +4,10 @@
 #define CAN_Chip_Select 54
 
 //CONTROL MODE
-#define AUTONOMOUS 0
-#define MANUAL_OCS 1
+#define AUTONOMOUS 1
 #define MANUAL_RC 2
-#define STATION_KEEP 3
+#define MANUAL_OCS 3
+#define STATION_KEEP 4
 
 //SCREEN
 #define SCREEN_INT 25
@@ -15,6 +15,8 @@
 #define SCREEN_RESET 24
 
 #define SD_CS 10
+
+#define SCREEN_LOOP 1000
 
 //FRISKY
 #define RC_INT 19
@@ -52,7 +54,6 @@
 #define BATT2_VOLTAGE 5
 
 //Heartbeat
-#define HB_TIMEOUT 500
 #define HB_COUNT 12
 #define BATT1 9
 #define BATT2 10
@@ -60,9 +61,11 @@
 #define ESC2 12
 
 //TIMEOUTS
-#define HEARTBEAT_TIMEOUT 501
+#define HB_TIMEOUT 1000
+#define HEARTBEAT_LOOP 500
 #define THRUSTER_TIMEOUT 100
 #define COMMLINK_TIMEOUT 4000
 #define SBC_TIMEOUT 3000
+#define STAT_TIMEOUT 2000
 
 #endif // _DEFINES_H
