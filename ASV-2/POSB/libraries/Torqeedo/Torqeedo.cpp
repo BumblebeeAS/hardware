@@ -1,12 +1,14 @@
 #include "Arduino.h"
 #include "Torqeedo.h"
 
+int Torqeedo::powerSeq = POWERSEQ_OFF;
+
 Torqeedo::Torqeedo(int RXEN, int DXEN, int ON, int batt_num)
 {
 	RX_ENABLE = RXEN;
 	DX_ENABLE = DXEN;
 	ON_PIN = ON;
-	battNum = batt_num;
+	_battNum = batt_num;
 	len = 0;
 	//requestData(0);
 }
@@ -17,7 +19,7 @@ Torqeedo::~Torqeedo(void)
 
 void Torqeedo::init()
 {
-	if (battNum == 1)
+	if (_battNum == 1)
 	{
 		Serial1.begin(BAUDRATE);
 		_write = write1;
@@ -53,17 +55,20 @@ void Torqeedo::init()
 
 void Torqeedo::onBattery(bool on_status)
 {
-	digitalWrite(ON_PIN, HIGH);  // on battery
-	if (on_status)
+	if (powerSeq == POWERSEQ_OFF)
 	{
-		onPinPeriod = BATTERY_ON_DURATION;
+		digitalWrite(ON_PIN, HIGH);  // on battery
+		if (on_status)
+		{
+			onPinPeriod = BATTERY_ON_DURATION;
+		}
+		else
+		{
+			onPinPeriod = BATTERY_OFF_DURATION;
+		}
+		onTime = millis();
+		powerSeq = _battNum;
 	}
-	else
-	{
-		onPinPeriod = BATTERY_OFF_DURATION;
-	}
-	onTime = millis();
-	powerSeq = true;
 	//Serial.println("ON");
 }
 
@@ -71,14 +76,16 @@ void Torqeedo::onBattery(bool on_status)
 // Pull back down when time is up
 bool Torqeedo::checkBatteryOnOff()
 {
-	if (powerSeq && (millis() - onTime > onPinPeriod))
+	if ((powerSeq == _battNum) && (millis() - onTime > onPinPeriod))
+		// Check if I am the batt that initiate powerseq
+		// If yes, check how long since powerseq start
 	{
 		//if turning on, trigger 1 message packet to enable comms
 		if (onPinPeriod == BATTERY_ON_DURATION) {
 			requestUpdate();
 		}
 		digitalWrite(ON_PIN, LOW);
-		powerSeq = false;
+		powerSeq = POWERSEQ_OFF;
 		requestCount=0;
 		return true;
 	}
@@ -88,8 +95,9 @@ bool Torqeedo::checkBatteryOnOff()
 // Re-trigger startup if no response received for BATT_RESET_COUNT times
 void Torqeedo::checkBatteryConnected()
 {
-	if (requestCount > BATT_RESET_COUNT){
-		Serial.println("START");
+	if ((requestCount > BATT_RESET_COUNT) && (powerSeq == POWERSEQ_OFF)){
+		Serial.print("Restart batt comms... ");
+		Serial.println(_battNum);
 		requestCount = 0;
 		onBattery(true);
 	}
@@ -397,20 +405,20 @@ void flush1()
 
 void write2(byte content)
 {
-	Serial2.write(content);
+	Serial3.write(content);
 	return;
 }
 byte read2()
 {
-	byte input = (byte)Serial2.read();
+	byte input = (byte)Serial3.read();
 	return input;
 }
 int available2()
 {
-	return Serial2.available();
+	return Serial3.available();
 }
 void flush2()
 {
-	Serial2.flush();
+	Serial3.flush();
 	return;
 }

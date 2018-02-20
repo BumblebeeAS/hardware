@@ -47,7 +47,7 @@ int16_t speed4 = 0;
 int control_mode = MANUAL_RC;
 
 Torqeedo Battery1(TORQEEDO1_RXEN, TORQEEDO1_DXEN, TORQEEDO1_ON, 1);
-Torqeedo Battery2(TORQEEDO2_RXEN, TORQEEDO2_DXEN, TORQEEDO2_ON, 1);
+Torqeedo Battery2(TORQEEDO2_RXEN, TORQEEDO2_DXEN, TORQEEDO2_ON, 2);
 
 uint8_t posb_stat_buf[2] = {128,256};
 uint8_t esc1_stat_buf[7] = {0x2C, 0x1, 0x14, 0x0, 0, 0, 0}; // 0, 0, 0, 200, 300
@@ -91,7 +91,7 @@ void setup()
 
 	// BATT INIT	
 	Battery1.init();
-	//Battery2.init();
+	Battery2.init();
 	Serial.flush();
 
 	// ESC INIT
@@ -224,24 +224,31 @@ void loop()
 	/************************************/
 	
 	Battery1.checkBatteryOnOff();
-	//Battery2.checkBatteryOnOff();
 	if (Battery1.readMessage())
 	{
-		heartbeat_batt1 = millis();
+		heartbeat_batt1 = true;
+		batt1_loop = millis();
 	}
-	/*if (Battery2.readMessage())
+#define _BATT2_
+#ifdef _BATT2_
+	Battery2.checkBatteryOnOff();
+	if (Battery2.readMessage())
 	{
-		heartbeat_batt1 = millis();
-	}*/
+		heartbeat_batt2 = true;
+		batt2_loop = millis();
+	}
+#endif
 
 	// Cycles through status flags, voltage, current
 	if((millis() - batt_loop) > BATT_TIMEOUT)
 	{
 		//Serial.print("REQUEST");
 	Battery1.checkBatteryConnected();
-	//Battery2.checkBatteryConnected();
 	Battery1.requestUpdate();
-	//Battery2.requestUpdate();
+#ifdef _BATT2_
+	Battery2.checkBatteryConnected();
+	Battery2.requestUpdate();
+#endif
 	batt_loop = millis();
 	}
 	
@@ -276,7 +283,7 @@ void getThrusterSpeed()
 	speed2 = map(CAN.parseCANFrame(buf,2,2), 0, 6400, -1000, 1000);
 	speed3 = map(CAN.parseCANFrame(buf,4,2), 0, 6400, -1000, 1000);
 	speed4 = map(CAN.parseCANFrame(buf,6,2), 0, 6400, -1000, 1000);
-	/*
+	
 	Serial.print(" 1: ");
 	Serial.print(speed1);
 	Serial.print(" 2: ");
@@ -285,7 +292,7 @@ void getThrusterSpeed()
 	Serial.print(speed3);
 	Serial.print(" 4: ");
 	Serial.println(speed4);
-	*/
+	
 }
 
 //======== TEMP HUMID SENSOR =============//
@@ -400,15 +407,26 @@ int wind_speed = 0;
 void publishCAN_windspeed()
 {
 	wind_dir = (wind_dir+10)%360;
-	wind_speed = (wind_speed + 100) % 20000;
+	wind_speed = (wind_speed + 100) % 1000;
+	/*
+	Serial.print("WIND: ");
+	Serial.print(wind_dir);
+	Serial.print(" ");
+	Serial.print(wind_speed);*/
 	CAN.setupCANFrame(buf,0,2, wind_dir);
 	CAN.setupCANFrame(buf,2,2, wind_speed);
+	/*
+	Serial.print(" | ");
+	Serial.print(buf[0],HEX);
+	Serial.print(" ");
+	Serial.println(buf[1], HEX);*/
 	CAN.sendMsgBuf(CAN_wind_speed,0,4,buf);
 }
 void publishCAN_esc1_stats()
 {
 
 	RoboteqStats esc1_stats = roboteq1.getRoboteqStats();
+	/*
 	Serial.print("Current(A): ");
 	Serial.print(esc1_stats.motor_current1);
 	Serial.print("\t");
@@ -418,7 +436,7 @@ void publishCAN_esc1_stats()
 	Serial.print(" ");
 	Serial.print(esc1_stats.motor_status_flags2, BIN);
 	Serial.print(" Fault flags: ");
-	Serial.println(esc1_stats.fault_flags, BIN);
+	Serial.println(esc1_stats.fault_flags, BIN);*/
 	CAN.setupCANFrame(esc1_stat_buf,0,2, esc1_stats.motor_current1);
 	CAN.setupCANFrame(esc1_stat_buf,2,2, esc1_stats.motor_current2);
 	CAN.setupCANFrame(esc1_stat_buf,3,1, esc1_stats.motor_status_flags1);
@@ -448,6 +466,11 @@ void publishCAN_batt1_stats()
 	Serial.print(" Temp(C): ");
 	Serial.println(Battery1.getTemperature());
 #endif
+	/*CAN.setupCANFrame(batt1_stat_buf, 0, 1, 76);
+	CAN.setupCANFrame(batt1_stat_buf, 1, 2, 275);
+	CAN.setupCANFrame(batt1_stat_buf, 3, 2, 0 - (int16_t)(-14));
+	CAN.setupCANFrame(batt1_stat_buf, 5, 1, 38);
+	CAN.sendMsgBuf(CAN_battery1_motor_stats, 0, 6, batt1_stat_buf);*/
 	CAN.setupCANFrame(batt1_stat_buf,0,1, Battery1.getCapacity());
 	CAN.setupCANFrame(batt1_stat_buf,1,2, Battery1.getVoltage());
 	CAN.setupCANFrame(batt1_stat_buf,3,2, 0-(int16_t)Battery1.getCurrent());
@@ -468,16 +491,18 @@ void checkCANmsg(){
 		switch(id){
 #ifndef _TEST_
 		case CAN_thruster:
+			Serial.print(control_mode);
 			if((control_mode == AUTONOMOUS) || (control_mode == STATION_KEEP))
 			{
-				//Serial.print("AUTO: ");
+				Serial.print(" AUTO: ");
 				getThrusterSpeed();
 			}
 			break;
 		case CAN_manual_thruster:
+				Serial.print(control_mode);
 			if((control_mode == MANUAL_OCS) || (control_mode == MANUAL_RC))
 			{
-				//Serial.print("MANUAL: ");
+				Serial.print(" MANUAL: ");
 				getThrusterSpeed();
 			}
 			break;

@@ -17,7 +17,9 @@
 #define BATTERY_ON_DURATION 600	// At least 0.5 sec
 #define BATTERY_OFF_DURATION 5000	// At least 3 sec
 
-#define BATT_RESET_COUNT 15 // number of request before re-trigger start up.
+#define POWERSEQ_OFF 0
+
+#define BATT_RESET_COUNT 30 // number of request before re-trigger start up.
 
 #define BAUDRATE 19200
 
@@ -97,7 +99,7 @@ private:
 	uint8_t RX_ENABLE;
 	uint8_t DX_ENABLE;
 	uint8_t ON_PIN;
-	uint8_t battNum;
+	uint8_t _battNum;
 
 	bool msgStart  = false;
 	uint8_t len = 0; //length of packet body including header
@@ -106,8 +108,7 @@ private:
 
 	uint16_t onPinPeriod = 0;
 	uint32_t onTime = 0;
-
-
+	
 	typedef void(*WriteCallback)  (const byte what);    // send a byte to serial port
 	typedef int(*AvailableCallback)  ();    // return number of bytes available
 	typedef byte(*ReadCallback)  ();    // read a byte from serial port
@@ -120,7 +121,7 @@ private:
 
 public:
 	int requestCount = 0;
-	bool powerSeq = false;
+	static int powerSeq;
 	bool kill = false;
 	byte data[MAX_PACKET_SIZE];
 	BatteryState battData;
@@ -128,7 +129,7 @@ public:
 	Torqeedo(int RXEN, int DXEN, int ON, int batt_num);
 	~Torqeedo();
 	void init();
-
+	
 	void onBattery(bool on_status);
 	bool checkBatteryOnOff();
 	void checkBatteryConnected();
