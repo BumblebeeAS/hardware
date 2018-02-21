@@ -31,7 +31,8 @@
 #define I2C_ADDR_DAC 0x4C
 
 //OCS
-#define XBEE_BAUDRATE 9600
+#define XBEE_BAUDRATE 115200
+#define START_BYTE 0xFE
 
 //Internal stats
 #define INT_STAT_COUNT 6
@@ -67,5 +68,12 @@
 #define COMMLINK_TIMEOUT 4000
 #define SBC_TIMEOUT 3000
 #define STAT_TIMEOUT 2000
+
+//XBEE
+#define MAXSIZE 30
+#define KILL_SEND 0x416B976D
+#define KILL_RCV 0x416B9775
+#define OCS_EXT 0x416B969E
+#define ASV_EXT 0x416B9783
 
 #endif // _DEFINES_H
