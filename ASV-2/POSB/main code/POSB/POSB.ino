@@ -45,6 +45,7 @@ int16_t speed2 = 0;
 int16_t speed3 = 0;
 int16_t speed4 = 0;
 int control_mode = MANUAL_RC;
+int estop_status = false;
 
 Torqeedo Battery1(TORQEEDO1_RXEN, TORQEEDO1_DXEN, TORQEEDO1_ON, 1);
 Torqeedo Battery2(TORQEEDO2_RXEN, TORQEEDO2_DXEN, TORQEEDO2_ON, 2);
@@ -57,6 +58,7 @@ uint8_t batt2_stat_buf[6] = {25, 0x2C, 0x1, 0xBC, 0x2, 50}; // 25, 700, 300, 50
 uint32_t heartbeat_loop;
 uint32_t batt_loop;
 uint32_t windspeed_loop;
+uint32_t blink_loop;
 uint32_t esc1_loop;
 uint32_t esc2_loop;
 uint32_t batt1_loop;
@@ -87,6 +89,7 @@ void setup()
 {	
 	// CAN BUS INIT
 	Serial.begin(115200);
+	Serial.println("Hi, I'm POSB");
 	CAN_init();
 
 	// BATT INIT	
@@ -101,8 +104,13 @@ void setup()
 	// SENSORS INIT
 	Wire.begin();
 
+	// LIGHT INIT
+	initLightTower();
+	lightInitSequence();
+
 	Temp_Humid_loop = millis();
 	heartbeat_loop = millis();
+	blink_loop = millis();
 	batt_loop = millis();
 	windspeed_loop = millis();
 	esc1_loop = millis();
@@ -262,6 +270,7 @@ void loop()
 	/*			Light Tower				*/
 	/************************************/
 
+	updateLightTower();
 
 	/************************************/
 	/*				CAN					*/
@@ -293,6 +302,98 @@ void getThrusterSpeed()
 	Serial.print(" 4: ");
 	Serial.println(speed4);
 	
+}
+
+//============= LIGHT TOWER =============//
+
+
+//==========================================
+//          LIGHT TOWER FUNCTIONS
+//==========================================
+
+void initLightTower()
+{
+	pinMode(LIGHTTOWER_RED, OUTPUT);
+	pinMode(LIGHTTOWER_YELLOW, OUTPUT);
+	pinMode(LIGHTTOWER_GREEN, OUTPUT);
+	digitalWrite(LIGHTTOWER_RED, LOW);
+	digitalWrite(LIGHTTOWER_YELLOW, LOW);
+	digitalWrite(LIGHTTOWER_GREEN, LOW);
+}
+
+void lightInitSequence()
+{
+	for (int i = 0; i < 2; i++)
+	{
+		digitalWrite(LIGHTTOWER_RED, HIGH);
+		delay(100);
+		digitalWrite(LIGHTTOWER_RED, LOW);
+		delay(200);
+		digitalWrite(LIGHTTOWER_YELLOW, HIGH);
+		delay(100);
+		digitalWrite(LIGHTTOWER_YELLOW, LOW);
+		delay(200);
+		digitalWrite(LIGHTTOWER_GREEN, HIGH);
+		delay(100);
+		digitalWrite(LIGHTTOWER_GREEN, LOW);
+		delay(200);
+	}
+	return;
+}
+
+// Set light tower to [colour], and turn off all other lights
+void setLightTower(byte colour)
+{
+	if (colour == LIGHTTOWER_RED)
+		digitalWrite(LIGHTTOWER_RED, HIGH);
+	else
+		digitalWrite(LIGHTTOWER_RED, LOW);
+
+	if (colour == LIGHTTOWER_YELLOW)
+		digitalWrite(LIGHTTOWER_YELLOW, HIGH);
+	else
+		digitalWrite(LIGHTTOWER_YELLOW, LOW);
+
+	if (colour == LIGHTTOWER_GREEN)
+		digitalWrite(LIGHTTOWER_GREEN, HIGH);
+	else
+		digitalWrite(LIGHTTOWER_GREEN, LOW);
+}
+
+// GREEN: AUTONOMOUS
+// GREEN: (BLINK) STATION KEEP
+// YELLOW: MANUAL
+// RED: ESTOP
+void updateLightTower()
+{		
+	if (estop_status)
+	{
+		setLightTower(LIGHTTOWER_RED);
+	}
+	else
+	{
+		switch (control_mode)
+		{
+		case AUTONOMOUS:
+			setLightTower(LIGHTTOWER_GREEN);
+			break;
+		case STATION_KEEP:
+			if ((millis() - blink_loop) > BLINK_TIMEOUT * 2)
+			{
+				setLightTower(LIGHTTOWER_NONE);
+				blink_loop = millis();
+			}
+			else if ((millis() - blink_loop) > BLINK_TIMEOUT)
+			{
+				setLightTower(LIGHTTOWER_GREEN);
+			}
+			break;
+		case MANUAL_OCS:
+		case MANUAL_RC:
+			setLightTower(LIGHTTOWER_YELLOW);
+			break;
+		}
+	}
 }
 
 //======== TEMP HUMID SENSOR =============//
@@ -509,6 +610,9 @@ void checkCANmsg(){
 #endif
 		case CAN_control_link:
 			control_mode = CAN.parseCANFrame(buf,0,1);
+			break;
+		case CAN_e_stop:
+			estop_status = CAN.parseCANFrame(buf, 0, 1);
 			break;
 		case ROBOTEQ_CAN1_REPLY_INDEX:
 			roboteq1.readRoboteqReply(id, len, buf);
