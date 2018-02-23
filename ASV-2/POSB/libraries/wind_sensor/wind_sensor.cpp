@@ -9,17 +9,17 @@ WindSensor::WindSensor() {
     _stringValues = "";
 }
 
-double WindSensor::getDirection() {
+uint16_t WindSensor::getDirection() {
     return _windDirection;
 }
 
-double WindSensor::getWindSpeed() {
+uint16_t WindSensor::getWindSpeed() {
     return _windSpeed;
 }
 
 void WindSensor::readValues() {
-    if(Serial1.available()) {
-    byte input = Serial1.read();
+    if(Serial2.available()) {
+    byte input = Serial2.read();
     
     switch(input) {
       case PACKET_START:
@@ -49,9 +49,9 @@ void WindSensor::writeValues() {
   char * token = strtok(cstr, ",");
   for(int i = 0; i < 3; i++) {
     if(i == 1) { // the first value is the direction
-      _windDirection = atof(token);
+      _windDirection = atoi(token);	// 0 to 359
     } else if (i == 2) { // the second value is the wind speed
-      _windSpeed = atof(token);
+      _windSpeed = atof(token)*100; // in 0.01m/s
     }
     token = strtok(NULL, ",");
   }

@@ -32,6 +32,7 @@
 #include "Arduino.h"
 #include "Roboteq.h"
 #include "Torqeedo.h"
+#include "wind_sensor.h"
 
 MCP_CAN CAN(8);
 uint8_t buf[8];
@@ -73,6 +74,9 @@ bool heartbeat_esc2 = false;
 bool heartbeat_batt1 = false;
 bool heartbeat_batt2 = false;
 
+WindSensor windSensor = WindSensor();
+uint16_t wind_dir = 0;
+uint16_t wind_speed = 0;
 HIH613x humidTempSensor(0x27);
 static uint32_t Temp_Humid_loop = 0; //250ms loop Publish temp and humidity
 uint8_t humid_ctr = 0;
@@ -203,29 +207,8 @@ void loop()
 		roboteq2.requestUpdate();
 		thruster_stat_loop = millis();
 	}
-	// Update heartbeat
-	if ((millis() - esc1_loop) > INACTIVITY_TIMEOUT)
-	{
-		heartbeat_esc1 = false;
-		esc1_loop = millis();
-	}
-	if ((millis() - esc2_loop) > INACTIVITY_TIMEOUT)
-	{
-		heartbeat_esc2 = false;
-		esc2_loop = millis();
-	}
-	if ((millis() - batt1_loop) > INACTIVITY_TIMEOUT)
-	{
-		heartbeat_batt1 = false;
-		Battery1.resetData();
-		batt1_loop = millis();
-	}
-	if ((millis() - batt2_loop) > INACTIVITY_TIMEOUT)
-	{
-		heartbeat_batt2 = false;
-		Battery2.resetData();
-		batt2_loop = millis();
-	}
+	resetEscHeartbeat();
+	resetBatteryHeartbeat();
 
 	/************************************/
 	/*			Battery Monitoring		*/
@@ -261,10 +244,11 @@ void loop()
 	}
 	
 	/************************************/
-	/*	Humidity & Temperature Sensor	*/
+	/*			Sensors					*/
 	/************************************/
 
 	readTempHumid();
+	windSensor.readValues();
 
 	/************************************/
 	/*			Light Tower				*/
@@ -283,7 +267,9 @@ void loop()
 	checkCANmsg();
 }
 
-//========== THRUSTER ====================//
+//==========================================
+//				   THRUSTER
+//==========================================
 
 // Map from [0 to 6400] to [-1000 to 1000]
 void getThrusterSpeed()
@@ -303,9 +289,6 @@ void getThrusterSpeed()
 	Serial.println(speed4);
 	
 }
-
-//============= LIGHT TOWER =============//
-
 
 //==========================================
 //          LIGHT TOWER FUNCTIONS
@@ -396,7 +379,9 @@ void updateLightTower()
 	}
 }
 
-//======== TEMP HUMID SENSOR =============//
+//==========================================
+//          TEMP HUMID SENSOR
+//==========================================
 
 void readTempHumid()
 {
@@ -435,7 +420,45 @@ void readTempHumid()
 	}
 }
 
-//============= CAN =============//
+//==========================================
+//          HEARTBEATS
+//==========================================
+
+void resetBatteryHeartbeat()
+{
+	// Turn off heartbeat if no batt response for 1s
+	if ((millis() - batt1_loop) > INACTIVITY_TIMEOUT)
+	{
+		heartbeat_batt1 = false;
+		Battery1.resetData();
+		batt1_loop = millis();
+	}
+	if ((millis() - batt2_loop) > INACTIVITY_TIMEOUT)
+	{
+		heartbeat_batt2 = false;
+		Battery2.resetData();
+		batt2_loop = millis();
+	}
+}
+
+void resetEscHeartbeat()
+{
+	// Turn off heartbeat if no esc response for 1s
+	if ((millis() - esc1_loop) > INACTIVITY_TIMEOUT)
+	{
+		heartbeat_esc1 = false;
+		esc1_loop = millis();
+	}
+	if ((millis() - esc2_loop) > INACTIVITY_TIMEOUT)
+	{
+		heartbeat_esc2 = false;
+		esc2_loop = millis();
+	}
+}
+
+//==========================================
+//					CAN
+//==========================================
 
 void CAN_init()
 {
@@ -503,11 +526,12 @@ void publishCAN_heartbeat()
 	buf[1] = heartbeat_batt1 + (heartbeat_batt2 << 1) + (heartbeat_esc1 << 2) + (heartbeat_esc2 << 3);
 	CAN.sendMsgBuf(CAN_heartbeat,0,2,buf);
 }
-int wind_dir = 0;
-int wind_speed = 0;
 void publishCAN_windspeed()
 {
-	wind_dir = (wind_dir+10)%360;
+	// TODO: reset if lose comms?
+	wind_dir = windSensor.getDirection();
+	wind_speed = windSensor.getWindSpeed();
+	/*wind_dir = (wind_dir+10)%360;
 	wind_speed = (wind_speed + 100) % 1000;
 	/*
 	Serial.print("WIND: ");
@@ -516,11 +540,6 @@ void publishCAN_windspeed()
 	Serial.print(wind_speed);*/
 	CAN.setupCANFrame(buf,0,2, wind_dir);
 	CAN.setupCANFrame(buf,2,2, wind_speed);
-	/*
-	Serial.print(" | ");
-	Serial.print(buf[0],HEX);
-	Serial.print(" ");
-	Serial.println(buf[1], HEX);*/
 	CAN.sendMsgBuf(CAN_wind_speed,0,4,buf);
 }
 void publishCAN_esc1_stats()

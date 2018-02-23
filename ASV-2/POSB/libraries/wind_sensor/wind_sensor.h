@@ -1,10 +1,13 @@
 #ifndef _WIND_SENSOR_H_
 #define _WIND_SENSOR_H_
 
+#define PACKET_START 2
+#define PACKET_END 3
+
 class WindSensor {
 private:
-    double _windDirection;
-    double _windSpeed;
+    uint16_t _windDirection;
+	uint16_t _windSpeed;
     boolean _startReading;
     String _stringValues;
 
@@ -13,8 +16,8 @@ private:
 public:
     WindSensor();
 
-    double getDirection();
-    double getWindSpeed();
+	uint16_t getDirection();
+	uint16_t getWindSpeed();
     void readValues();
 };
 
