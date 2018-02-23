@@ -555,12 +555,12 @@ void publishCAN_windspeed()
 	wind_dir = windSensor.getDirection();
 	wind_speed = windSensor.getWindSpeed();
 	/*wind_dir = (wind_dir+10)%360;
-	wind_speed = (wind_speed + 100) % 1000;
-	/*
-	Serial.print("WIND: ");
+	wind_speed = (wind_speed + 100) % 1000;*/
+	
+	Serial.print(" WIND: ");
 	Serial.print(wind_dir);
 	Serial.print(" ");
-	Serial.print(wind_speed);*/
+	Serial.print(wind_speed);
 	CAN.setupCANFrame(buf,0,2, wind_dir);
 	CAN.setupCANFrame(buf,2,2, wind_speed);
 	CAN.sendMsgBuf(CAN_wind_speed,0,4,buf);
