@@ -58,17 +58,18 @@ uint8_t batt1_stat_buf[6] = {25, 0x2C, 0x1, 0x58, 0x2, 75}; // 25, 600, 300, 75
 uint8_t batt2_stat_buf[6] = {25, 0x2C, 0x1, 0xBC, 0x2, 50}; // 25, 700, 300, 50
 uint32_t heartbeat_loop;
 uint32_t batt_loop;
-uint32_t windspeed_loop;
-uint32_t blink_loop;
-uint32_t esc1_loop;
-uint32_t esc2_loop;
-uint32_t batt1_loop;
-uint32_t batt2_loop;
 uint32_t power_loop;
 uint8_t power_ctr = 0;
 uint32_t thruster_loop;
 uint32_t thruster_stat_loop;
+uint32_t windspeed_loop;
+uint32_t blink_loop;
 
+uint32_t esc1_loop;
+uint32_t esc2_loop;
+uint32_t batt1_loop;
+uint32_t batt2_loop;
+uint32_t controlmode_loop;
 bool heartbeat_esc1 = false;
 bool heartbeat_esc2 = false;
 bool heartbeat_batt1 = false;
@@ -121,6 +122,7 @@ void setup()
 	esc2_loop = millis();
 	batt1_loop = millis();
 	batt2_loop = millis();
+	controlmode_loop = millis();
 	power_loop = millis();
 	thruster_loop = millis();
 }
@@ -207,8 +209,6 @@ void loop()
 		roboteq2.requestUpdate();
 		thruster_stat_loop = millis();
 	}
-	resetEscHeartbeat();
-	resetBatteryHeartbeat();
 
 	/************************************/
 	/*			Battery Monitoring		*/
@@ -257,12 +257,19 @@ void loop()
 	updateLightTower();
 
 	/************************************/
+	/*			Miscellaneous			*/
+	/************************************/
+
+	resetEscHeartbeat();
+	resetBatteryHeartbeat();
+	failsafe();
+
+	/************************************/
 	/*				CAN					*/
 	/************************************/
 
 	// CAN TX
 	publishCAN();
-
 	// CAN RX
 	checkCANmsg();
 }
@@ -286,8 +293,14 @@ void getThrusterSpeed()
 	Serial.print(" 3: ");
 	Serial.print(speed3);
 	Serial.print(" 4: ");
-	Serial.println(speed4);
-	
+	Serial.println(speed4);	
+}
+void resetThrusterSpeed()
+{
+	speed1 = 0;
+	speed2 = 0;
+	speed3 = 0;
+	speed4 = 0;
 }
 
 //==========================================
@@ -424,6 +437,16 @@ void readTempHumid()
 //          HEARTBEATS
 //==========================================
 
+// If stop getting "CONTROLMODE" msg (CAN ID: 103), stop all thrusters
+void failsafe()
+{
+	if ((millis() - controlmode_loop) > CONTROLMODE_TIMEOUT)
+	{
+		control_mode = MANUAL_OCS;
+		resetThrusterSpeed();
+		Serial.println("*** All thrusters stopped *** No telemetry HB");
+	}
+}
 void resetBatteryHeartbeat()
 {
 	// Turn off heartbeat if no batt response for 1s
@@ -629,6 +652,7 @@ void checkCANmsg(){
 #endif
 		case CAN_control_link:
 			control_mode = CAN.parseCANFrame(buf,0,1);
+			controlmode_loop = millis();
 			break;
 		case CAN_e_stop:
 			estop_status = CAN.parseCANFrame(buf, 0, 1);
