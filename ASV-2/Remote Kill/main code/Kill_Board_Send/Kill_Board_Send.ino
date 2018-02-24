@@ -1,10 +1,11 @@
 #include <XBee.h>
 #include <SoftwareSerial.h>
+#include "defines.h"
 
 // create the XBee object
 XBee xbee = XBee();
 uint8_t payload[] = { 0, 0 };
-XBeeAddress64 addr64 = XBeeAddress64(0x0013A200, 0x416B9779);
+XBeeAddress64 addr64 = XBeeAddress64(0x0013A200, 0x416B9775);
 
 ZBTxRequest zbTx = ZBTxRequest(addr64, payload, sizeof(payload));
 ZBTxStatusResponse txStatus = ZBTxStatusResponse();
@@ -15,19 +16,35 @@ uint8_t inByte;
 
 SoftwareSerial mySerial(6, 7); // RX, TX
 
+void batteryCheck() {
+  double batteryBit = analogRead(BATTERY_READ);
+  double batteryVoltage = (batteryBit - 13.3) / 227.5;
+  Serial.print("Battery voltage: ");
+  Serial.println(batteryVoltage);
+
+  if(batteryVoltage < 3.8) {
+    digitalWrite(LED_LOW_BATT, HIGH);
+  } else {
+    digitalWrite(LED_LOW_BATT, LOW);
+  }
+}
+
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600);
-  mySerial.begin(9600);
+  Serial.begin(115200);
+  mySerial.begin(115200);
   xbee.setSerial(mySerial);
 
   pinMode(3, INPUT);
   xbee_loop = millis();
+
+  pinMode(BATTERY_READ, INPUT);
+  pinMode(LED_LOW_BATT, OUTPUT);
 }
 
 void loop() {
 
-  if ((millis() - xbee_loop) > 1000){
+  if ((millis() - xbee_loop) > 500){
   
     if (digitalRead(3)== HIGH){
       sentByte = 0x15;
@@ -78,4 +95,6 @@ void loop() {
      }
      xbee_loop = millis();
   }
+
+  batteryCheck();
 }

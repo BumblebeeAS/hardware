@@ -1,11 +1,20 @@
 #ifndef _DEFINES_H_
 #define _DEFINES_H_
 
+// CAN
+#define CAN_Chip_Select 8
+
+// KILL
 #define NMOS_CONTACTOR 11
+#define HARDKILL_IN 5
 
-#define XBEE_BAUDRATE 9600
-#define SERIAL_BAUDRATE 9600
+// XBEE
+#define XBEE_BAUDRATE 115200
+#define SERIAL_BAUDRATE 115200
 
-#define XBEE_DELAY 200
+// TIMEOUT
+#define XBEE_TIMEOUT 500
+#define HEARTBEAT_TIMEOUT 500
+#define ESTOP_TIMEOUT 1000
 
 #endif
