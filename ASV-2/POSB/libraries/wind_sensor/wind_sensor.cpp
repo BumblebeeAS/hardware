@@ -9,6 +9,10 @@ WindSensor::WindSensor() {
     _stringValues = "";
 }
 
+void WindSensor::init() {
+	Serial2.begin(9600);
+}
+
 uint16_t WindSensor::getDirection() {
     return _windDirection;
 }

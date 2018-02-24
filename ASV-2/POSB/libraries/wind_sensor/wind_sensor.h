@@ -16,6 +16,8 @@ private:
 public:
     WindSensor();
 
+	void init();
+
 	uint16_t getDirection();
 	uint16_t getWindSpeed();
     void readValues();

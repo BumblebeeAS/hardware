@@ -1,11 +1,11 @@
-#include "define.h"
+
 #include "wind_sensor.h"
 
 WindSensor windSensor = WindSensor();
 
 void setup() {
   Serial.begin(9600);
-  Serial1.begin(9600);
+  Serial2.begin(9600);
 }
 
 void loop() {

@@ -108,6 +108,7 @@ void setup()
 
 	// SENSORS INIT
 	Wire.begin();
+	windSensor.init();
 
 	// LIGHT INIT
 	initLightTower();
@@ -324,15 +325,15 @@ void lightInitSequence()
 		digitalWrite(LIGHTTOWER_RED, HIGH);
 		delay(100);
 		digitalWrite(LIGHTTOWER_RED, LOW);
-		delay(200);
+		delay(100);
 		digitalWrite(LIGHTTOWER_YELLOW, HIGH);
 		delay(100);
 		digitalWrite(LIGHTTOWER_YELLOW, LOW);
-		delay(200);
+		delay(100);
 		digitalWrite(LIGHTTOWER_GREEN, HIGH);
 		delay(100);
 		digitalWrite(LIGHTTOWER_GREEN, LOW);
-		delay(200);
+		delay(100);
 	}
 	return;
 }
@@ -445,6 +446,7 @@ void failsafe()
 		control_mode = MANUAL_OCS;
 		resetThrusterSpeed();
 		Serial.println("*** All thrusters stopped *** No telemetry HB");
+		controlmode_loop = millis();
 	}
 }
 void resetBatteryHeartbeat()
@@ -551,16 +553,13 @@ void publishCAN_heartbeat()
 }
 void publishCAN_windspeed()
 {
-	// TODO: reset if lose comms?
 	wind_dir = windSensor.getDirection();
 	wind_speed = windSensor.getWindSpeed();
-	/*wind_dir = (wind_dir+10)%360;
-	wind_speed = (wind_speed + 100) % 1000;*/
-	
+	/*
 	Serial.print(" WIND: ");
 	Serial.print(wind_dir);
 	Serial.print(" ");
-	Serial.print(wind_speed);
+	Serial.print(wind_speed);*/
 	CAN.setupCANFrame(buf,0,2, wind_dir);
 	CAN.setupCANFrame(buf,2,2, wind_speed);
 	CAN.sendMsgBuf(CAN_wind_speed,0,4,buf);
