@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include "define.h"
 #include "wind_sensor.h"
 
 WindSensor::WindSensor() {

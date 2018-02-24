@@ -24,8 +24,8 @@
 
 #include <can_defines.h>
 #include <can.h>
-#include <HIH613x.h>
-#include <Xbee.h>
+#include "HIH613x.h"
+#include "Xbee.h"
 
 #include "can_asv_defines.h"
 #include "defines.h"
@@ -617,7 +617,7 @@ void publishCAN_batt1_stats()
 	CAN.setupCANFrame(batt1_stat_buf,1,2, Battery1.getVoltage());
 	CAN.setupCANFrame(batt1_stat_buf,3,2, 0-(int16_t)Battery1.getCurrent());
 	CAN.setupCANFrame(batt1_stat_buf,5,1, Battery1.getTemperature());
-	CAN.sendMsgBuf(CAN_battery1_motor_stats, 0, 6, batt1_stat_buf);
+	CAN.sendMsgBuf(CAN_battery1_stats, 0, 6, batt1_stat_buf);
 }
 void publishCAN_batt2_stats()
 {
@@ -625,7 +625,7 @@ void publishCAN_batt2_stats()
 	CAN.setupCANFrame(batt2_stat_buf,1,2, Battery2.getVoltage());
 	CAN.setupCANFrame(batt2_stat_buf,3,2, 0 - (int16_t)Battery2.getCurrent());
 	CAN.setupCANFrame(batt2_stat_buf,5,1, Battery2.getTemperature());
-	CAN.sendMsgBuf(CAN_battery2_motor_stats, 0, 6, batt2_stat_buf);
+	CAN.sendMsgBuf(CAN_battery2_stats, 0, 6, batt2_stat_buf);
 }
 void checkCANmsg(){
 	if (CAN_MSGAVAIL == CAN.checkReceive()){

@@ -2,6 +2,8 @@
 #include "can.h"
 #include "can_asv_defines.h"
 
+#define DEBUG_MODE true
+
 /* Load Switch Pin Mappings */
 #define LS_NAVTIC 46 //Q2_GATE
 #define LS_POE_INJECTOR 45 //Q3_GATE
@@ -21,6 +23,7 @@
 #define STAGGER_TIME 250
 #define CAN_HEARTBEAT_INTERVAL 500
 #define CAN_STATUS_INTERVAL 1000
+#define SERIAL_INTERVAL 2000
 
 MCP_CAN CAN(8);
 uint32_t id = 0;
@@ -28,6 +31,7 @@ uint8_t len = 0;
 uint8_t buf[8] = { 0 };
 uint32_t CanHeartbeatLoop = 0;
 uint32_t CanStatusLoop = 0;
+uint32_t SerialLoop = 0;
 
 uint8_t LsControl = 0x1F; //Indicates which LS are turned on/off
 
@@ -83,7 +87,14 @@ void loop()
 	// Check for incoming CAN message
 	if (checkCanMsg() == true) {
 		// Update load switch states
+		Serial.println("Updating load switch states");
 		updateLoadSwitch();
+	}
+
+	if (DEBUG_MODE && ((millis() - SerialLoop) > SERIAL_INTERVAL)) {
+		Serial.print("Status: ");
+		Serial.println(LsControl, HEX);
+		SerialLoop = millis();
 	}
 }
 
@@ -117,17 +128,18 @@ void publishCanHB() {
 boolean checkCanMsg() {
 	if (CAN_MSGAVAIL == CAN.checkReceive()) {
 		CAN.readMsgBufID(&id, &len, buf);    // read data,  len: data length, buf: data buf
+		boolean mine = false;
 		switch (id) {
 		case CAN_POPB_control:
 			LsControl = CAN.parseCANFrame(buf, 0, 1);
-			//Serial.println(LsControl, HEX);
+			mine = true;
 			break;
 		default:
 			//Serial.println("Others");
 			break;
 		}
 		CAN.clearMsg();
-		return true;
+		return mine;
 	}
 	else
 		return false;

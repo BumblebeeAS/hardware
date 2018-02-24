@@ -33,13 +33,15 @@ bool remote_kill = 0;
 
 
 void setup() {
+	
 	// put your setup code here, to run once:
 	Serial.begin(SERIAL_BAUDRATE);
 	Serial1.begin(XBEE_BAUDRATE);
 	xbee.setSerial(Serial1);
 	pinMode(NMOS_CONTACTOR, OUTPUT);
 	digitalWrite(NMOS_CONTACTOR, LOW);
-	
+
+	Serial.println("Hi I am POKB!");
 	Serial.println("reset");
 
 	CAN_init();

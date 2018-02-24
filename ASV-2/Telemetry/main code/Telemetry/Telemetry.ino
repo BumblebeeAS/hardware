@@ -23,13 +23,13 @@
 //###################################################
 
 #include <Wire.h>
-#include <XBee.h>
+#include "XBee.h"
 #include <Adafruit_RA8875.h>
 #include <Adafruit_GFX.h>
 #include "LCD_Driver.h"
 #include "Frisky_CPPM.h"
 #include "define.h"
-#include "can_defines.h"
+#include <can_defines.h>
 #include "can_asv_defines.h"
 #include <Arduino.h>
 #include <SPI.h> //for CAN controller
@@ -623,7 +623,7 @@ void checkCANmsg() {
 			break;
 		}
 
-		case CAN_battery1_motor_stats:
+		case CAN_battery1_stats:
 			//Serial.println("Batt1 stats");
 			powerStats[BATT1_CAPACITY] = CAN.parseCANFrame(buf, 0, 1);
 			powerStats[BATT1_VOLTAGE] = CAN.parseCANFrame(buf, 1, 2);
@@ -632,7 +632,7 @@ void checkCANmsg() {
 			batt1_timeout = millis();
 			break;
 
-		case CAN_battery2_motor_stats:
+		case CAN_battery2_stats:
 			//Serial.println("Batt2 stats");
 			powerStats[BATT2_CAPACITY] = CAN.parseCANFrame(buf, 0, 1);
 			powerStats[BATT2_VOLTAGE] = CAN.parseCANFrame(buf, 1, 2);
@@ -663,8 +663,8 @@ void checkCANmsg() {
 		case CAN_heartbeat:
 		case CAN_e_stop:
 		case CAN_wind_speed:
-		case CAN_battery1_motor_stats:
-		case CAN_battery2_motor_stats:
+		case CAN_battery1_stats:
+		case CAN_battery2_stats:
 		case CAN_esc1_motor_stats:
 		case CAN_esc2_motor_stats:
 		case CAN_remote_kill_stats:
