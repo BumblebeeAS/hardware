@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "LCD_Driver.h"
+#include <stdio.h>
 
 LCD::LCD(int screen_cs, int screen_reset)
 {
@@ -82,9 +83,17 @@ void LCD::write_value_int(uint32_t var){
 	if (var == 255){
 		write_value_string("N/A");
 	}else{
-		dummyStr = String(var);
-		dummyStr.toCharArray(dummyChar, 9); //length = 9, arbitrary value
-		screen->textWrite(dummyChar);
+		char buf[20] = {};
+		Serial.print(" DUMvar: ");
+		Serial.print(var);
+		sprintf(buf, "%lu", var);
+		//dummyStr = String(var);
+		Serial.print(" DUMstr: ");
+		Serial.print(buf);
+		//dummyStr.toCharArray(dummyChar, 9); //length = 9, arbitrary value
+		screen->textWrite(buf);
+		//Serial.print(" DUMchar: ");
+		//Serial.print(dummyChar);
 	increment_row();
 	}
 }

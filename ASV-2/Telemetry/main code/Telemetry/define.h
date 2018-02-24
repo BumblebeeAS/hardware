@@ -20,7 +20,7 @@
 
 //FRISKY
 #define RC_INT 19
-#define RSSI_THRESHOLD 50
+#define RSSI_THRESHOLD 10
 
 #define FRISKY_FORWARD 2
 #define FRISKY_SIDE 1
@@ -55,7 +55,7 @@
 #define BATT2_VOLTAGE 5
 
 //Heartbeat
-#define HB_COUNT 12
+#define HB_COUNT 13
 #define BATT1 9
 #define BATT2 10
 #define ESC1 11
@@ -75,5 +75,6 @@
 #define KILL_RCV 0x416B9775
 #define OCS_EXT 0x416B969E
 #define ASV_EXT 0x416B9783
+#define SPARE 0x416B96A3
 
 #endif // _DEFINES_H

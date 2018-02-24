@@ -84,7 +84,11 @@ ZBTxRequest zbTx;
 ZBTxStatusResponse txStatus = ZBTxStatusResponse();
 uint8_t *payload;
 uint8_t xbee_buf[12] = { 0,0,0,0,0,0,0,0,0,0,0,0 };
+uint8_t cmd[] = { 'D','B' };
+AtCommandRequest atRequest = AtCommandRequest();
+AtCommandResponse atResponse = AtCommandResponse();
 
+int count = 0;
 
 void setup() {
 	Serial.begin(115200);
@@ -126,6 +130,13 @@ void loop() {
 		screen_update();
 		loopTime = millis();
 		update_heartbeat();
+
+		id = 5;
+		len = 3;
+		buf[0] = 1;
+		buf[1] = 2;
+		buf[2] = 3;
+		//forwardToXbee();
 	}
 
 	/*************************************************/
@@ -159,7 +170,7 @@ void loop() {
 		Serial.println("STATION KEEP");
 #endif
 	}
-	
+
 	/********************************************/
 	/*					RC TX				    */
 	/* Send ASV Batt value to Frisky Controller */
@@ -182,14 +193,30 @@ void loop() {
 		{
 			xbee.getResponse().getZBRxResponse(rx);
 			payload = rx.getData();
+			len = rx.getDataLength();
+			for (int i = 0; i < len; i++)
+			{
+				Serial.print(payload[i]);
+				Serial.print(" ");
+			}
+			Serial.print(" ||| id: ");
+			Serial.print(payload[2]);
+			Serial.print(" | len: ");
+			Serial.print(payload[3]);
+			Serial.print(" | data: ");
+			for (int i = 4; i < len; i++)
+			{
+				Serial.print(payload[i]);
+				Serial.print(" ");
+			}
+			Serial.println("");
 			//internalStats[RSSI_OCS] = rx.getRssi();
 			//TODO: Get RSSI (ZB??)
-			if (internalStats[RSSI_OCS] > RSSI_THRESHOLD)
-				heartbeat_timeout[HEARTBEAT_OCS] = millis();
 			switch (payload[2])
 			{
 			case CAN_control_link:
-				control_mode_ocs = payload[3];
+				control_mode_ocs = payload[4];
+				internalStats[RSSI_OCS] = payload[6];
 				break;
 			case CAN_manual_thruster:
 				if (control_mode == MANUAL_OCS)
@@ -210,7 +237,11 @@ void loop() {
 				}
 				break;
 			case CAN_heartbeat:
-				publishCAN_heartbeat(HEARTBEAT_OCS);
+				if (payload[4] == HEARTBEAT_OCS)
+				{
+					publishCAN_heartbeat(HEARTBEAT_OCS);
+					heartbeat_timeout[HEARTBEAT_OCS] = millis();
+				}
 				break;
 			default:
 				break;
@@ -364,8 +395,9 @@ void screen_prepare() {
 	screen.write_string("Batt2 OK:");
 	screen.write_string("ESC1 OK:");
 	screen.write_string("ESC2 OK:");
-	screen.write_value_string("We need more food");
-	screen.write_value_string("and more sleep");
+	screen.write_value_string("SLUMBER PARTY!!");
+	screen.write_value_string("  without cc");
+	screen.write_value_string("    why cc abandon (T_T)");
 }
 
 void screen_update() {
@@ -378,8 +410,15 @@ void screen_update() {
 	screen.set_cursor(645, 0);
 	for (int i = 0; i < POWER_STAT_COUNT; i++)
 	{
+		Serial.print(" REAL: ");
+		Serial.print(i);
+		Serial.print(" | ");
+		Serial.print(powerStats[i]);
 		screen.write_value_int(powerStats[i]);
 	}
+	screen.write_value_int(count);
+	count = (count + 1) % 10;
+	Serial.println();
 }
 
 void update_heartbeat()
@@ -397,7 +436,7 @@ void update_heartbeat()
 				screen.write_value_string("YES");
 		}
 	}
-	
+
 	screen.set_cursor(550, 210);
 	for (; i < 13; i++) {
 		if ((millis() - heartbeat_timeout[i]) > HB_TIMEOUT) {
@@ -561,7 +600,7 @@ START_INIT:
 #endif           
 		goto START_INIT;
 	}
-}
+	}
 
 /*
 =====Display=====
@@ -597,7 +636,7 @@ void checkCANmsg() {
 			powerStats[BATT1_CAPACITY] = CAN.parseCANFrame(buf, 0, 1);
 			powerStats[BATT1_VOLTAGE] = CAN.parseCANFrame(buf, 1, 2);
 			powerStats[BATT1_CURRENT] = CAN.parseCANFrame(buf, 3, 2);
-			
+
 			batt1_timeout = millis();
 			break;
 
@@ -630,20 +669,19 @@ void checkCANmsg() {
 		}
 		switch (CAN.getCanId()) {
 		case CAN_heartbeat:
-		case CAN_control_link:	
-		case CAN_e_stop:	
-		case CAN_wind_speed:	
-		case CAN_battery1_motor_stats: 
+		case CAN_e_stop:
+		case CAN_wind_speed:
+		case CAN_battery1_motor_stats:
 		case CAN_battery2_motor_stats:
-		case CAN_esc1_motor_stats: 
-		case CAN_esc2_motor_stats: 
-		case CAN_remote_kill_stats: 
-		case CAN_INS_stats: 
-		case CAN_GPS_stats: 
-		case CAN_cpu_temp: 
+		case CAN_esc1_motor_stats:
+		case CAN_esc2_motor_stats:
+		case CAN_remote_kill_stats:
+		case CAN_INS_stats:
+		case CAN_GPS_stats:
+		case CAN_cpu_temp:
 		case CAN_POSB_stats:
 			CAN.parseCANFrame(buf, 0, len);
-			forwardToXbee();
+			//forwardToXbee();
 			break;
 		default:
 			break;
@@ -666,7 +704,9 @@ void get_thruster_batt_heartbeat()
 			if (thruster_heartbeat & 1) // Check first bit
 			{
 				heartbeat_timeout[BATT1 + i] = millis();
+				//Serial.print(BATT1 + i);
 			}
+			//Serial.println("");
 			thruster_heartbeat = thruster_heartbeat >> 1; // Move to next bit
 		}
 	}
@@ -685,7 +725,9 @@ void publishCAN()
 	if ((millis() - heartbeat_loop) > HEARTBEAT_LOOP)
 	{
 		publishCAN_controllink();
+		//forwardToXbee(); // Fwd controllink msg
 		publishCAN_heartbeat(HEARTBEAT_Tele);
+		//forwardToXbee(); // Fwd tele heartbeat msg 
 		heartbeat_loop = millis();
 	}
 	if ((internalStats[RSSI_RC] > RSSI_THRESHOLD) &&	// If no rc link (low rssi), don't send heartbeat
@@ -714,8 +756,13 @@ void publishCAN_manualthruster()
 void publishCAN_controllink()
 {
 	id = CAN_control_link;
-	len = 1;
+	len = 3;
 	buf[0] = control_mode;
+	buf[1] = internalStats[RSSI_RC];
+	/*buf[2] = getXbeeRssi();
+	Serial.print("RSSI: ");
+	Serial.println(buf[2]);*/
+	buf[2] = internalStats[RSSI_OCS];
 	CAN.sendMsgBuf(CAN_control_link, 0, 1, buf);
 }
 
@@ -725,12 +772,13 @@ void publishCAN_controllink()
 
 void forwardToXbee() {
 	//START_BYTE x2, len, id, buf
-	zbTx = ZBTxRequest(addr64, xbee_buf, sizeof(xbee_buf));
-	xbee_buf[0] = 0xFE;
-	xbee_buf[1] = 0xFE;
+	zbTx = ZBTxRequest(addr64, xbee_buf, 4 + len);
+	xbee_buf[0] = START_BYTE;
+	xbee_buf[1] = START_BYTE;
 	xbee_buf[2] = id;
 	xbee_buf[3] = len;
-	for (int i = 4, j = 0; i < len + 4; i++, j++) {
+	for (int i = 4, j = 0; j < len; i++, j++) {
+		// Copy data from CAN buf to xbee buf
 		xbee_buf[i] = buf[j];
 	}
 	xbee.send(zbTx);
@@ -745,17 +793,38 @@ void forwardToXbee() {
 			if (txStatus.getDeliveryStatus() == SUCCESS)
 			{
 				// success.  time to celebrate
-				Serial.println("Ack");
+				//Serial.println("Ack");
 			}
 			else
 			{
-				Serial.println("No Acknowledgement");
+				//Serial.println("No Acknowledgement");
 			}
 		}
 		else
 		{
 			// local XBee did not provide a timely TX Status Response -- should not happen
 			Serial.println("Sender Error");
+		}
+	}
+}
+
+// Not used
+// XBee RSSI retrieved from ocs side instead
+uint8_t getXbeeRssi() {
+	atRequest.setCommand(cmd);
+	xbee.send(atRequest);
+
+	// wait up to 5 seconds for the status response
+	if (xbee.readPacket(100)) {
+		// got a response!
+
+		// should be an AT command response
+		if (xbee.getResponse().getApiId() == AT_COMMAND_RESPONSE) {
+			xbee.getResponse().getAtCommandResponse(atResponse);
+
+			if (atResponse.isOk()) {
+				return atResponse.getValue()[0];
+			}
 		}
 	}
 }
