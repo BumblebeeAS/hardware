@@ -92,6 +92,7 @@ int count = 0;
 
 void setup() {
 	Serial.begin(115200);
+	Serial.println("Hi, I'm telemetry!");
 
 	// CAN INIT
 	CAN_init();
@@ -194,6 +195,7 @@ void loop() {
 			xbee.getResponse().getZBRxResponse(rx);
 			payload = rx.getData();
 			len = rx.getDataLength();
+			/*
 			for (int i = 0; i < len; i++)
 			{
 				Serial.print(payload[i]);
@@ -209,9 +211,7 @@ void loop() {
 				Serial.print(payload[i]);
 				Serial.print(" ");
 			}
-			Serial.println("");
-			//internalStats[RSSI_OCS] = rx.getRssi();
-			//TODO: Get RSSI (ZB??)
+			Serial.println("");*/
 			switch (payload[2])
 			{
 			case CAN_control_link:
@@ -395,9 +395,6 @@ void screen_prepare() {
 	screen.write_string("Batt2 OK:");
 	screen.write_string("ESC1 OK:");
 	screen.write_string("ESC2 OK:");
-	screen.write_value_string("SLUMBER PARTY!!");
-	screen.write_value_string("  without cc");
-	screen.write_value_string("    why cc abandon (T_T)");
 }
 
 void screen_update() {
@@ -410,15 +407,10 @@ void screen_update() {
 	screen.set_cursor(645, 0);
 	for (int i = 0; i < POWER_STAT_COUNT; i++)
 	{
-		Serial.print(" REAL: ");
-		Serial.print(i);
-		Serial.print(" | ");
-		Serial.print(powerStats[i]);
 		screen.write_value_int(powerStats[i]);
 	}
-	screen.write_value_int(count);
-	count = (count + 1) % 10;
-	Serial.println();
+	//screen.write_value_int(count);
+	//count = (count + 1) % 10;
 }
 
 void update_heartbeat()
@@ -632,7 +624,7 @@ void checkCANmsg() {
 		}
 
 		case CAN_battery1_motor_stats:
-			Serial.println("Batt1 stats");
+			//Serial.println("Batt1 stats");
 			powerStats[BATT1_CAPACITY] = CAN.parseCANFrame(buf, 0, 1);
 			powerStats[BATT1_VOLTAGE] = CAN.parseCANFrame(buf, 1, 2);
 			powerStats[BATT1_CURRENT] = CAN.parseCANFrame(buf, 3, 2);
@@ -641,7 +633,7 @@ void checkCANmsg() {
 			break;
 
 		case CAN_battery2_motor_stats:
-			Serial.println("Batt2 stats");
+			//Serial.println("Batt2 stats");
 			powerStats[BATT2_CAPACITY] = CAN.parseCANFrame(buf, 0, 1);
 			powerStats[BATT2_VOLTAGE] = CAN.parseCANFrame(buf, 1, 2);
 			powerStats[BATT2_CURRENT] = CAN.parseCANFrame(buf, 3, 2);
@@ -649,13 +641,13 @@ void checkCANmsg() {
 			break;
 
 		case CAN_cpu_temp:
-			Serial.println("sbc stats");
+			//Serial.println("sbc stats");
 			internalStats[CPU_TEMP] = CAN.parseCANFrame(buf, 0, 1);
 			sbc_timeout = millis();
 			break;
 
 		case CAN_POSB_stats:
-			Serial.println("posb stats");
+			//Serial.println("posb stats");
 			//internalStats[INT_PRESS] = CAN.parseCANFrame(buf, 2, 1);
 			internalStats[INT_PRESS] = 255;
 			internalStats[HUMIDITY] = CAN.parseCANFrame(buf, 1, 1);
@@ -697,8 +689,8 @@ void get_thruster_batt_heartbeat()
 	if (len == 2) // if is POSB heartbeat
 	{
 		uint8_t thruster_heartbeat = CAN.parseCANFrame(buf, 1, 1);
-		Serial.print("ESC HB: ");
-		Serial.println(thruster_heartbeat, HEX);
+		/*Serial.print("ESC + Thruster HB: ");
+		Serial.println(thruster_heartbeat, HEX);*/
 		for (int i = 0; i < 4; i++)
 		{
 			if (thruster_heartbeat & 1) // Check first bit

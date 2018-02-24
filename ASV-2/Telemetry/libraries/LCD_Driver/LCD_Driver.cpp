@@ -84,16 +84,8 @@ void LCD::write_value_int(uint32_t var){
 		write_value_string("N/A");
 	}else{
 		char buf[20] = {};
-		Serial.print(" DUMvar: ");
-		Serial.print(var);
 		sprintf(buf, "%lu", var);
-		//dummyStr = String(var);
-		Serial.print(" DUMstr: ");
-		Serial.print(buf);
-		//dummyStr.toCharArray(dummyChar, 9); //length = 9, arbitrary value
 		screen->textWrite(buf);
-		//Serial.print(" DUMchar: ");
-		//Serial.print(dummyChar);
 	increment_row();
 	}
 }
