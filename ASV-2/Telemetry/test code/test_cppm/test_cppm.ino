@@ -1,6 +1,6 @@
-int ppm[5] ={0}; 
+int ppm[6] ={0}; 
 
-const int cppm = 3; // pin in for cppm
+const int cppm = 19; // pin in for cppm
 
 unsigned long prev = 1000000;  // to always discard first frame
 unsigned long delta = 0;
@@ -14,7 +14,7 @@ void setup() {
 }
 
 void printppm() {
-  for (int i=1; i<=5; i++) {
+  for (int i=1; i<=6; i++) {
     Serial.print("CH ");
     Serial.print(i);
     Serial.print(": ");
