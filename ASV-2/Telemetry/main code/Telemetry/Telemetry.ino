@@ -35,6 +35,7 @@
 #include <SPI.h> //for CAN controller
 #include <can.h>
 
+#define _XBEE_
 LCD screen = LCD(SCREEN_CS, SCREEN_RESET);  //screen
 Frisky rc = Frisky(RC_INT);
 
@@ -242,6 +243,9 @@ void loop() {
 					publishCAN_heartbeat(HEARTBEAT_OCS);
 					heartbeat_timeout[HEARTBEAT_OCS] = millis();
 				}
+				break;
+			case CAN_soft_e_stop:
+				forwardToCAN(payload);
 				break;
 			default:
 				break;
@@ -485,10 +489,21 @@ void get_directions()
 // Cap thrust at -3200 and 3200
 void convert_thruster_values()
 {
-	speed1 = constrain(dir_forward - dir_side - dir_yaw, -3200, 3200);
-	speed2 = constrain(dir_forward + dir_side + dir_yaw, -3200, 3200);
-	speed3 = constrain(dir_forward + dir_side - dir_yaw, -3200, 3200);
-	speed4 = constrain(dir_forward - dir_side + dir_yaw, -3200, 3200);
+	if ((millis() - heartbeat_timeout[HEARTBEAT_POKB]) > FAILSAFE_TIMEOUT)
+	{
+		// If no POKB heartbeat, stop all thrusters
+		speed1 = 0;
+		speed2 = 0;
+		speed3 = 0;
+		speed4 = 0;
+	}
+	else
+	{
+		speed1 = constrain(dir_forward - dir_side - dir_yaw, -3200, 3200);
+		speed2 = constrain(dir_forward + dir_side + dir_yaw, -3200, 3200);
+		speed3 = constrain(-dir_forward - dir_side + dir_yaw, -3200, 3200);
+		speed4 = constrain(-dir_forward + dir_side - dir_yaw, -3200, 3200);
+	}
 }
 
 
@@ -531,7 +546,8 @@ void get_controlmode()
 	{
 		control_mode = control_mode_ocs;
 	}
-	else if ((millis() - heartbeat_timeout[HEARTBEAT_Cogswell]) > SBC_TIMEOUT) // Lost SBC heartbeat
+	else if (((millis() - heartbeat_timeout[HEARTBEAT_Cogswell]) > FAILSAFE_TIMEOUT)
+		|| ((millis() - heartbeat_timeout[HEARTBEAT_POKB]) > FAILSAFE_TIMEOUT)) // Lost SBC or POKB heartbeat
 	{
 		control_mode = MANUAL_OCS;
 	}
@@ -673,7 +689,9 @@ void checkCANmsg() {
 		case CAN_cpu_temp:
 		case CAN_POSB_stats:
 			CAN.parseCANFrame(buf, 0, len);
-			//forwardToXbee();
+#ifdef _XBEE_
+			forwardToXbee();
+#endif
 			break;
 		default:
 			break;
@@ -717,9 +735,13 @@ void publishCAN()
 	if ((millis() - heartbeat_loop) > HEARTBEAT_LOOP)
 	{
 		publishCAN_controllink();
-		//forwardToXbee(); // Fwd controllink msg
+#ifdef _XBEE_
+		forwardToXbee(); // Fwd controllink msg
+#endif
 		publishCAN_heartbeat(HEARTBEAT_Tele);
-		//forwardToXbee(); // Fwd tele heartbeat msg 
+#ifdef _XBEE_
+		forwardToXbee(); // Fwd tele heartbeat msg 
+#endif
 		heartbeat_loop = millis();
 	}
 	if ((internalStats[RSSI_RC] > RSSI_THRESHOLD) &&	// If no rc link (low rssi), don't send heartbeat
@@ -756,6 +778,17 @@ void publishCAN_controllink()
 	Serial.println(buf[2]);*/
 	buf[2] = internalStats[RSSI_OCS];
 	CAN.sendMsgBuf(CAN_control_link, 0, 1, buf);
+}
+
+void forwardToCAN(uint8_t payload[])
+{
+	id = payload[2];
+	len = payload[3];
+	for (int i = 0; i < len; i++)
+	{
+		buf[i] = payload[4 + i];
+	}
+	CAN.sendMsgBuf(id, 0, len, buf);
 }
 
 //==========================================
