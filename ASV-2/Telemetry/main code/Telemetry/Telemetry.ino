@@ -688,6 +688,7 @@ void checkCANmsg() {
 		case CAN_GPS_stats:
 		case CAN_cpu_temp:
 		case CAN_POSB_stats:
+		case CAN_POPB_stats:
 			CAN.parseCANFrame(buf, 0, len);
 #ifdef _XBEE_
 			forwardToXbee();
