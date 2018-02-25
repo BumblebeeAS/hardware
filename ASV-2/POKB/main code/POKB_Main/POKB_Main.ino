@@ -114,11 +114,11 @@ void setKill() {
 	{
 		if (remote_kill || soft_kill)
 		{
-			On_Contactor();
+			Kill_Contactor();
 		}
 		else
 		{
-			Kill_Contactor();
+			On_Contactor();
 		}
 		estop_loop = millis();
 	}
