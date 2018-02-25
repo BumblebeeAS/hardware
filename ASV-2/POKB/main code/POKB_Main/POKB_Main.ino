@@ -13,6 +13,7 @@
 MCP_CAN CAN(CAN_Chip_Select);               //Set Chip Select to pin 8
 unsigned char len = 0; //length of CAN message, taken care by library
 uint8_t buf[8];  //Buffer for CAN message
+uint32_t id = 0;
 
 XBee xbee = XBee();
 
@@ -24,13 +25,14 @@ ModemStatusResponse msr = ModemStatusResponse();
 static uint32_t xbee_loop = 0;
 static uint32_t heartbeat_loop = 0;
 static uint32_t estop_loop = 0;
+static uint32_t can_loop = 0;
+static uint32_t posb_hb_loop = 0;
 
 uint8_t incomingByte = 0;
 int no_data = 0;
-bool hard_kill = 0;
-bool remote_kill = 0;
-
-
+bool hard_kill = 0;		// Onboard
+bool remote_kill = 0;	// Remote kill box
+bool soft_kill = 0;		// From OCS
 
 void setup() {
 	
@@ -50,6 +52,8 @@ void setup() {
 	xbee_loop = millis();
 	heartbeat_loop = millis();
 	estop_loop = millis();
+	can_loop = millis();
+	posb_hb_loop = millis();
 
   pinMode(HARDKILL_IN, INPUT);
 }
@@ -60,17 +64,16 @@ void loop() {
 		xbee_receive();
 		xbee_loop = millis();
 	}
-
-#ifdef _HACKJOB_
+	
 	// Send current kill status via CAN
-	if ((millis() - estop_loop) > ESTOP_TIMEOUT)
+	if ((millis() - can_loop) > CAN_TIMEOUT)
 	{
-		hard_kill = digitalRead(HARDKILL_IN) ? false : true;
-		Serial.print("KILL STAT: ");
-		Serial.print(hard_kill);
-		Serial.print(" ");
-		Serial.println(remote_kill);
-		if (hard_kill || remote_kill)
+#ifdef _HACKJOB_
+		readHardKill();
+		if (hard_kill || remote_kill || soft_kill)
+#else
+		if (remote_kill || soft_kill)
+#endif
 		{
 			publishCAN_estop(true);
 		}
@@ -78,29 +81,57 @@ void loop() {
 		{
 			publishCAN_estop(false);
 		}
-		estop_loop = millis();
+		can_loop = millis();
 	}
-#endif
-
+	// Set current kill
+	setKill();
+	
 	// Send POKB heartbeat via CAN
 	if ((millis() - heartbeat_loop) > HEARTBEAT_TIMEOUT) {
 		publishCAN_heartbeat();
 		heartbeat_loop = millis();
+	}
+
+	checkCANmsg();
+}
+
+void readHardKill() {
+	hard_kill = digitalRead(HARDKILL_IN) ? false : true;
+	/*
+	Serial.print("KILL STAT: ");
+	Serial.print(hard_kill);
+	Serial.print(" ");
+	Serial.println(remote_kill);*/
+}
+
+void setKill() {
+	// Check POSB heartbeat for failsafe
+	if ((millis() - posb_hb_loop) > FAILSAFE_TIMEOUT) {
+		On_Contactor();
+	}
+	// On kill, if any source of kill is activated
+	else if ((millis() - estop_loop) > ESTOP_TIMEOUT)
+	{
+		if (remote_kill || soft_kill)
+		{
+			On_Contactor();
+		}
+		else
+		{
+			Kill_Contactor();
+		}
+		estop_loop = millis();
 	}
 }
 
 void On_Contactor() {
 	digitalWrite(NMOS_CONTACTOR, HIGH);
 	Serial.println("normal");
-	remote_kill = 0;
-	no_data = 0;
 }
 
 void Kill_Contactor() {
 	digitalWrite(NMOS_CONTACTOR, LOW);
 	Serial.println("KILL!");
-	remote_kill = 1;
-	no_data = 0;
 }
 
 void xbee_receive(){
@@ -116,28 +147,22 @@ void xbee_receive(){
 			Serial.println(incomingByte, HEX);
 
 			if (incomingByte == 0x15) {
-				On_Contactor();
-#ifndef _HACKJOB_
-				publishCAN_estop(false);
-#endif
+				remote_kill = false;
 			}
 
 			else {
-				Kill_Contactor();
-#ifndef _HACKJOB_
-				publishCAN_estop(true);
-#endif
+				remote_kill = true;
 			}
+			no_data = 0;
 		}
 	}
-
 	else {
 		no_data++;
 		Serial.print("Count: ");
 		Serial.println(no_data);
 
 		if (no_data == 20) {
-			Kill_Contactor();
+			remote_kill = true;
 			Serial.println("Connection Time-out KILL");
 		}
 		Serial.println("Nothing Available");
@@ -174,4 +199,22 @@ void publishCAN_estop(bool estop_status)
 {
 	CAN.setupCANFrame(buf, 0, 1, estop_status);
 	CAN.sendMsgBuf(CAN_e_stop, 0, 1, buf);
+}
+
+void checkCANmsg() {
+	if (CAN_MSGAVAIL == CAN.checkReceive()) {
+		CAN.readMsgBufID(&id, &len, buf);    // read data,  len: data length, buf: data buf
+		switch (id) {
+		case CAN_heartbeat:
+			if (buf[0] == HEARTBEAT_POSB)
+				posb_hb_loop = millis();
+		case CAN_soft_e_stop:
+			soft_kill = !buf[0];
+			break;
+		default:
+			//Serial.println("Others");
+			break;
+		}
+		CAN.clearMsg();
+	}
 }
