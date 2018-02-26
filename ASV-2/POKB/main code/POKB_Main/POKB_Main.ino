@@ -107,17 +107,23 @@ void readHardKill() {
 void setKill() {
 	// Check POSB heartbeat for failsafe
 	if ((millis() - posb_hb_loop) > FAILSAFE_TIMEOUT) {
-		On_Contactor();
+		Kill_Contactor();
 	}
 	// On kill, if any source of kill is activated
 	else if ((millis() - estop_loop) > ESTOP_TIMEOUT)
 	{
+		Serial.print("SET ");
 		if (remote_kill || soft_kill)
 		{
+			Serial.print("REMOTE: ");
+			Serial.print(remote_kill);
+			Serial.print(" SOFT: ");
+			Serial.println(soft_kill);
 			Kill_Contactor();
 		}
 		else
 		{
+			Serial.println("NORMAL");
 			On_Contactor();
 		}
 		estop_loop = millis();
@@ -126,25 +132,25 @@ void setKill() {
 
 void On_Contactor() {
 	digitalWrite(NMOS_CONTACTOR, HIGH);
-	Serial.println("normal");
+	//Serial.println("normal");
 }
 
 void Kill_Contactor() {
 	digitalWrite(NMOS_CONTACTOR, LOW);
-	Serial.println("KILL!");
+	//Serial.println("KILL!");
 }
 
 void xbee_receive(){
 	xbee.readPacket();
 
 	if (xbee.getResponse().isAvailable()) {
-		Serial.println("Available");
+		//Serial.println("Available");
 		if (xbee.getResponse().getApiId() == ZB_RX_RESPONSE){
 			xbee.getResponse().getZBRxResponse(rx);
 			// get data
 			incomingByte = rx.getData(0);
-			Serial.print("Incoming Byte: ");
-			Serial.println(incomingByte, HEX);
+			//Serial.print("Incoming Byte: ");
+			//Serial.println(incomingByte, HEX);
 
 			if (incomingByte == 0x15) {
 				remote_kill = false;
@@ -199,6 +205,7 @@ void publishCAN_estop(bool estop_status)
 {
 	CAN.setupCANFrame(buf, 0, 1, estop_status);
 	CAN.sendMsgBuf(CAN_e_stop, 0, 1, buf);
+	Serial.println(estop_status ? "KILL" : "NORMAL");
 }
 
 void checkCANmsg() {
@@ -208,8 +215,11 @@ void checkCANmsg() {
 		case CAN_heartbeat:
 			if (buf[0] == HEARTBEAT_POSB)
 				posb_hb_loop = millis();
+			break;
 		case CAN_soft_e_stop:
 			soft_kill = !buf[0];
+			//Serial.print("*** RX *** SOFT: ");
+			//Serial.println(soft_kill);
 			break;
 		default:
 			//Serial.println("Others");
