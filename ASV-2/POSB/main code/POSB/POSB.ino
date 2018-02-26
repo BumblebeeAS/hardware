@@ -51,11 +51,11 @@ int estop_status = false;
 Torqeedo Battery1(TORQEEDO1_RXEN, TORQEEDO1_DXEN, TORQEEDO1_ON, 1);
 Torqeedo Battery2(TORQEEDO2_RXEN, TORQEEDO2_DXEN, TORQEEDO2_ON, 2);
 
-uint8_t posb_stat_buf[2] = {128,256};
-uint8_t esc1_stat_buf[7] = {0x2C, 0x1, 0x14, 0x0, 0, 0, 0}; // 0, 0, 0, 200, 300
-uint8_t esc2_stat_buf[7] = {0x90, 0x1, 0xF4, 0x1, 0, 0, 0}; // 0, 0, 0, 500, 400
-uint8_t batt1_stat_buf[6] = {25, 0x2C, 0x1, 0x58, 0x2, 75}; // 25, 600, 300, 75
-uint8_t batt2_stat_buf[6] = {25, 0x2C, 0x1, 0xBC, 0x2, 50}; // 25, 700, 300, 50
+uint8_t posb_stat_buf[2] = { 128,256 };
+uint8_t esc1_stat_buf[7] = { 0x2C, 0x1, 0x14, 0x0, 0, 0, 0 }; // 0, 0, 0, 200, 300
+uint8_t esc2_stat_buf[7] = { 0x90, 0x1, 0xF4, 0x1, 0, 0, 0 }; // 0, 0, 0, 500, 400
+uint8_t batt1_stat_buf[6] = { 25, 0x2C, 0x1, 0x58, 0x2, 75 }; // 25, 600, 300, 75
+uint8_t batt2_stat_buf[6] = { 25, 0x2C, 0x1, 0xBC, 0x2, 50 }; // 25, 700, 300, 50
 uint32_t heartbeat_loop;
 uint32_t batt_loop;
 uint32_t power_loop;
@@ -91,7 +91,7 @@ int serialidx = 0;
 #endif
 
 void setup()
-{	
+{
 	// CAN BUS INIT
 	Serial.begin(115200);
 	Serial.println("Hi, I'm POSB");
@@ -108,7 +108,7 @@ void setup()
 
 	// SENSORS INIT
 	Wire.begin();
-	windSensor.init();
+	//windSensor.init();
 
 	// LIGHT INIT
 	initLightTower();
@@ -214,7 +214,7 @@ void loop()
 	/************************************/
 	/*			Battery Monitoring		*/
 	/************************************/
-	
+
 	Battery1.checkBatteryOnOff();
 	if (Battery1.readMessage())
 	{
@@ -232,18 +232,18 @@ void loop()
 #endif
 
 	// Cycles through status flags, voltage, current
-	if((millis() - batt_loop) > BATT_TIMEOUT)
+	if ((millis() - batt_loop) > BATT_TIMEOUT)
 	{
 		//Serial.print("REQUEST");
-	Battery1.checkBatteryConnected();
-	Battery1.requestUpdate();
+		Battery1.checkBatteryConnected();
+		Battery1.requestUpdate();
 #ifdef _BATT2_
-	Battery2.checkBatteryConnected();
-	Battery2.requestUpdate();
+		Battery2.checkBatteryConnected();
+		Battery2.requestUpdate();
 #endif
-	batt_loop = millis();
+		batt_loop = millis();
 	}
-	
+
 	/************************************/
 	/*			Sensors					*/
 	/************************************/
@@ -282,11 +282,11 @@ void loop()
 // Map from [0 to 6400] to [-1000 to 1000]
 void getThrusterSpeed()
 {
-	speed1 = map(CAN.parseCANFrame(buf,0,2), 0, 6400, -1000, 1000);
-	speed2 = map(CAN.parseCANFrame(buf,2,2), 0, 6400, -1000, 1000);
-	speed3 = map(CAN.parseCANFrame(buf,4,2), 0, 6400, -1000, 1000);
-	speed4 = map(CAN.parseCANFrame(buf,6,2), 0, 6400, -1000, 1000);
-	
+	speed1 = map(CAN.parseCANFrame(buf, 0, 2), 0, 6400, -1000, 1000);
+	speed2 = map(CAN.parseCANFrame(buf, 2, 2), 0, 6400, -1000, 1000);
+	speed3 = map(CAN.parseCANFrame(buf, 4, 2), 0, 6400, -1000, 1000);
+	speed4 = map(CAN.parseCANFrame(buf, 6, 2), 0, 6400, -1000, 1000);
+	/*
 	Serial.print(" 1: ");
 	Serial.print(speed1);
 	Serial.print(" 2: ");
@@ -294,7 +294,7 @@ void getThrusterSpeed()
 	Serial.print(" 3: ");
 	Serial.print(speed3);
 	Serial.print(" 4: ");
-	Serial.println(speed4);	
+	Serial.println(speed4);	*/
 }
 void resetThrusterSpeed()
 {
@@ -342,9 +342,15 @@ void lightInitSequence()
 void setLightTower(byte colour)
 {
 	if (colour == LIGHTTOWER_RED)
+	{
 		digitalWrite(LIGHTTOWER_RED, HIGH);
+		//Serial.print("RED ON ");
+	}
 	else
+	{
 		digitalWrite(LIGHTTOWER_RED, LOW);
+		//Serial.print("RED OFF ");
+	}
 
 	if (colour == LIGHTTOWER_YELLOW)
 		digitalWrite(LIGHTTOWER_YELLOW, HIGH);
@@ -352,9 +358,15 @@ void setLightTower(byte colour)
 		digitalWrite(LIGHTTOWER_YELLOW, LOW);
 
 	if (colour == LIGHTTOWER_GREEN)
+	{
 		digitalWrite(LIGHTTOWER_GREEN, HIGH);
+		//Serial.print("GREEN ON ");
+	}
 	else
+	{
 		digitalWrite(LIGHTTOWER_GREEN, LOW);
+		//Serial.print("GREEN OFF ");
+	}
 }
 
 // GREEN: AUTONOMOUS
@@ -362,9 +374,11 @@ void setLightTower(byte colour)
 // YELLOW: MANUAL
 // RED: ESTOP
 void updateLightTower()
-{		
+{
+	//Serial.print("Light! ");
 	if (estop_status)
 	{
+		//Serial.print("ESTOP!! ");
 		setLightTower(LIGHTTOWER_RED);
 	}
 	else
@@ -391,6 +405,7 @@ void updateLightTower()
 			break;
 		}
 	}
+	//Serial.println("");
 }
 
 //==========================================
@@ -419,10 +434,11 @@ void readTempHumid()
 			posb_stat_buf[0] = humidTempSensor.getTemperature() + 0.5;
 			posb_stat_buf[1] = humidTempSensor.getHumidity() + 0.5;
 #endif
+			/*
 			Serial.print("Temp: ");
 			Serial.print(posb_stat_buf[0]);
 			Serial.print("\t");
-			Serial.println(posb_stat_buf[1]);
+			Serial.println(posb_stat_buf[1]);*/
 			publishCAN_posbstats();
 			humid_ctr = 0;
 			break;
@@ -430,7 +446,7 @@ void readTempHumid()
 		default:
 			break;
 		}
-			Temp_Humid_loop = millis();
+		Temp_Humid_loop = millis();
 	}
 }
 
@@ -543,13 +559,14 @@ void publishCAN()
 
 void publishCAN_posbstats()
 {
-	CAN.sendMsgBuf(CAN_POSB_stats,0,2,posb_stat_buf);
+	CAN.sendMsgBuf(CAN_POSB_stats, 0, 2, posb_stat_buf);
 }
 void publishCAN_heartbeat()
 {
 	buf[0] = HEARTBEAT_POSB;
 	buf[1] = heartbeat_batt1 + (heartbeat_batt2 << 1) + (heartbeat_esc1 << 2) + (heartbeat_esc2 << 3);
-	CAN.sendMsgBuf(CAN_heartbeat,0,2,buf);
+	CAN.sendMsgBuf(CAN_heartbeat, 0, 2, buf);
+	Serial.println("HEARTBEAT!");
 }
 void publishCAN_windspeed()
 {
@@ -560,9 +577,9 @@ void publishCAN_windspeed()
 	Serial.print(wind_dir);
 	Serial.print(" ");
 	Serial.print(wind_speed);*/
-	CAN.setupCANFrame(buf,0,2, wind_dir);
-	CAN.setupCANFrame(buf,2,2, wind_speed);
-	CAN.sendMsgBuf(CAN_wind_speed,0,4,buf);
+	CAN.setupCANFrame(buf, 0, 2, wind_dir);
+	CAN.setupCANFrame(buf, 2, 2, wind_speed);
+	CAN.sendMsgBuf(CAN_wind_speed, 0, 4, buf);
 }
 void publishCAN_esc1_stats()
 {
@@ -579,21 +596,21 @@ void publishCAN_esc1_stats()
 	Serial.print(esc1_stats.motor_status_flags2, BIN);
 	Serial.print(" Fault flags: ");
 	Serial.println(esc1_stats.fault_flags, BIN);*/
-	CAN.setupCANFrame(esc1_stat_buf,0,2, esc1_stats.motor_current1);
-	CAN.setupCANFrame(esc1_stat_buf,2,2, esc1_stats.motor_current2);
-	CAN.setupCANFrame(esc1_stat_buf,3,1, esc1_stats.motor_status_flags1);
-	CAN.setupCANFrame(esc1_stat_buf,4,1, esc1_stats.motor_status_flags2);
-	CAN.setupCANFrame(esc1_stat_buf,5,1, esc1_stats.fault_flags);
+	CAN.setupCANFrame(esc1_stat_buf, 0, 2, esc1_stats.motor_current1);
+	CAN.setupCANFrame(esc1_stat_buf, 2, 2, esc1_stats.motor_current2);
+	CAN.setupCANFrame(esc1_stat_buf, 3, 1, esc1_stats.motor_status_flags1);
+	CAN.setupCANFrame(esc1_stat_buf, 4, 1, esc1_stats.motor_status_flags2);
+	CAN.setupCANFrame(esc1_stat_buf, 5, 1, esc1_stats.fault_flags);
 	CAN.sendMsgBuf(CAN_esc1_motor_stats, 0, 7, esc1_stat_buf);
 }
 void publishCAN_esc2_stats()
 {
 	RoboteqStats esc2_stats = roboteq2.getRoboteqStats();
-	CAN.setupCANFrame(esc2_stat_buf,0,2, esc2_stats.motor_current1);
-	CAN.setupCANFrame(esc2_stat_buf,2,2, esc2_stats.motor_current2);
-	CAN.setupCANFrame(esc2_stat_buf,3,1, esc2_stats.motor_status_flags1);
-	CAN.setupCANFrame(esc2_stat_buf,4,1, esc2_stats.motor_status_flags2);
-	CAN.setupCANFrame(esc2_stat_buf,5,1, esc2_stats.fault_flags);
+	CAN.setupCANFrame(esc2_stat_buf, 0, 2, esc2_stats.motor_current1);
+	CAN.setupCANFrame(esc2_stat_buf, 2, 2, esc2_stats.motor_current2);
+	CAN.setupCANFrame(esc2_stat_buf, 3, 1, esc2_stats.motor_status_flags1);
+	CAN.setupCANFrame(esc2_stat_buf, 4, 1, esc2_stats.motor_status_flags2);
+	CAN.setupCANFrame(esc2_stat_buf, 5, 1, esc2_stats.fault_flags);
 	CAN.sendMsgBuf(CAN_esc2_motor_stats, 0, 7, esc2_stat_buf);
 }
 void publishCAN_batt1_stats()
@@ -613,44 +630,48 @@ void publishCAN_batt1_stats()
 	CAN.setupCANFrame(batt1_stat_buf, 3, 2, 0 - (int16_t)(-14));
 	CAN.setupCANFrame(batt1_stat_buf, 5, 1, 38);
 	CAN.sendMsgBuf(CAN_battery1_motor_stats, 0, 6, batt1_stat_buf);*/
-	CAN.setupCANFrame(batt1_stat_buf,0,1, Battery1.getCapacity());
-	CAN.setupCANFrame(batt1_stat_buf,1,2, Battery1.getVoltage());
-	CAN.setupCANFrame(batt1_stat_buf,3,2, 0-(int16_t)Battery1.getCurrent());
-	CAN.setupCANFrame(batt1_stat_buf,5,1, Battery1.getTemperature());
+	CAN.setupCANFrame(batt1_stat_buf, 0, 1, Battery1.getCapacity());
+	CAN.setupCANFrame(batt1_stat_buf, 1, 2, Battery1.getVoltage());
+	CAN.setupCANFrame(batt1_stat_buf, 3, 2, 0 - (int16_t)Battery1.getCurrent());
+	CAN.setupCANFrame(batt1_stat_buf, 5, 1, Battery1.getTemperature());
 	CAN.sendMsgBuf(CAN_battery1_stats, 0, 6, batt1_stat_buf);
 }
 void publishCAN_batt2_stats()
 {
-	CAN.setupCANFrame(batt2_stat_buf,0,1, Battery2.getCapacity());
-	CAN.setupCANFrame(batt2_stat_buf,1,2, Battery2.getVoltage());
-	CAN.setupCANFrame(batt2_stat_buf,3,2, 0 - (int16_t)Battery2.getCurrent());
-	CAN.setupCANFrame(batt2_stat_buf,5,1, Battery2.getTemperature());
+	CAN.setupCANFrame(batt2_stat_buf, 0, 1, Battery2.getCapacity());
+	CAN.setupCANFrame(batt2_stat_buf, 1, 2, Battery2.getVoltage());
+	CAN.setupCANFrame(batt2_stat_buf, 3, 2, 0 - (int16_t)Battery2.getCurrent());
+	CAN.setupCANFrame(batt2_stat_buf, 5, 1, Battery2.getTemperature());
 	CAN.sendMsgBuf(CAN_battery2_stats, 0, 6, batt2_stat_buf);
 }
-void checkCANmsg(){
-	if (CAN_MSGAVAIL == CAN.checkReceive()){
+void checkCANmsg() {
+	if (CAN_MSGAVAIL == CAN.checkReceive()) {
 		CAN.readMsgBufID(&id, &len, buf);    // read data,  len: data length, buf: data buf
-		switch(id){
+		switch (id) {
 #ifndef _TEST_
 		case CAN_thruster:
+			Serial.print("[");
 			Serial.print(control_mode);
-			if((control_mode == AUTONOMOUS) || (control_mode == STATION_KEEP))
+			Serial.print("]");
+			if ((control_mode == AUTONOMOUS) || (control_mode == STATION_KEEP))
 			{
-				Serial.print(" AUTO: ");
+				//Serial.print(" AUTO: ");
 				getThrusterSpeed();
 			}
 			break;
 		case CAN_manual_thruster:
-				Serial.print(control_mode);
-			if((control_mode == MANUAL_OCS) || (control_mode == MANUAL_RC))
+			Serial.print("[");
+			Serial.print(control_mode);
+			Serial.print("]");
+			if ((control_mode == MANUAL_OCS) || (control_mode == MANUAL_RC))
 			{
-				Serial.print(" MANUAL: ");
+				//Serial.print(" MANUAL: ");
 				getThrusterSpeed();
 			}
 			break;
 #endif
 		case CAN_control_link:
-			control_mode = CAN.parseCANFrame(buf,0,1);
+			control_mode = CAN.parseCANFrame(buf, 0, 1);
 			controlmode_loop = millis();
 			break;
 		case CAN_e_stop:
