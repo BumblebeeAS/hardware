@@ -150,7 +150,6 @@ void loop() {
 	if (control_mode == MANUAL_RC)
 	{
 		get_directions();
-		convert_thruster_values();
 
 #ifdef _DEBUG_
 		Serial.print("MANUAL RC -");
@@ -220,22 +219,22 @@ void loop() {
 				internalStats[RSSI_OCS] = payload[6];
 				break;
 			case CAN_manual_thruster:
+					Serial.print("OCS Mode: ");
+					Serial.print(control_mode_ocs);
 				if (control_mode == MANUAL_OCS)
 				{
-					speed1 = uint16_t(CAN.parseCANFrame(payload, 4, 2));
-					speed2 = uint16_t(CAN.parseCANFrame(payload, 6, 2));
-					speed3 = uint16_t(CAN.parseCANFrame(payload, 8, 2));
-					speed4 = uint16_t(CAN.parseCANFrame(payload, 10, 2));
+					speed1 = (uint16_t(CAN.parseCANFrame(payload, 4, 2)))-3200;
+					speed2 = (uint16_t(CAN.parseCANFrame(payload, 6, 2)))-3200;
+					speed3 = (uint16_t(CAN.parseCANFrame(payload, 8, 2)))-3200;
+					speed4 = (uint16_t(CAN.parseCANFrame(payload, 10, 2)))-3200;
 					/*
-					Serial.print("Mode: ");
-					Serial.print(payload[8], HEX);
 					Serial.print(" Speed1: ");
 					Serial.print(speed1);
 					Serial.print(" Speed2: ");
-					Serial.print(speed2);
-					Serial.println();
-					*/
+					Serial.print(speed2);*/
+					
 				}
+					Serial.println();
 				break;
 			case CAN_heartbeat:
 				if (payload[4] == HEARTBEAT_OCS)
@@ -266,6 +265,7 @@ void loop() {
 	/*			Transmit Thruster commands		  */
 	/**********************************************/
 	get_controlmode();
+	set_thruster_values();
 
 	//******* CAN RX **********/
 	checkCANmsg();
@@ -487,23 +487,43 @@ void get_directions()
 
 // Resolve vector thrust &
 // Cap thrust at -3200 and 3200
-void convert_thruster_values()
+void set_thruster_values()
 {
 	if ((millis() - heartbeat_timeout[HEARTBEAT_POKB]) > FAILSAFE_TIMEOUT)
 	{
 		// If no POKB heartbeat, stop all thrusters
-		speed1 = 0;
-		speed2 = 0;
-		speed3 = 0;
-		speed4 = 0;
+		reset_thruster_values();
 	}
 	else
 	{
-		speed1 = constrain(dir_forward - dir_side - dir_yaw, -3200, 3200);
-		speed2 = constrain(dir_forward + dir_side + dir_yaw, -3200, 3200);
-		speed3 = constrain(-dir_forward - dir_side + dir_yaw, -3200, 3200);
-		speed4 = constrain(-dir_forward + dir_side - dir_yaw, -3200, 3200);
+		switch (control_mode)
+		{
+		case AUTONOMOUS:
+		case STATION_KEEP:
+			// If not in manual mode, reset all thrusters
+			reset_thruster_values();
+			break;
+		case MANUAL_RC:
+			convert_thruster_values();
+			break;
+		}
 	}
+}
+// Resolve vector thrust &
+// Cap thrust at -3200 and 3200
+void convert_thruster_values()
+{
+			speed1 = constrain(-dir_forward - dir_side - dir_yaw, -3200, 3200);
+			speed2 = constrain(-dir_forward + dir_side + dir_yaw, -3200, 3200);
+			speed3 = constrain(dir_forward - dir_side + dir_yaw, -3200, 3200);
+			speed4 = constrain(dir_forward + dir_side - dir_yaw, -3200, 3200);
+}
+void reset_thruster_values()
+{
+	speed1 = 0;
+	speed2 = 0;
+	speed3 = 0;
+	speed4 = 0;
 }
 
 
@@ -533,7 +553,12 @@ int calculate_rssi()
 
 void get_controlmode()
 {
-	if (((millis() - heartbeat_timeout[HEARTBEAT_RC]) > COMMLINK_TIMEOUT) &&
+	if (((millis() - heartbeat_timeout[HEARTBEAT_Cogswell]) > FAILSAFE_TIMEOUT)
+		|| ((millis() - heartbeat_timeout[HEARTBEAT_POKB]) > FAILSAFE_TIMEOUT)) // Lost SBC or POKB heartbeat
+	{
+		control_mode = MANUAL_OCS;
+	}
+	else if (((millis() - heartbeat_timeout[HEARTBEAT_RC]) > COMMLINK_TIMEOUT) &&
 		((millis() - heartbeat_timeout[HEARTBEAT_OCS]) > COMMLINK_TIMEOUT)) // Both rc & ocs loss comms
 	{
 		control_mode = STATION_KEEP;
@@ -542,14 +567,10 @@ void get_controlmode()
 	{
 		control_mode = control_mode_rc;
 	}
-	else if (control_mode_ocs != AUTONOMOUS)
+	// If ocs is alive and not autonomous
+	else if (((millis() - heartbeat_timeout[HEARTBEAT_OCS]) < COMMLINK_TIMEOUT) && (control_mode_ocs != AUTONOMOUS))
 	{
 		control_mode = control_mode_ocs;
-	}
-	else if (((millis() - heartbeat_timeout[HEARTBEAT_Cogswell]) > FAILSAFE_TIMEOUT)
-		|| ((millis() - heartbeat_timeout[HEARTBEAT_POKB]) > FAILSAFE_TIMEOUT)) // Lost SBC or POKB heartbeat
-	{
-		control_mode = MANUAL_OCS;
 	}
 	else
 	{
@@ -746,7 +767,7 @@ void publishCAN()
 		heartbeat_loop = millis();
 	}
 	if ((internalStats[RSSI_RC] > RSSI_THRESHOLD) &&	// If no rc link (low rssi), don't send heartbeat
-		((millis() - rc_loop) > HB_TIMEOUT))
+		((millis() - rc_loop) > HEARTBEAT_LOOP))
 	{
 		publishCAN_heartbeat(HEARTBEAT_RC);
 		rc_loop = millis();
