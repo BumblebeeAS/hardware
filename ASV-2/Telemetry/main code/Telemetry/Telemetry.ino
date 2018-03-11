@@ -246,6 +246,9 @@ void loop() {
 			case CAN_soft_e_stop:
 				forwardToCAN(payload);
 				break;
+			case CAN_POPB_control:
+				forwardToCAN(payload);
+				break;
 			default:
 				break;
 			}
