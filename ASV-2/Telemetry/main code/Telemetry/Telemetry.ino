@@ -556,7 +556,14 @@ void get_controlmode()
 	if (((millis() - heartbeat_timeout[HEARTBEAT_Cogswell]) > FAILSAFE_TIMEOUT)
 		|| ((millis() - heartbeat_timeout[HEARTBEAT_POKB]) > FAILSAFE_TIMEOUT)) // Lost SBC or POKB heartbeat
 	{
-		control_mode = MANUAL_OCS;
+		if (control_mode_rc != AUTONOMOUS) // rc overrides ocs
+		{
+			control_mode = control_mode_rc;
+		}
+		else
+		{
+			control_mode = MANUAL_OCS;
+		}
 	}
 	else if (((millis() - heartbeat_timeout[HEARTBEAT_RC]) > COMMLINK_TIMEOUT) &&
 		((millis() - heartbeat_timeout[HEARTBEAT_OCS]) > COMMLINK_TIMEOUT)) // Both rc & ocs loss comms
@@ -799,7 +806,7 @@ void publishCAN_controllink()
 	Serial.print("RSSI: ");
 	Serial.println(buf[2]);*/
 	buf[2] = internalStats[RSSI_OCS];
-	CAN.sendMsgBuf(CAN_control_link, 0, 1, buf);
+	CAN.sendMsgBuf(CAN_control_link, 0, 3, buf);
 }
 
 void forwardToCAN(uint8_t payload[])
