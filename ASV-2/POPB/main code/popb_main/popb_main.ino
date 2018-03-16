@@ -41,6 +41,12 @@ void setup()
 	Serial.println("This is POPB!");
 	CAN_init();
 
+	// CAN Masking
+	CAN.init_Mask(0, 0, 0x3FF);
+	CAN.init_Mask(1, 0, 0x3FF);
+
+	CAN.init_Filt(0, 0, CAN_POPB_control);
+
 	/* Initialise Load Switch Pins*/
 	pinMode(LS_NAVTIC, OUTPUT);
 	pinMode(LS_POE_INJECTOR, OUTPUT);
@@ -126,12 +132,16 @@ void publishCanHB() {
 }
 
 boolean checkCanMsg() {
+	//Serial.println("checking CAN");
 	if (CAN_MSGAVAIL == CAN.checkReceive()) {
 		CAN.readMsgBufID(&id, &len, buf);    // read data,  len: data length, buf: data buf
 		boolean mine = false;
+		Serial.print("ID: ");
+		Serial.println(id);
 		switch (id) {
 		case CAN_POPB_control:
 			LsControl = CAN.parseCANFrame(buf, 0, 1);
+			Serial.println("Yay Mine!");
 			mine = true;
 			break;
 		default:
