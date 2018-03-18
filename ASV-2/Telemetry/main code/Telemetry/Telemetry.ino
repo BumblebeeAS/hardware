@@ -240,7 +240,11 @@ void loop() {
 				if (payload[4] == HEARTBEAT_OCS)
 				{
 					publishCAN_heartbeat(HEARTBEAT_OCS);
+#ifdef _XBEE_
+					forwardToXbee();
+#endif
 					heartbeat_timeout[HEARTBEAT_OCS] = millis();
+
 				}
 				break;
 			case CAN_soft_e_stop:
@@ -663,7 +667,7 @@ void checkCANmsg() {
 		case CAN_heartbeat:
 		{
 			uint32_t device = CAN.parseCANFrame(buf, 0, 1);
-			//Serial.print(" heartbeat: ");
+			//Serial.pri nt(" heartbeat: ");
 			//Serial.println(device);
 			heartbeat_timeout[device] = millis();
 			get_thruster_batt_heartbeat();
@@ -780,12 +784,17 @@ void publishCAN()
 		((millis() - rc_loop) > HEARTBEAT_LOOP))
 	{
 		publishCAN_heartbeat(HEARTBEAT_RC);
+#ifdef _XBEE_
+		forwardToXbee(); // Fwd tele heartbeat msg 
+#endif
 		rc_loop = millis();
 	}
 }
 
 void publishCAN_heartbeat(int device_id)
 {
+	id = CAN_heartbeat;
+	len = 1;
 	buf[0] = device_id;
 	CAN.sendMsgBuf(CAN_heartbeat, 0, 1, buf);
 }
