@@ -3,6 +3,7 @@
 #include "can_asv_defines.h"
 
 #define DEBUG_MODE true
+#define DEBUG_MODEVVV false
 
 /* Load Switch Pin Mappings */
 #define LS_NAVTIC 46 //Q2_GATE
@@ -21,6 +22,7 @@
 #define ENABLE_E1 0x20
 
 #define STAGGER_TIME 250
+#define AUTORESET_TIME 5000
 #define CAN_HEARTBEAT_INTERVAL 500
 #define CAN_STATUS_INTERVAL 1000
 #define SERIAL_INTERVAL 2000
@@ -29,10 +31,11 @@ MCP_CAN CAN(8);
 uint32_t id = 0;
 uint8_t len = 0;
 uint8_t buf[8] = { 0 };
+uint32_t autoResetLoop = 0;
 uint32_t CanHeartbeatLoop = 0;
 uint32_t CanStatusLoop = 0;
 uint32_t SerialLoop = 0;
-
+boolean autoReset = false;
 uint8_t LsControl = 0x1F; //Indicates which LS are turned on/off
 
 void setup()
@@ -65,11 +68,11 @@ void setup()
 	digitalWrite(LS_SICK, LOW);
 
 	//Staggered turn on
+	digitalWrite(LS_POE_INJECTOR, HIGH);
+	delay(STAGGER_TIME);
 	digitalWrite(LS_NAVTIC, HIGH);
 	delay(STAGGER_TIME);
 	digitalWrite(LS_RADAR, HIGH);
-	delay(STAGGER_TIME);
-	digitalWrite(LS_POE_INJECTOR, HIGH);
 	delay(STAGGER_TIME);
 	digitalWrite(LS_VELODYNE, HIGH);
 	delay(STAGGER_TIME);
@@ -91,9 +94,11 @@ void loop()
 	}
 
 	// Check for incoming CAN message
-	if (checkCanMsg() == true) {
+	if (checkCanMsg()) {
 		// Update load switch states
-		Serial.println("Updating load switch states");
+		if (DEBUG_MODE) 
+			Serial.println("Updating load switch states");
+		
 		updateLoadSwitch();
 	}
 
@@ -101,6 +106,15 @@ void loop()
 		Serial.print("Status: ");
 		Serial.println(LsControl, HEX);
 		SerialLoop = millis();
+	}
+
+	//Auto reset -- Triggered by Offing PoE (RocketAC) -- NEED TO TEST
+	if (autoReset && ((millis() - autoResetLoop) > AUTORESET_TIME)) {
+		autoReset = false;
+		LsControl = LsControl | ENABLE_POE_INJECTOR;
+		if (DEBUG_MODEVVV)
+			Serial.println("Auto restarting POE");
+		updateLoadSwitch();
 	}
 }
 
@@ -141,8 +155,9 @@ boolean checkCanMsg() {
 		switch (id) {
 		case CAN_POPB_control:
 			LsControl = CAN.parseCANFrame(buf, 0, 1);
-			Serial.println("Yay Mine!");
 			mine = true;
+			if (DEBUG_MODEVVV)
+				Serial.println("Yay Mine!");			
 			break;
 		default:
 			//Serial.println("Others");
@@ -158,43 +173,71 @@ boolean checkCanMsg() {
 void updateLoadSwitch() {
 	if ((LsControl & ENABLE_E1) > 0) {
 		digitalWrite(LS_E1, HIGH);
+		if (DEBUG_MODEVVV)
+			Serial.print("E1:H | ");
 	}
 	else {
 		digitalWrite(LS_E1, LOW);
+		if (DEBUG_MODEVVV)
+			Serial.print("E1:L | ");
 	}
 
 	if ((LsControl & ENABLE_NAVTIC) > 0) {
 		digitalWrite(LS_NAVTIC, HIGH);
+		if (DEBUG_MODEVVV)
+			Serial.print("NAV:H | ");
 	}
 	else {
 		digitalWrite(LS_NAVTIC, LOW);
+		if (DEBUG_MODEVVV)
+			Serial.print("NAV:L | ");
 	}
 
 	if ((LsControl & ENABLE_POE_INJECTOR) > 0) {
 		digitalWrite(LS_POE_INJECTOR, HIGH);
+		if (DEBUG_MODEVVV)
+			Serial.print("POE:H | ");
 	}
 	else {
 		digitalWrite(LS_POE_INJECTOR, LOW);
+		autoReset = true; // Auto Reset for backup
+		autoResetLoop = millis();
+		if (DEBUG_MODEVVV)
+			Serial.print("POE:L | ");
 	}
 
 	if ((LsControl & ENABLE_RADAR) > 0) {
 		digitalWrite(LS_RADAR, HIGH);
+		if (DEBUG_MODEVVV)
+			Serial.print("RAD:H | ");
 	}
 	else {
 		digitalWrite(LS_RADAR, LOW);
+		if (DEBUG_MODEVVV)
+			Serial.print("RAD:L | ");
 	}
 
 	if ((LsControl & ENABLE_SICK) > 0) {
 		digitalWrite(LS_SICK, HIGH);
+		if (DEBUG_MODEVVV)
+			Serial.print("SICK:H | ");
 	}
 	else {
 		digitalWrite(LS_SICK, LOW);
+		if (DEBUG_MODEVVV)
+			Serial.print("SICK:L | ");
 	}
 
 	if ((LsControl & ENABLE_VELODYNE) > 0) {
 		digitalWrite(LS_VELODYNE, HIGH);
+		if (DEBUG_MODEVVV)
+			Serial.print("PUCK:H | ");
 	}
 	else {
 		digitalWrite(LS_VELODYNE, LOW);
+		if (DEBUG_MODEVVV)
+			Serial.print("PUCK:L | ");
 	}
+	if (DEBUG_MODEVVV)
+		Serial.println(LsControl, HEX);
 }

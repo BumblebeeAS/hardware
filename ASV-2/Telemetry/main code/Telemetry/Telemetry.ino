@@ -219,8 +219,8 @@ void loop() {
 				internalStats[RSSI_OCS] = payload[6];
 				break;
 			case CAN_manual_thruster:
-					Serial.print("OCS Mode: ");
-					Serial.print(control_mode_ocs);
+					//Serial.print("OCS Mode: ");
+					//Serial.print(control_mode_ocs);
 				if (control_mode == MANUAL_OCS)
 				{
 					speed1 = (uint16_t(CAN.parseCANFrame(payload, 4, 2)))-3200;
@@ -239,18 +239,19 @@ void loop() {
 			case CAN_heartbeat:
 				if (payload[4] == HEARTBEAT_OCS)
 				{
+					Serial.println("OCS Heartbeat");
 					publishCAN_heartbeat(HEARTBEAT_OCS);
-#ifdef _XBEE_
-					forwardToXbee();
-#endif
+					// NEED SEND THIS HEARTBEAT BACK TO OCS FOR WEBUI
 					heartbeat_timeout[HEARTBEAT_OCS] = millis();
 
 				}
 				break;
 			case CAN_soft_e_stop:
+				Serial.println("SOFT E STOP!");
 				forwardToCAN(payload);
 				break;
 			case CAN_POPB_control:
+				Serial.println("POPB Control Signal!");
 				forwardToCAN(payload);
 				break;
 			default:
