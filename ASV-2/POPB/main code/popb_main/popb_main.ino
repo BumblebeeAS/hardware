@@ -8,8 +8,8 @@
 /* Load Switch Pin Mappings */
 #define LS_NAVTIC 46 //Q2_GATE
 #define LS_POE_INJECTOR 45 //Q3_GATE
-#define LS_RADAR 44 //Q4_GATE
-#define LS_VELODYNE 42 //Q5_GATE
+#define LS_RADAR 42 //Q5_GATE
+#define LS_VELODYNE 44 //Q4_GATE
 #define LS_E1 47 //Q6_GATE -- E1_GATE
 #define LS_SICK 43 //Q7_GATE -- E2_GATE
 
