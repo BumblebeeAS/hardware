@@ -75,6 +75,6 @@
 #define KILL_RCV 0x416B9775
 #define OCS_EXT 0x416B969E
 #define ASV_EXT 0x416B9783
-#define SPARE 0x416B96A3
+#define SPARE1 0x416B96A3
 
 #endif // _DEFINES_H

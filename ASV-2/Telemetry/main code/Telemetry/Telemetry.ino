@@ -81,6 +81,7 @@ XBee xbee = XBee();
 XBeeResponse response = XBeeResponse();
 ZBRxResponse rx = ZBRxResponse();
 XBeeAddress64 addr64 = XBeeAddress64(0x0013A200, OCS_EXT);
+XBeeAddress64 addr64spare = XBeeAddress64(0x0013A200, SPARE1);
 ZBTxRequest zbTx;
 ZBTxStatusResponse txStatus = ZBTxStatusResponse();
 uint8_t *payload;
@@ -89,10 +90,13 @@ uint8_t cmd[] = { 'D','B' };
 AtCommandRequest atRequest = AtCommandRequest();
 AtCommandResponse atResponse = AtCommandResponse();
 
+#define _OFF_SCREEN_
 int count = 0;
 
 void setup() {
 	Serial.begin(115200);
+	pinMode(10, OUTPUT);
+	digitalWrite(10, HIGH);
 	Serial.println("Hi, I'm telemetry!");
 
 	// CAN INIT
@@ -100,9 +104,13 @@ void setup() {
 	Serial.println("CAN OK");
 
 	// LCD INIT
+#ifdef _OFF_SCREEN_
+	Serial.println("Skipping screen");
+#else
 	screen.screen_init();
 	Serial.println("Screen OK");
 	screen_prepare();
+#endif
 
 	// FRISKY INIT
 	rc.init();
@@ -129,9 +137,11 @@ void loop() {
 	reset_stats();
 
 	if ((millis() - loopTime) > SCREEN_LOOP) {
+#ifndef _OFF_SCREEN_
 		screen_update();
-		loopTime = millis();
 		update_heartbeat();
+#endif
+		loopTime = millis();
 
 		id = 5;
 		len = 3;
@@ -564,9 +574,9 @@ void get_controlmode()
 	if (((millis() - heartbeat_timeout[HEARTBEAT_Cogswell]) > FAILSAFE_TIMEOUT)
 		|| ((millis() - heartbeat_timeout[HEARTBEAT_POKB]) > FAILSAFE_TIMEOUT)) // Lost SBC or POKB heartbeat
 	{
-		if (control_mode_rc != AUTONOMOUS) // rc overrides ocs
+		if (control_mode_rc == MANUAL_RC) // rc overrides ocs
 		{
-			control_mode = control_mode_rc;
+			control_mode = MANUAL_RC;
 		}
 		else
 		{
@@ -837,6 +847,8 @@ void forwardToCAN(uint8_t payload[])
 //          XBEE FUNCTIONS
 //==========================================
 
+#define _XBEE_DEBUG_
+#ifndef _XBEE_DEBUG_
 void forwardToXbee() {
 	//START_BYTE x2, len, id, buf
 	zbTx = ZBTxRequest(addr64, xbee_buf, 4 + len);
@@ -874,6 +886,51 @@ void forwardToXbee() {
 		}
 	}
 }
+#else
+void forwardToXbee()
+{
+	forwardToXbeeAddr(addr64);
+	//if((id == 111) || (id == 112))
+	//	forwardToXbeeAddr(addr64spare);
+}
+void forwardToXbeeAddr(XBeeAddress64 addr) {
+	//START_BYTE x2, len, id, buf
+	zbTx = ZBTxRequest(addr, xbee_buf, 4 + len);
+	xbee_buf[0] = START_BYTE;
+	xbee_buf[1] = START_BYTE;
+	xbee_buf[2] = id;
+	xbee_buf[3] = len;
+	for (int i = 4, j = 0; j < len; i++, j++) {
+		// Copy data from CAN buf to xbee buf
+		xbee_buf[i] = buf[j];
+	}
+	xbee.send(zbTx);
+	if (xbee.readPacket(100))
+	{
+		// got a response!
+		// should be a znet tx status      
+		if (xbee.getResponse().getApiId() == ZB_TX_STATUS_RESPONSE)
+		{
+			xbee.getResponse().getZBTxStatusResponse(txStatus);
+			// get the delivery status, the fifth byte
+			if (txStatus.getDeliveryStatus() == SUCCESS)
+			{
+				// success.  time to celebrate
+				//Serial.println("Ack");
+			}
+			else
+			{
+				//Serial.println("No Acknowledgement");
+			}
+		}
+		else
+		{
+			// local XBee did not provide a timely TX Status Response -- should not happen
+			Serial.println("Sender Error");
+		}
+	}
+}
+#endif
 
 // Not used
 // XBee RSSI retrieved from ocs side instead
