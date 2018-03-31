@@ -90,14 +90,20 @@ uint8_t cmd[] = { 'D','B' };
 AtCommandRequest atRequest = AtCommandRequest();
 AtCommandResponse atResponse = AtCommandResponse();
 
-#define _OFF_SCREEN_
+//#define _OFF_SCREEN_
 int count = 0;
 
 void setup() {
 	Serial.begin(115200);
-	pinMode(10, OUTPUT);
-	digitalWrite(10, HIGH);
+	pinMode(SCREEN_CS, OUTPUT);		//CS screen
+	digitalWrite(SCREEN_CS, HIGH);
+	pinMode(CAN_Chip_Select, OUTPUT);		//CS CAN
+	digitalWrite(CAN_Chip_Select, HIGH);
 	Serial.println("Hi, I'm telemetry!");
+
+	SPI.beginTransaction(SPISettings(20000000, MSBFIRST, SPI_MODE0));	//4MHz
+	SPI.endTransaction();
+	Serial.println("SPI set to 20MHz since the screen is fked");
 
 	// CAN INIT
 	CAN_init();
