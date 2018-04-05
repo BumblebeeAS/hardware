@@ -108,7 +108,7 @@ void loop()
 		SerialLoop = millis();
 	}
 
-	//Auto reset -- Triggered by Offing PoE (RocketAC) -- NEED TO TEST
+	//Auto reset -- Triggered by Offing PoE (RocketAC)
 	if (autoReset && ((millis() - autoResetLoop) > AUTORESET_TIME)) {
 		autoReset = false;
 		LsControl = LsControl | ENABLE_POE_INJECTOR;
@@ -150,12 +150,12 @@ boolean checkCanMsg() {
 	if (CAN_MSGAVAIL == CAN.checkReceive()) {
 		CAN.readMsgBufID(&id, &len, buf);    // read data,  len: data length, buf: data buf
 		boolean mine = false;
-		Serial.print("ID: ");
-		Serial.println(id);
 		switch (id) {
 		case CAN_POPB_control:
 			LsControl = CAN.parseCANFrame(buf, 0, 1);
 			mine = true;
+			if (DEBUG_MODE)
+				Serial.println(LsControl);
 			if (DEBUG_MODEVVV)
 				Serial.println("Yay Mine!");			
 			break;
