@@ -35,6 +35,7 @@
 #include <SPI.h> //for CAN controller
 #include <can.h>
 
+#define _DEBUG_
 #define _XBEE_
 LCD screen = LCD(SCREEN_CS, SCREEN_RESET);  //screen
 Frisky rc = Frisky(RC_INT);
@@ -90,31 +91,52 @@ uint8_t cmd[] = { 'D','B' };
 AtCommandRequest atRequest = AtCommandRequest();
 AtCommandResponse atResponse = AtCommandResponse();
 
-//#define _OFF_SCREEN_
+#define _OFF_SCREEN_
 int count = 0;
 
 void setup() {
-	Serial.begin(115200);
+	//Serial.begin(115200);
 	pinMode(SCREEN_CS, OUTPUT);		//CS screen
 	digitalWrite(SCREEN_CS, HIGH);
 	pinMode(CAN_Chip_Select, OUTPUT);		//CS CAN
 	digitalWrite(CAN_Chip_Select, HIGH);
-	Serial.println("Hi, I'm telemetry!");
+	//Serial.println("Hi, I'm telemetry!");
 
 	SPI.beginTransaction(SPISettings(20000000, MSBFIRST, SPI_MODE0));	//4MHz
 	SPI.endTransaction();
-	Serial.println("SPI set to 20MHz since the screen is fked");
+	//Serial.println("SPI set to 20MHz since the screen is fked");
 
 	// CAN INIT
 	CAN_init();
-	Serial.println("CAN OK");
+	
+	//Serial.println("CAN OK");
+	/*
+	// CAN Masking
+	CAN.init_Mask(0, 0, 0x3FF);
+	CAN.init_Mask(1, 0, 0x3FF);
 
+	//CAN.init_Filt(0, 0, CAN_INS_stats);
+	//CAN.init_Filt(0, 0, CAN_GPS_stats);
+	//CAN.init_Filt(0, 0, CAN_cpu_temp);
+	//CAN.init_Filt(0, 0, CAN_wind_speed);
+	CAN.init_Filt(0, 0, CAN_battery1_stats);
+	CAN.init_Filt(0, 0, CAN_battery2_stats);
+	CAN.init_Filt(0, 0, CAN_esc1_motor_stats);
+	CAN.init_Filt(0, 0, CAN_esc2_motor_stats);
+	CAN.init_Filt(0, 0, CAN_remote_kill_stats);
+	CAN.init_Filt(0, 0, CAN_POSB_stats);
+	CAN.init_Filt(0, 0, CAN_POPB_stats);
+	CAN.init_Filt(0, 0 , CAN_control_link);
+	CAN.init_Filt(0, 0, CAN_heartbeat);
+	CAN.init_Filt(0, 0, CAN_soft_e_stop);
+	CAN.init_Filt(0, 0, CAN_e_stop);
+	*/
 	// LCD INIT
 #ifdef _OFF_SCREEN_
-	Serial.println("Skipping screen");
+	//Serial.println("Skipping screen");
 #else
 	screen.screen_init();
-	Serial.println("Screen OK");
+	//Serial.println("Screen OK");
 	screen_prepare();
 #endif
 
@@ -124,7 +146,7 @@ void setup() {
 	// XBEE INIT
 	Serial2.begin(XBEE_BAUDRATE);
 	xbee.setSerial(Serial2);
-	Serial.println("INITIATING TRANSMISSION...");
+	//Serial.println("INITIATING TRANSMISSION...");
 
 	// DAC INIT
 	Wire.begin();
@@ -143,6 +165,7 @@ void loop() {
 	reset_stats();
 
 	if ((millis() - loopTime) > SCREEN_LOOP) {
+		
 #ifndef _OFF_SCREEN_
 		screen_update();
 		update_heartbeat();
@@ -168,23 +191,24 @@ void loop() {
 		get_directions();
 
 #ifdef _DEBUG_
-		Serial.print("MANUAL RC -");
-		Serial.print(" 1: ");
-		Serial.print(speed1);
-		Serial.print(" 2: ");
-		Serial.print(speed2);
-		Serial.print(" 3: ");
-		Serial.print(speed3);
-		Serial.print(" 4: ");
-		Serial.println(speed4);
+		//Serial.print("MANUAL RC -");
+		//Serial.print(" 1: ");
+		//Serial.print(speed1);
+		//Serial.print(" 2: ");
+		//Serial.print(speed2);
+		//Serial.print(" 3: ");
+		//Serial.print(speed3);
+		//Serial.print(" 4: ");
+		//Serial.println(speed4);
+		//Serial.println(control_mode);
 	}
 	else if (control_mode == AUTONOMOUS)
 	{
-		Serial.println("AUTONOMOUS");
+		//Serial.println("AUTONOMOUS");
 	}
 	else
 	{
-		Serial.println("STATION KEEP");
+		//Serial.println("STATION KEEP");
 #endif
 	}
 
@@ -202,7 +226,7 @@ void loop() {
 	/*					OCS RX					  */
 	/* Read OCS XBEE for Manual Thruster override */
 	/**********************************************/
-
+#ifdef _XBEE_
 	xbee.readPacket();
 	if (xbee.getResponse().isAvailable())
 	{
@@ -214,20 +238,20 @@ void loop() {
 			/*
 			for (int i = 0; i < len; i++)
 			{
-				Serial.print(payload[i]);
-				Serial.print(" ");
+				//Serial.print(payload[i]);
+				//Serial.print(" ");
 			}
-			Serial.print(" ||| id: ");
-			Serial.print(payload[2]);
-			Serial.print(" | len: ");
-			Serial.print(payload[3]);
-			Serial.print(" | data: ");
+			//Serial.print(" ||| id: ");
+			//Serial.print(payload[2]);
+			//Serial.print(" | len: ");
+			//Serial.print(payload[3]);
+			//Serial.print(" | data: ");
 			for (int i = 4; i < len; i++)
 			{
-				Serial.print(payload[i]);
-				Serial.print(" ");
+				//Serial.print(payload[i]);
+				//Serial.print(" ");
 			}
-			Serial.println("");*/
+			//Serial.println("");*/
 			switch (payload[2])
 			{
 			case CAN_control_link:
@@ -244,18 +268,18 @@ void loop() {
 					speed3 = (uint16_t(CAN.parseCANFrame(payload, 8, 2)))-3200;
 					speed4 = (uint16_t(CAN.parseCANFrame(payload, 10, 2)))-3200;
 					/*
-					Serial.print(" Speed1: ");
-					Serial.print(speed1);
-					Serial.print(" Speed2: ");
-					Serial.print(speed2);*/
+					//Serial.print(" Speed1: ");
+					//Serial.print(speed1);
+					//Serial.print(" Speed2: ");
+					//Serial.print(speed2);*/
 					
 				}
-					Serial.println();
+					//Serial.println();
 				break;
 			case CAN_heartbeat:
 				if (payload[4] == HEARTBEAT_OCS)
 				{
-					Serial.println("OCS Heartbeat");
+					//Serial.println("OCS Heartbeat");
 					publishCAN_heartbeat(HEARTBEAT_OCS);
 					// NEED SEND THIS HEARTBEAT BACK TO OCS FOR WEBUI
 					heartbeat_timeout[HEARTBEAT_OCS] = millis();
@@ -263,11 +287,11 @@ void loop() {
 				}
 				break;
 			case CAN_soft_e_stop:
-				Serial.println("SOFT E STOP!");
+				//Serial.println("SOFT E STOP!");
 				forwardToCAN(payload);
 				break;
 			case CAN_POPB_control:
-				Serial.println("POPB Control Signal!");
+				//Serial.println("POPB Control Signal!");
 				forwardToCAN(payload);
 				break;
 			default:
@@ -276,6 +300,7 @@ void loop() {
 		}
 
 	}
+#endif
 
 	/**********************************************/
 	/*					OCS TX					  */
@@ -305,8 +330,8 @@ void loop() {
 	//    CAN_State_Buf[1]=CAN.checkTXStatus(0);//check buffer 0
 	//    CAN_State_Buf[2]=CAN.checkTXStatus(1);//check buffer 1
 	//    CAN.sendMsgBuf(CAN_telemetry_BUS_stats, 0, 3, CAN_State_Buf); //id, extended frame(1) or normal(0), no of bytes sent, data
-	//    Serial.print("CAN publish time:");
-	//    Serial.println(millis() - test_time);
+	//    //Serial.print("CAN publish time:");
+	//    //Serial.println(millis() - test_time);
 	//    canStatsTime = millis();
 	//  }
 }
@@ -516,6 +541,7 @@ void set_thruster_values()
 	if ((millis() - heartbeat_timeout[HEARTBEAT_POKB]) > FAILSAFE_TIMEOUT)
 	{
 		// If no POKB heartbeat, stop all thrusters
+		//Serial.println("Can't see heartbeat");
 		reset_thruster_values();
 	}
 	else
@@ -649,13 +675,13 @@ void CAN_init() {
 START_INIT:
 	if (CAN_OK == CAN.begin(CAN_1000KBPS)) {                   // init can bus : baudrate = 1000k
 #if DEBUG_MODE == NORMAL
-		Serial.println("CAN init ok!");
+		//Serial.println("CAN init ok!");
 #endif           
 	}
 	else {
 #if DEBUG_MODE == NORMAL
-		Serial.println("CAN init fail");
-		Serial.println("Init CAN again");
+		//Serial.println("CAN init fail");
+		//Serial.println("Init CAN again");
 		delay(1000);
 #endif           
 		goto START_INIT;
@@ -684,7 +710,7 @@ void checkCANmsg() {
 		case CAN_heartbeat:
 		{
 			uint32_t device = CAN.parseCANFrame(buf, 0, 1);
-			//Serial.pri nt(" heartbeat: ");
+			//Serial.print(" heartbeat: ");
 			//Serial.println(device);
 			heartbeat_timeout[device] = millis();
 			get_thruster_batt_heartbeat();
@@ -728,6 +754,8 @@ void checkCANmsg() {
 			break;
 		}
 		switch (CAN.getCanId()) {
+
+		case CAN_remote_kill_stats:
 		case CAN_heartbeat:
 		case CAN_e_stop:
 		case CAN_wind_speed:
@@ -735,7 +763,6 @@ void checkCANmsg() {
 		case CAN_battery2_stats:
 		case CAN_esc1_motor_stats:
 		case CAN_esc2_motor_stats:
-		case CAN_remote_kill_stats:
 		case CAN_INS_stats:
 		case CAN_GPS_stats:
 		case CAN_cpu_temp:
@@ -760,8 +787,8 @@ void get_thruster_batt_heartbeat()
 	if (len == 2) // if is POSB heartbeat
 	{
 		uint8_t thruster_heartbeat = CAN.parseCANFrame(buf, 1, 1);
-		/*Serial.print("ESC + Thruster HB: ");
-		Serial.println(thruster_heartbeat, HEX);*/
+		/*//Serial.print("ESC + Thruster HB: ");
+		//Serial.println(thruster_heartbeat, HEX);*/
 		for (int i = 0; i < 4; i++)
 		{
 			if (thruster_heartbeat & 1) // Check first bit
@@ -832,8 +859,8 @@ void publishCAN_controllink()
 	buf[0] = control_mode;
 	buf[1] = internalStats[RSSI_RC];
 	/*buf[2] = getXbeeRssi();
-	Serial.print("RSSI: ");
-	Serial.println(buf[2]);*/
+	//Serial.print("RSSI: ");
+	//Serial.println(buf[2]);*/
 	buf[2] = internalStats[RSSI_OCS];
 	CAN.sendMsgBuf(CAN_control_link, 0, 3, buf);
 }
@@ -888,7 +915,7 @@ void forwardToXbee() {
 		else
 		{
 			// local XBee did not provide a timely TX Status Response -- should not happen
-			Serial.println("Sender Error");
+			//Serial.println("Sender Error");
 		}
 	}
 }
@@ -932,7 +959,7 @@ void forwardToXbeeAddr(XBeeAddress64 addr) {
 		else
 		{
 			// local XBee did not provide a timely TX Status Response -- should not happen
-			Serial.println("Sender Error");
+			//Serial.println("Sender Error");
 		}
 	}
 }
