@@ -35,8 +35,6 @@
 #include <SPI.h> //for CAN controller
 #include <can.h>
 
-#define _DEBUG_
-#define _XBEE_
 LCD screen = LCD(SCREEN_CS, SCREEN_RESET);  //screen
 Frisky rc = Frisky(RC_INT);
 
@@ -91,25 +89,37 @@ uint8_t cmd[] = { 'D','B' };
 AtCommandRequest atRequest = AtCommandRequest();
 AtCommandResponse atResponse = AtCommandResponse();
 
-#define _OFF_SCREEN_
+//#define _DEBUG_			//	uncomment to print debug
+#define _XBEE_			//	uncomment to use xbee
+//#define _SERIAL_		//	uncomment to use serial 0
+
+#define _XBEE_DEBUG_	//	comment to debug xbee
+//#define _OFF_SCREEN_	//	comment to use screen
+
 int count = 0;
 
 void setup() {
-	//Serial.begin(115200);
+	delay(1000);
 	pinMode(SCREEN_CS, OUTPUT);		//CS screen
 	digitalWrite(SCREEN_CS, HIGH);
 	pinMode(CAN_Chip_Select, OUTPUT);		//CS CAN
 	digitalWrite(CAN_Chip_Select, HIGH);
-	//Serial.println("Hi, I'm telemetry!");
 
-	SPI.beginTransaction(SPISettings(20000000, MSBFIRST, SPI_MODE0));	//4MHz
-	SPI.endTransaction();
-	//Serial.println("SPI set to 20MHz since the screen is fked");
+#ifdef _SERIAL_
+	Serial.begin(115200);
+	Serial.println("Hi, I'm telemetry!");
+	Serial.println("SPI set to 20MHz since the screen is fked");
+#endif 
+
+	//SPI.beginTransaction(SPISettings(20000000, MSBFIRST, SPI_MODE0));	//20MHz
+	//SPI.endTransaction();
 
 	// CAN INIT
 	CAN_init();
-	
-	//Serial.println("CAN OK");
+#ifdef _SERIAL_
+	Serial.println("CAN OK");
+#endif 
+
 	/*
 	// CAN Masking
 	CAN.init_Mask(0, 0, 0x3FF);
@@ -131,12 +141,17 @@ void setup() {
 	CAN.init_Filt(0, 0, CAN_soft_e_stop);
 	CAN.init_Filt(0, 0, CAN_e_stop);
 	*/
+
 	// LCD INIT
 #ifdef _OFF_SCREEN_
-	//Serial.println("Skipping screen");
+#ifdef _SERIAL_
+	Serial.println("Skipping screen");
+#endif 
 #else
 	screen.screen_init();
-	//Serial.println("Screen OK");
+#ifdef _SERIAL_
+	Serial.println("Screen OK");
+#endif /
 	screen_prepare();
 #endif
 
@@ -146,7 +161,9 @@ void setup() {
 	// XBEE INIT
 	Serial2.begin(XBEE_BAUDRATE);
 	xbee.setSerial(Serial2);
-	//Serial.println("INITIATING TRANSMISSION...");
+#ifdef _SERIAL_
+	Serial.println("INITIATING TRANSMISSION...");
+#endif 
 
 	// DAC INIT
 	Wire.begin();
@@ -204,11 +221,15 @@ void loop() {
 	}
 	else if (control_mode == AUTONOMOUS)
 	{
-		//Serial.println("AUTONOMOUS");
+#ifdef _SERIAL_
+		Serial.println("AUTONOMOUS");
+#endif
 	}
 	else
 	{
-		//Serial.println("STATION KEEP");
+#ifdef _SERIAL_
+		Serial.println("STATION KEEP");
+#endif
 #endif
 	}
 
@@ -259,8 +280,10 @@ void loop() {
 				internalStats[RSSI_OCS] = payload[6];
 				break;
 			case CAN_manual_thruster:
-					//Serial.print("OCS Mode: ");
-					//Serial.print(control_mode_ocs);
+#ifdef _SERIAL_
+				Serial.print("OCS Mode: ");
+				Serial.print(control_mode_ocs);
+#endif
 				if (control_mode == MANUAL_OCS)
 				{
 					speed1 = (uint16_t(CAN.parseCANFrame(payload, 4, 2)))-3200;
@@ -274,12 +297,16 @@ void loop() {
 					//Serial.print(speed2);*/
 					
 				}
-					//Serial.println();
+#ifdef _SERIAL_
+					Serial.println();
+#endif
 				break;
 			case CAN_heartbeat:
 				if (payload[4] == HEARTBEAT_OCS)
 				{
-					//Serial.println("OCS Heartbeat");
+#ifdef _SERIAL_
+					Serial.println("OCS Heartbeat");
+#endif	
 					publishCAN_heartbeat(HEARTBEAT_OCS);
 					// NEED SEND THIS HEARTBEAT BACK TO OCS FOR WEBUI
 					heartbeat_timeout[HEARTBEAT_OCS] = millis();
@@ -287,11 +314,15 @@ void loop() {
 				}
 				break;
 			case CAN_soft_e_stop:
-				//Serial.println("SOFT E STOP!");
+#ifdef _SERIAL_
+				Serial.println("SOFT E STOP!");
+#endif 
 				forwardToCAN(payload);
 				break;
 			case CAN_POPB_control:
-				//Serial.println("POPB Control Signal!");
+#ifdef _SERIAL_
+				Serial.println("POPB Control Signal!");
+#endif
 				forwardToCAN(payload);
 				break;
 			default:
@@ -541,7 +572,6 @@ void set_thruster_values()
 	if ((millis() - heartbeat_timeout[HEARTBEAT_POKB]) > FAILSAFE_TIMEOUT)
 	{
 		// If no POKB heartbeat, stop all thrusters
-		//Serial.println("Can't see heartbeat");
 		reset_thruster_values();
 	}
 	else
@@ -675,13 +705,13 @@ void CAN_init() {
 START_INIT:
 	if (CAN_OK == CAN.begin(CAN_1000KBPS)) {                   // init can bus : baudrate = 1000k
 #if DEBUG_MODE == NORMAL
-		//Serial.println("CAN init ok!");
+		Serial.println("CAN init ok!");
 #endif           
 	}
 	else {
 #if DEBUG_MODE == NORMAL
-		//Serial.println("CAN init fail");
-		//Serial.println("Init CAN again");
+		Serial.println("CAN init fail");
+		Serial.println("Init CAN again");
 		delay(1000);
 #endif           
 		goto START_INIT;
@@ -710,15 +740,19 @@ void checkCANmsg() {
 		case CAN_heartbeat:
 		{
 			uint32_t device = CAN.parseCANFrame(buf, 0, 1);
-			//Serial.print(" heartbeat: ");
-			//Serial.println(device);
+#ifdef _SERIAL_
+			Serial.print(" heartbeat: ");
+			Serial.println(device);
+#endif
 			heartbeat_timeout[device] = millis();
 			get_thruster_batt_heartbeat();
 			break;
 		}
 
 		case CAN_battery1_stats:
-			//Serial.println("Batt1 stats");
+#ifdef _SERIAL_
+			Serial.println("Batt1 stats");
+#endif
 			powerStats[BATT1_CAPACITY] = CAN.parseCANFrame(buf, 0, 1);
 			powerStats[BATT1_VOLTAGE] = CAN.parseCANFrame(buf, 1, 2);
 			powerStats[BATT1_CURRENT] = CAN.parseCANFrame(buf, 3, 2);
@@ -727,7 +761,9 @@ void checkCANmsg() {
 			break;
 
 		case CAN_battery2_stats:
-			//Serial.println("Batt2 stats");
+#ifdef _SERIAL_
+			Serial.println("Batt2 stats");
+#endif
 			powerStats[BATT2_CAPACITY] = CAN.parseCANFrame(buf, 0, 1);
 			powerStats[BATT2_VOLTAGE] = CAN.parseCANFrame(buf, 1, 2);
 			powerStats[BATT2_CURRENT] = CAN.parseCANFrame(buf, 3, 2);
@@ -735,13 +771,17 @@ void checkCANmsg() {
 			break;
 
 		case CAN_cpu_temp:
-			//Serial.println("sbc stats");
+#ifdef _SERIAL_
+			Serial.println("sbc stats");
+#endif
 			internalStats[CPU_TEMP] = CAN.parseCANFrame(buf, 0, 1);
 			sbc_timeout = millis();
 			break;
 
 		case CAN_POSB_stats:
-			//Serial.println("posb stats");
+#ifdef _SERIAL_
+			Serial.println("posb stats");
+#endif
 			//internalStats[INT_PRESS] = CAN.parseCANFrame(buf, 2, 1);
 			internalStats[INT_PRESS] = 255;
 			internalStats[HUMIDITY] = CAN.parseCANFrame(buf, 1, 1);
@@ -750,7 +790,9 @@ void checkCANmsg() {
 			break;
 
 		default:
-			//Serial.println("Others");
+#ifdef _SERIAL_
+			Serial.println("Others");
+#endif
 			break;
 		}
 		switch (CAN.getCanId()) {
@@ -787,16 +829,20 @@ void get_thruster_batt_heartbeat()
 	if (len == 2) // if is POSB heartbeat
 	{
 		uint8_t thruster_heartbeat = CAN.parseCANFrame(buf, 1, 1);
-		/*//Serial.print("ESC + Thruster HB: ");
-		//Serial.println(thruster_heartbeat, HEX);*/
+		/*Serial.print("ESC + Thruster HB: ");
+		Serial.println(thruster_heartbeat, HEX);*/
 		for (int i = 0; i < 4; i++)
 		{
 			if (thruster_heartbeat & 1) // Check first bit
 			{
 				heartbeat_timeout[BATT1 + i] = millis();
-				//Serial.print(BATT1 + i);
+#ifdef _SERIAL_
+				Serial.print(BATT1 + i);
+#endif
 			}
-			//Serial.println("");
+#ifdef _SERIAL_
+			Serial.println("");
+#endif
 			thruster_heartbeat = thruster_heartbeat >> 1; // Move to next bit
 		}
 	}
@@ -859,8 +905,8 @@ void publishCAN_controllink()
 	buf[0] = control_mode;
 	buf[1] = internalStats[RSSI_RC];
 	/*buf[2] = getXbeeRssi();
-	//Serial.print("RSSI: ");
-	//Serial.println(buf[2]);*/
+	Serial.print("RSSI: ");
+	Serial.println(buf[2]);*/
 	buf[2] = internalStats[RSSI_OCS];
 	CAN.sendMsgBuf(CAN_control_link, 0, 3, buf);
 }
@@ -880,7 +926,6 @@ void forwardToCAN(uint8_t payload[])
 //          XBEE FUNCTIONS
 //==========================================
 
-#define _XBEE_DEBUG_
 #ifndef _XBEE_DEBUG_
 void forwardToXbee() {
 	//START_BYTE x2, len, id, buf
@@ -949,17 +994,23 @@ void forwardToXbeeAddr(XBeeAddress64 addr) {
 			if (txStatus.getDeliveryStatus() == SUCCESS)
 			{
 				// success.  time to celebrate
-				//Serial.println("Ack");
+#ifdef _SERIAL_
+				Serial.println("Ack");
+#endif
 			}
 			else
 			{
-				//Serial.println("No Acknowledgement");
+#ifdef _SERIAL_
+				Serial.println("No Acknowledgement");
+#endif
 			}
 		}
 		else
 		{
 			// local XBee did not provide a timely TX Status Response -- should not happen
-			//Serial.println("Sender Error");
+#ifdef _SERIAL_
+			Serial.println("Sender Error");
+#endif
 		}
 	}
 }

@@ -14,8 +14,6 @@
 #define SCREEN_CS 22
 #define SCREEN_RESET 24
 
-#define SD_CS 10
-
 #define SCREEN_LOOP 1000
 
 //FRISKY
