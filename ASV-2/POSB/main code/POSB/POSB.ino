@@ -82,6 +82,8 @@ HIH613x humidTempSensor(0x27);
 static uint32_t Temp_Humid_loop = 0; //250ms loop Publish temp and humidity
 uint8_t humid_ctr = 0;
 
+#define _TELE_DED_
+
 //#define _TEST_
 #ifdef _TEST_
 
@@ -459,9 +461,14 @@ void failsafe()
 {
 	if ((millis() - controlmode_loop) > CONTROLMODE_TIMEOUT)
 	{
+#ifndef _TELE_DED_
 		control_mode = MANUAL_OCS;
 		resetThrusterSpeed();
 		Serial.println("*** All thrusters stopped *** No telemetry HB");
+#else
+		control_mode = AUTONOMOUS;
+		Serial.println("thruster not stopped though tele ded.....  QQ");
+#endif // !_TELE DED_
 		controlmode_loop = millis();
 	}
 }
