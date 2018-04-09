@@ -54,8 +54,8 @@ Torqeedo Battery2(TORQEEDO2_RXEN, TORQEEDO2_DXEN, TORQEEDO2_ON, 2);
 uint8_t posb_stat_buf[2] = { 128,256 };
 uint8_t esc1_stat_buf[7] = { 0x2C, 0x1, 0x14, 0x0, 0, 0, 0 }; // 0, 0, 0, 200, 300
 uint8_t esc2_stat_buf[7] = { 0x90, 0x1, 0xF4, 0x1, 0, 0, 0 }; // 0, 0, 0, 500, 400
-uint8_t batt1_stat_buf[6] = { 25, 0x2C, 0x1, 0x58, 0x2, 75 }; // 25, 600, 300, 75
-uint8_t batt2_stat_buf[6] = { 25, 0x2C, 0x1, 0xBC, 0x2, 50 }; // 25, 700, 300, 50
+uint8_t batt1_stat_buf[7] = { 25, 0x2C, 0x1, 0x58, 0x2, 75 , 0}; // 25, 600, 300, 75
+uint8_t batt2_stat_buf[7] = { 25, 0x2C, 0x1, 0xBC, 0x2, 50 , 0}; // 25, 700, 300, 50
 uint32_t heartbeat_loop;
 uint32_t batt_loop;
 uint32_t power_loop;
@@ -64,6 +64,7 @@ uint32_t thruster_loop;
 uint32_t thruster_stat_loop;
 uint32_t windspeed_loop;
 uint32_t blink_loop;
+uint32_t autothruster_loop;
 
 uint32_t esc1_loop;
 uint32_t esc2_loop;
@@ -128,6 +129,7 @@ void setup()
 	controlmode_loop = millis();
 	power_loop = millis();
 	thruster_loop = millis();
+	autothruster_loop = millis();
 }
 
 void loop()
@@ -288,7 +290,7 @@ void getThrusterSpeed()
 	speed2 = map(CAN.parseCANFrame(buf, 2, 2), 0, 6400, -1000, 1000);
 	speed3 = map(CAN.parseCANFrame(buf, 4, 2), 0, 6400, -1000, 1000);
 	speed4 = map(CAN.parseCANFrame(buf, 6, 2), 0, 6400, -1000, 1000);
-	/*
+	
 	Serial.print(" 1: ");
 	Serial.print(speed1);
 	Serial.print(" 2: ");
@@ -296,7 +298,7 @@ void getThrusterSpeed()
 	Serial.print(" 3: ");
 	Serial.print(speed3);
 	Serial.print(" 4: ");
-	Serial.println(speed4);	*/
+	Serial.println(speed4);	
 }
 void resetThrusterSpeed()
 {
@@ -470,6 +472,11 @@ void failsafe()
 		Serial.println("thruster not stopped though tele ded.....  QQ");
 #endif // !_TELE DED_
 		controlmode_loop = millis();
+		if ((millis() - autothruster_loop) > INACTIVITY_TIMEOUT)
+		{
+			resetThrusterSpeed();
+			autothruster_loop = millis();
+		}
 	}
 }
 void resetBatteryHeartbeat()
@@ -640,16 +647,16 @@ void publishCAN_batt1_stats()
 	CAN.setupCANFrame(batt1_stat_buf, 0, 1, Battery1.getCapacity());
 	CAN.setupCANFrame(batt1_stat_buf, 1, 2, Battery1.getVoltage());
 	CAN.setupCANFrame(batt1_stat_buf, 3, 2, 0 - (int16_t)Battery1.getCurrent());
-	CAN.setupCANFrame(batt1_stat_buf, 5, 1, Battery1.getTemperature());
-	CAN.sendMsgBuf(CAN_battery1_stats, 0, 6, batt1_stat_buf);
+	CAN.setupCANFrame(batt1_stat_buf, 5, 2, Battery1.getTemperature());
+	CAN.sendMsgBuf(CAN_battery1_stats, 0, 7, batt1_stat_buf);
 }
 void publishCAN_batt2_stats()
 {
 	CAN.setupCANFrame(batt2_stat_buf, 0, 1, Battery2.getCapacity());
 	CAN.setupCANFrame(batt2_stat_buf, 1, 2, Battery2.getVoltage());
 	CAN.setupCANFrame(batt2_stat_buf, 3, 2, 0 - (int16_t)Battery2.getCurrent());
-	CAN.setupCANFrame(batt2_stat_buf, 5, 1, Battery2.getTemperature());
-	CAN.sendMsgBuf(CAN_battery2_stats, 0, 6, batt2_stat_buf);
+	CAN.setupCANFrame(batt2_stat_buf, 5, 2, Battery2.getTemperature());
+	CAN.sendMsgBuf(CAN_battery2_stats, 0, 7, batt2_stat_buf);
 }
 void checkCANmsg() {
 	if (CAN_MSGAVAIL == CAN.checkReceive()) {
@@ -662,8 +669,9 @@ void checkCANmsg() {
 			Serial.print("]");
 			if ((control_mode == AUTONOMOUS) || (control_mode == STATION_KEEP))
 			{
-				//Serial.print(" AUTO: ");
+				Serial.print(" AUTO: ");
 				getThrusterSpeed();
+				autothruster_loop = millis();
 			}
 			break;
 		case CAN_manual_thruster:

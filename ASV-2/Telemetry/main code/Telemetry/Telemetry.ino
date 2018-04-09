@@ -94,7 +94,7 @@ AtCommandResponse atResponse = AtCommandResponse();
 //#define _SERIAL_		//	uncomment to use serial 0
 
 #define _XBEE_DEBUG_	//	comment to debug xbee
-//#define _OFF_SCREEN_	//	comment to use screen
+#define _OFF_SCREEN_	//	comment to use screen
 
 int count = 0;
 
@@ -105,6 +105,7 @@ void setup() {
 	pinMode(CAN_Chip_Select, OUTPUT);		//CS CAN
 	digitalWrite(CAN_Chip_Select, HIGH);
 
+	Serial.begin(115200);
 #ifdef _SERIAL_
 	Serial.begin(115200);
 	Serial.println("Hi, I'm telemetry!");
@@ -633,19 +634,21 @@ int calculate_rssi()
 
 void get_controlmode()
 {
-	if (((millis() - heartbeat_timeout[HEARTBEAT_Cogswell]) > FAILSAFE_TIMEOUT)
+	/*if (((millis() - heartbeat_timeout[HEARTBEAT_Cogswell]) > FAILSAFE_TIMEOUT)
 		|| ((millis() - heartbeat_timeout[HEARTBEAT_POKB]) > FAILSAFE_TIMEOUT)) // Lost SBC or POKB heartbeat
 	{
+
 		if (control_mode_rc == MANUAL_RC) // rc overrides ocs
 		{
 			control_mode = MANUAL_RC;
 		}
 		else
 		{
+			Serial.println("SBC TIMEOUT");
 			control_mode = MANUAL_OCS;
 		}
 	}
-	else if (((millis() - heartbeat_timeout[HEARTBEAT_RC]) > COMMLINK_TIMEOUT) &&
+	else*/ if (((millis() - heartbeat_timeout[HEARTBEAT_RC]) > COMMLINK_TIMEOUT) &&
 		((millis() - heartbeat_timeout[HEARTBEAT_OCS]) > COMMLINK_TIMEOUT)) // Both rc & ocs loss comms
 	{
 		control_mode = STATION_KEEP;
@@ -744,6 +747,10 @@ void checkCANmsg() {
 			Serial.print(" heartbeat: ");
 			Serial.println(device);
 #endif
+			if (device == HEARTBEAT_Cogswell)
+			{
+				Serial.println("*********SBC**********");
+			}
 			heartbeat_timeout[device] = millis();
 			get_thruster_batt_heartbeat();
 			break;
