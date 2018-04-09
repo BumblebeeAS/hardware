@@ -91,7 +91,7 @@ AtCommandResponse atResponse = AtCommandResponse();
 
 //#define _DEBUG_			//	uncomment to print debug
 #define _XBEE_			//	uncomment to use xbee
-//#define _SERIAL_		//	uncomment to use serial 0
+#define _SERIAL_		//	uncomment to use serial 0
 
 #define _XBEE_DEBUG_	//	comment to debug xbee
 #define _OFF_SCREEN_	//	comment to use screen
@@ -105,15 +105,15 @@ void setup() {
 	pinMode(CAN_Chip_Select, OUTPUT);		//CS CAN
 	digitalWrite(CAN_Chip_Select, HIGH);
 
-	Serial.begin(115200);
+
 #ifdef _SERIAL_
 	Serial.begin(115200);
 	Serial.println("Hi, I'm telemetry!");
 	Serial.println("SPI set to 20MHz since the screen is fked");
 #endif 
 
-	//SPI.beginTransaction(SPISettings(20000000, MSBFIRST, SPI_MODE0));	//20MHz
-	//SPI.endTransaction();
+	SPI.beginTransaction(SPISettings(20000000, MSBFIRST, SPI_MODE0));	//20MHz
+	SPI.endTransaction();
 
 	// CAN INIT
 	CAN_init();
@@ -121,27 +121,36 @@ void setup() {
 	Serial.println("CAN OK");
 #endif 
 
-	/*
+	
 	// CAN Masking
-	CAN.init_Mask(0, 0, 0x3FF);
-	CAN.init_Mask(1, 0, 0x3FF);
+	//CAN.init_Mask(0, 0, 0x3ff);// there are 2 mask in mcp2515,
+	//CAN.init_Mask(1, 0, 0x3ff);// you need to set both of them
+	
+	CAN.init_Mask(0, 0, 0x400);
+	CAN.init_Mask(1, 0, 0x400);
+
+	CAN.init_Filt(0, 0, 0);
 
 	//CAN.init_Filt(0, 0, CAN_INS_stats);
 	//CAN.init_Filt(0, 0, CAN_GPS_stats);
 	//CAN.init_Filt(0, 0, CAN_cpu_temp);
 	//CAN.init_Filt(0, 0, CAN_wind_speed);
+	// can only filter to accepty 6
+	/*
 	CAN.init_Filt(0, 0, CAN_battery1_stats);
-	CAN.init_Filt(0, 0, CAN_battery2_stats);
-	CAN.init_Filt(0, 0, CAN_esc1_motor_stats);
-	CAN.init_Filt(0, 0, CAN_esc2_motor_stats);
-	CAN.init_Filt(0, 0, CAN_remote_kill_stats);
-	CAN.init_Filt(0, 0, CAN_POSB_stats);
-	CAN.init_Filt(0, 0, CAN_POPB_stats);
-	CAN.init_Filt(0, 0 , CAN_control_link);
-	CAN.init_Filt(0, 0, CAN_heartbeat);
-	CAN.init_Filt(0, 0, CAN_soft_e_stop);
-	CAN.init_Filt(0, 0, CAN_e_stop);
+	CAN.init_Filt(1, 0, CAN_battery2_stats);
+	CAN.init_Filt(2, 0, CAN_esc1_motor_stats);
+	CAN.init_Filt(3, 0, CAN_esc2_motor_stats);
+	CAN.init_Filt(4, 0, CAN_remote_kill_stats);
+	CAN.init_Filt(5, 0, CAN_POSB_stats);
+	/*
+	CAN.init_Filt(6, 0, CAN_POPB_stats);
+	CAN.init_Filt(7, 0 , CAN_control_link);
+	CAN.init_Filt(8, 0, CAN_heartbeat);
+	CAN.init_Filt(9, 0, CAN_soft_e_stop);
+	CAN.init_Filt(10, 0, CAN_e_stop);
 	*/
+
 
 	// LCD INIT
 #ifdef _OFF_SCREEN_
@@ -209,15 +218,17 @@ void loop() {
 		get_directions();
 
 #ifdef _DEBUG_
-		//Serial.print("MANUAL RC -");
-		//Serial.print(" 1: ");
-		//Serial.print(speed1);
-		//Serial.print(" 2: ");
-		//Serial.print(speed2);
-		//Serial.print(" 3: ");
-		//Serial.print(speed3);
-		//Serial.print(" 4: ");
-		//Serial.println(speed4);
+		Serial.print("MANUAL RC -");
+		Serial.print(" 1: ");
+		Serial.print(speed1);
+		Serial.print(" 2: ");
+		Serial.print(speed2);
+		Serial.print(" 3: ");
+		Serial.print(speed3);
+		Serial.print(" 4: ");
+		Serial.print(speed4);
+		Serial.print("    ");
+		Serial.println(internalStats[RSSI_RC]);
 		//Serial.println(control_mode);
 	}
 	else if (control_mode == AUTONOMOUS)
@@ -281,7 +292,7 @@ void loop() {
 				internalStats[RSSI_OCS] = payload[6];
 				break;
 			case CAN_manual_thruster:
-#ifdef _SERIAL_
+#ifdef _DEBUG_
 				Serial.print("OCS Mode: ");
 				Serial.print(control_mode_ocs);
 #endif
@@ -298,14 +309,11 @@ void loop() {
 					//Serial.print(speed2);*/
 					
 				}
-#ifdef _SERIAL_
-					Serial.println();
-#endif
 				break;
 			case CAN_heartbeat:
 				if (payload[4] == HEARTBEAT_OCS)
 				{
-#ifdef _SERIAL_
+#ifdef _DEBUG_
 					Serial.println("OCS Heartbeat");
 #endif	
 					publishCAN_heartbeat(HEARTBEAT_OCS);
@@ -315,7 +323,7 @@ void loop() {
 				}
 				break;
 			case CAN_soft_e_stop:
-#ifdef _SERIAL_
+#ifdef _DEBUG_
 				Serial.println("SOFT E STOP!");
 #endif 
 				forwardToCAN(payload);
@@ -655,7 +663,7 @@ void get_controlmode()
 	}
 	else if (control_mode_rc != AUTONOMOUS) // rc overrides ocs
 	{
-		control_mode = control_mode_rc;
+		control_mode = control_mode_rc;\
 	}
 	// If ocs is alive and not autonomous
 	else if (((millis() - heartbeat_timeout[HEARTBEAT_OCS]) < COMMLINK_TIMEOUT) && (control_mode_ocs != AUTONOMOUS))
@@ -743,7 +751,7 @@ void checkCANmsg() {
 		case CAN_heartbeat:
 		{
 			uint32_t device = CAN.parseCANFrame(buf, 0, 1);
-#ifdef _SERIAL_
+#ifdef _DEBUG_
 			Serial.print(" heartbeat: ");
 			Serial.println(device);
 #endif
@@ -757,7 +765,7 @@ void checkCANmsg() {
 		}
 
 		case CAN_battery1_stats:
-#ifdef _SERIAL_
+#ifdef _DEBUG_
 			Serial.println("Batt1 stats");
 #endif
 			powerStats[BATT1_CAPACITY] = CAN.parseCANFrame(buf, 0, 1);
@@ -768,7 +776,7 @@ void checkCANmsg() {
 			break;
 
 		case CAN_battery2_stats:
-#ifdef _SERIAL_
+#ifdef _DEBUG_
 			Serial.println("Batt2 stats");
 #endif
 			powerStats[BATT2_CAPACITY] = CAN.parseCANFrame(buf, 0, 1);
@@ -778,7 +786,7 @@ void checkCANmsg() {
 			break;
 
 		case CAN_cpu_temp:
-#ifdef _SERIAL_
+#ifdef _DEBUG_
 			Serial.println("sbc stats");
 #endif
 			internalStats[CPU_TEMP] = CAN.parseCANFrame(buf, 0, 1);
@@ -786,7 +794,7 @@ void checkCANmsg() {
 			break;
 
 		case CAN_POSB_stats:
-#ifdef _SERIAL_
+#ifdef _DEBUG_
 			Serial.println("posb stats");
 #endif
 			//internalStats[INT_PRESS] = CAN.parseCANFrame(buf, 2, 1);
@@ -798,7 +806,8 @@ void checkCANmsg() {
 
 		default:
 #ifdef _SERIAL_
-			Serial.println("Others");
+			Serial.print("Others  ");
+			Serial.println(CAN.getCanId());
 #endif
 			break;
 		}
@@ -844,7 +853,7 @@ void get_thruster_batt_heartbeat()
 			{
 				heartbeat_timeout[BATT1 + i] = millis();
 #ifdef _SERIAL_
-				Serial.print(BATT1 + i);
+				//Serial.print(BATT1 + i);
 #endif
 			}
 #ifdef _SERIAL_
@@ -1001,23 +1010,17 @@ void forwardToXbeeAddr(XBeeAddress64 addr) {
 			if (txStatus.getDeliveryStatus() == SUCCESS)
 			{
 				// success.  time to celebrate
-#ifdef _SERIAL_
-				Serial.println("Ack");
-#endif
+				//Serial.println("Ack");
 			}
 			else
 			{
-#ifdef _SERIAL_
-				Serial.println("No Acknowledgement");
-#endif
+				//Serial.println("No Acknowledgement");
 			}
 		}
 		else
 		{
 			// local XBee did not provide a timely TX Status Response -- should not happen
-#ifdef _SERIAL_
 			Serial.println("Sender Error");
-#endif
 		}
 	}
 }
