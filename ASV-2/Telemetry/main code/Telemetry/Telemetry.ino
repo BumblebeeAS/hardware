@@ -90,7 +90,7 @@ AtCommandRequest atRequest = AtCommandRequest();
 AtCommandResponse atResponse = AtCommandResponse();
 
 //#define _DEBUG_			//	uncomment to print debug
-#define _XBEE_			//	uncomment to use xbee
+//#define _XBEE_			//	uncomment to use xbee
 #define _SERIAL_		//	uncomment to use serial 0
 
 #define _XBEE_DEBUG_	//	comment to debug xbee
@@ -126,31 +126,21 @@ void setup() {
 	//CAN.init_Mask(0, 0, 0x3ff);// there are 2 mask in mcp2515,
 	//CAN.init_Mask(1, 0, 0x3ff);// you need to set both of them
 	
+	/*
+						Truth table
+			mask	filter	  id bit	reject
+			  1		  0		    1		  yes
+			  1		  1		    0		  yes
+
+	*/
+
+
+	//Bit set here will be pass into filter
 	CAN.init_Mask(0, 0, 0x400);
 	CAN.init_Mask(1, 0, 0x400);
 
+	//If mask of this bit is 1 and Filt is 0, it will filter out
 	CAN.init_Filt(0, 0, 0);
-
-	//CAN.init_Filt(0, 0, CAN_INS_stats);
-	//CAN.init_Filt(0, 0, CAN_GPS_stats);
-	//CAN.init_Filt(0, 0, CAN_cpu_temp);
-	//CAN.init_Filt(0, 0, CAN_wind_speed);
-	// can only filter to accepty 6
-	/*
-	CAN.init_Filt(0, 0, CAN_battery1_stats);
-	CAN.init_Filt(1, 0, CAN_battery2_stats);
-	CAN.init_Filt(2, 0, CAN_esc1_motor_stats);
-	CAN.init_Filt(3, 0, CAN_esc2_motor_stats);
-	CAN.init_Filt(4, 0, CAN_remote_kill_stats);
-	CAN.init_Filt(5, 0, CAN_POSB_stats);
-	/*
-	CAN.init_Filt(6, 0, CAN_POPB_stats);
-	CAN.init_Filt(7, 0 , CAN_control_link);
-	CAN.init_Filt(8, 0, CAN_heartbeat);
-	CAN.init_Filt(9, 0, CAN_soft_e_stop);
-	CAN.init_Filt(10, 0, CAN_e_stop);
-	*/
-
 
 	// LCD INIT
 #ifdef _OFF_SCREEN_
@@ -227,7 +217,7 @@ void loop() {
 		Serial.print(speed3);
 		Serial.print(" 4: ");
 		Serial.print(speed4);
-		Serial.print("    ");
+		Serial.print("    RSSI: ");
 		Serial.println(internalStats[RSSI_RC]);
 		//Serial.println(control_mode);
 	}
@@ -660,19 +650,27 @@ void get_controlmode()
 		((millis() - heartbeat_timeout[HEARTBEAT_OCS]) > COMMLINK_TIMEOUT)) // Both rc & ocs loss comms
 	{
 		control_mode = STATION_KEEP;
+		//Serial.print("loss comm ");
 	}
 	else if (control_mode_rc != AUTONOMOUS) // rc overrides ocs
 	{
-		control_mode = control_mode_rc;\
+		control_mode = control_mode_rc;
+		//Serial.print("rc: ");
+		//Serial.print(control_mode);
 	}
 	// If ocs is alive and not autonomous
 	else if (((millis() - heartbeat_timeout[HEARTBEAT_OCS]) < COMMLINK_TIMEOUT) && (control_mode_ocs != AUTONOMOUS))
 	{
 		control_mode = control_mode_ocs;
+		//Serial.print("ocs: ");
+		//Serial.print(control_mode);
 	}
 	else
 	{
 		control_mode = AUTONOMOUS;
+		Serial.print("auto ");
+		Serial.print("RSSI: ");
+		Serial.println(internalStats[RSSI_RC]);
 	}
 }
 
@@ -688,7 +686,30 @@ void get_controlmode_rc()
 	}
 	else
 	{
-		control_mode_rc = AUTONOMOUS;
+		//if (!checkRC_error()) {
+			control_mode_rc = AUTONOMOUS;
+		//}
+	}
+}
+
+bool checkRC_error() {
+	if ((check_center_deadzone(rc.get_ch(FRISKY_SIDE)) == 1500) &&
+		(check_center_deadzone(rc.get_ch(FRISKY_FORWARD)) == 1500) &&
+		(check_center_deadzone(rc.get_ch(FRISKY_YAW)) == 1500) &&
+		(check_center_deadzone(rc.get_ch(FRISKY_ARM)) == 1500)) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+int32_t check_center_deadzone(int32_t num) {
+	if (num <= 1524 && num >= 1476) {
+		return 1500;
+	}
+	else {
+		return num;
 	}
 }
 
@@ -985,7 +1006,7 @@ void forwardToXbee()
 {
 	forwardToXbeeAddr(addr64);
 	//if((id == 111) || (id == 112))
-	//	forwardToXbeeAddr(addr64spare);
+	//forwardToXbeeAddr(addr64spare);
 }
 void forwardToXbeeAddr(XBeeAddress64 addr) {
 	//START_BYTE x2, len, id, buf
