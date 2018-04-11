@@ -8,7 +8,7 @@ bool sync = false;
 int ch = 0;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   pinMode(cppm,INPUT);
   attachInterrupt(digitalPinToInterrupt(cppm), readppm, RISING); 
 }
@@ -27,14 +27,9 @@ void printppm() {
 
 void loop() {
   printppm(); 
-  if (micros() - prev > 5000000) {
-    resetppm();
-  }
-}
-
-void resetppm() {
-  for (int i=0; i<5; i++) {
-    ppm[i] = 1500;
+  if (ppm[0] > 1200) {
+    Serial.println("**************DED**************");
+    //Serial.println(micros());
   }
 }
 

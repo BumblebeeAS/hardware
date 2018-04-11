@@ -90,11 +90,11 @@ AtCommandRequest atRequest = AtCommandRequest();
 AtCommandResponse atResponse = AtCommandResponse();
 
 //#define _DEBUG_			//	uncomment to print debug
-//#define _XBEE_			//	uncomment to use xbee
-#define _SERIAL_		//	uncomment to use serial 0
+#define _XBEE_			//	uncomment to use xbee
+//#define _SERIAL_		//	uncomment to use serial 0
 
 #define _XBEE_DEBUG_	//	comment to debug xbee
-#define _OFF_SCREEN_	//	comment to use screen
+//#define _OFF_SCREEN_	//	comment to use screen
 
 int count = 0;
 
@@ -133,7 +133,6 @@ void setup() {
 			  1		  1		    0		  yes
 
 	*/
-
 
 	//Bit set here will be pass into filter
 	CAN.init_Mask(0, 0, 0x400);
@@ -174,7 +173,6 @@ void setup() {
 		heartbeat_timeout[i] = millis();
 	}
 }
-
 
 void loop() {
 	//******* LCD SCREEN **********/
@@ -612,7 +610,7 @@ void reset_thruster_values()
 
 void get_rssi()
 {
-	// Map RSSI from 1500 to 2000 duty cycle to 0 to 100 dB
+	// Map RSSI from 1000 to 2000 duty cycle to 0 to 100 dB
 	internalStats[RSSI_RC] = calculate_rssi();
 	if ((internalStats[RSSI_RC] != 255) && (internalStats[RSSI_RC] > RSSI_THRESHOLD))
 	{
@@ -622,12 +620,9 @@ void get_rssi()
 
 int calculate_rssi()
 {
-	// WHY DEADZONE
-	// Remove deadzone, remove values below 1500
-	// and map from [1500 to 2000] to [0 to 100]
-	uint32_t dead = remove_deadzone(rc.get_ch(FRISKY_RSSI));
-	int cppm = constrain(dead, 1524, 2000);
-	return map(cppm, 1524, 2000, 0, 100);
+	// Map from [1000 to 2000] to [0 to 100]
+	int cppm = constrain(rc.get_ch(FRISKY_RSSI), 1000, 2000);
+	return map(cppm, 1000, 2000, 0, 100);
 }
 
 void get_controlmode()
@@ -668,9 +663,9 @@ void get_controlmode()
 	else
 	{
 		control_mode = AUTONOMOUS;
-		Serial.print("auto ");
-		Serial.print("RSSI: ");
-		Serial.println(internalStats[RSSI_RC]);
+		//Serial.print("auto ");
+		//Serial.print("RSSI: ");
+		//Serial.println(internalStats[RSSI_RC]);
 	}
 }
 
@@ -686,17 +681,18 @@ void get_controlmode_rc()
 	}
 	else
 	{
-		//if (!checkRC_error()) {
-			control_mode_rc = AUTONOMOUS;
-		//}
+		control_mode_rc = AUTONOMOUS;
 	}
 }
 
+/*
 bool checkRC_error() {
 	if ((check_center_deadzone(rc.get_ch(FRISKY_SIDE)) == 1500) &&
 		(check_center_deadzone(rc.get_ch(FRISKY_FORWARD)) == 1500) &&
 		(check_center_deadzone(rc.get_ch(FRISKY_YAW)) == 1500) &&
-		(check_center_deadzone(rc.get_ch(FRISKY_ARM)) == 1500)) {
+		(check_center_deadzone(rc.get_ch(FRISKY_ARM)) == 1000) &&
+		internalStats[RSSI_RC] != 0
+		) {
 		return true;
 	}
 	else {
@@ -704,14 +700,25 @@ bool checkRC_error() {
 	}
 }
 
+bool checkFakeRSSI() {
+	if (internalStats[RSSI_RC] == 0) {
+
+	}
+}
+
 int32_t check_center_deadzone(int32_t num) {
 	if (num <= 1524 && num >= 1476) {
 		return 1500;
 	}
+	if (num <= 1000) {
+		return 1000;
+	}
 	else {
 		return num;
 	}
+	
 }
+*/
 
 uint16_t convert_batt_capacity(uint32_t capacity)
 {
@@ -1041,7 +1048,7 @@ void forwardToXbeeAddr(XBeeAddress64 addr) {
 		else
 		{
 			// local XBee did not provide a timely TX Status Response -- should not happen
-			Serial.println("Sender Error");
+			//Serial.println("Sender Error");
 		}
 	}
 }

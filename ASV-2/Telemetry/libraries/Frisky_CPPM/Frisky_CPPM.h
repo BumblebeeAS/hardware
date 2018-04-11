@@ -7,6 +7,7 @@ class Frisky
 {
 private:
 	static int ppm[6]; 
+	static int ppm_buffer[6];
 
 	int _cppm_pin; // pin in for cppm
 
@@ -16,6 +17,8 @@ private:
 	static int _ch;
 
 	static void readppm();
+
+	static void checkppm();
 
 public:
 	Frisky(int cppm_pin);
