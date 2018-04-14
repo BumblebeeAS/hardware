@@ -90,11 +90,12 @@ AtCommandRequest atRequest = AtCommandRequest();
 AtCommandResponse atResponse = AtCommandResponse();
 
 //#define _DEBUG_			//	uncomment to print debug
-#define _XBEE_			//	uncomment to use xbee
+//#define _XBEE_			//	uncomment to use xbee
 //#define _SERIAL_		//	uncomment to use serial 0
 
 #define _XBEE_DEBUG_	//	comment to debug xbee
 //#define _OFF_SCREEN_	//	comment to use screen
+//#define _HANG_
 
 int count = 0;
 
@@ -104,7 +105,6 @@ void setup() {
 	digitalWrite(SCREEN_CS, HIGH);
 	pinMode(CAN_Chip_Select, OUTPUT);		//CS CAN
 	digitalWrite(CAN_Chip_Select, HIGH);
-
 
 #ifdef _SERIAL_
 	Serial.begin(115200);
@@ -135,11 +135,16 @@ void setup() {
 	*/
 
 	//Bit set here will be pass into filter
-	CAN.init_Mask(0, 0, 0x400);
-	CAN.init_Mask(1, 0, 0x400);
+	CAN.init_Mask(0, 0, 0x600);
+	CAN.init_Mask(1, 0, 0x600);
 
 	//If mask of this bit is 1 and Filt is 0, it will filter out
 	CAN.init_Filt(0, 0, 0);
+	CAN.init_Filt(1, 0, 0);
+	CAN.init_Filt(2, 0, 0);
+	CAN.init_Filt(3, 0, 0);
+	CAN.init_Filt(4, 0, 0);
+	CAN.init_Filt(5, 0, 0);
 
 	// LCD INIT
 #ifdef _OFF_SCREEN_
@@ -178,7 +183,9 @@ void loop() {
 	//******* LCD SCREEN **********/
 
 	reset_stats();
-
+#ifdef _HANG_
+	Serial.println("resetted");
+#endif
 	if ((millis() - loopTime) > SCREEN_LOOP) {
 		
 #ifndef _OFF_SCREEN_
@@ -194,13 +201,21 @@ void loop() {
 		buf[2] = 3;
 		//forwardToXbee();
 	}
-
+#ifdef _HANG_
+	Serial.println("updated screen");
+#endif
 	/*************************************************/
 	/*					RC RX					     */
 	/* Read Frisky CPPM for Manual Thruster override */
 	/*************************************************/
 	get_controlmode_rc();
+#ifdef _HANG_
+	Serial.println("got control mode");
+#endif
 	get_rssi();
+#ifdef _HANG_
+	Serial.println("got rssi");
+#endif
 	if (control_mode == MANUAL_RC)
 	{
 		get_directions();
@@ -232,7 +247,9 @@ void loop() {
 #endif
 #endif
 	}
-
+#ifdef _HANG_
+	Serial.println("calculated directions");
+#endif
 	/********************************************/
 	/*					RC TX				    */
 	/* Send ASV Batt value to Frisky Controller */
@@ -242,7 +259,9 @@ void loop() {
 	uint16_t DAC_input = convert_batt_capacity(lower_batt);
 	//TODO set DAC refresh every 2s	
 	set_DAC(DAC_input);
-
+#ifdef _HANG_
+	Serial.println("sent back to frsky");
+#endif
 	/**********************************************/
 	/*					OCS RX					  */
 	/* Read OCS XBEE for Manual Thruster override */
@@ -343,13 +362,19 @@ void loop() {
 	/**********************************************/
 	get_controlmode();
 	set_thruster_values();
-
+#ifdef _HANG_
+	Serial.println("set thruster");
+#endif
 	//******* CAN RX **********/
 	checkCANmsg();
-
+#ifdef _HANG_
+	Serial.println("got CAN msg");
+#endif
 	//******* CAN TX **********/
 	publishCAN();
-
+#ifdef _HANG_
+	Serial.println("sent CAN msg");
+#endif
 	//******* CAN ERROR REPORTING **********/
 	//  if((millis() - canStatsTime) > 1000){
 	//    test_time = millis();
@@ -622,6 +647,7 @@ int calculate_rssi()
 {
 	// Map from [1000 to 2000] to [0 to 100]
 	int cppm = constrain(rc.get_ch(FRISKY_RSSI), 1000, 2000);
+	cppm = ((cppm - 1500) / 500) * 100;
 	return map(cppm, 1000, 2000, 0, 100);
 }
 
@@ -651,7 +677,7 @@ void get_controlmode()
 	{
 		control_mode = control_mode_rc;
 		//Serial.print("rc: ");
-		//Serial.print(control_mode);
+		//Serial.println(control_mode);
 	}
 	// If ocs is alive and not autonomous
 	else if (((millis() - heartbeat_timeout[HEARTBEAT_OCS]) < COMMLINK_TIMEOUT) && (control_mode_ocs != AUTONOMOUS))
@@ -663,9 +689,10 @@ void get_controlmode()
 	else
 	{
 		control_mode = AUTONOMOUS;
-		//Serial.print("auto ");
-		//Serial.print("RSSI: ");
-		//Serial.println(internalStats[RSSI_RC]);
+		/*Serial.print("auto ");
+		Serial.print("RSSI: ");
+		Serial.println(internalStats[RSSI_RC]);
+		*/
 	}
 }
 
@@ -684,41 +711,6 @@ void get_controlmode_rc()
 		control_mode_rc = AUTONOMOUS;
 	}
 }
-
-/*
-bool checkRC_error() {
-	if ((check_center_deadzone(rc.get_ch(FRISKY_SIDE)) == 1500) &&
-		(check_center_deadzone(rc.get_ch(FRISKY_FORWARD)) == 1500) &&
-		(check_center_deadzone(rc.get_ch(FRISKY_YAW)) == 1500) &&
-		(check_center_deadzone(rc.get_ch(FRISKY_ARM)) == 1000) &&
-		internalStats[RSSI_RC] != 0
-		) {
-		return true;
-	}
-	else {
-		return false;
-	}
-}
-
-bool checkFakeRSSI() {
-	if (internalStats[RSSI_RC] == 0) {
-
-	}
-}
-
-int32_t check_center_deadzone(int32_t num) {
-	if (num <= 1524 && num >= 1476) {
-		return 1500;
-	}
-	if (num <= 1000) {
-		return 1000;
-	}
-	else {
-		return num;
-	}
-	
-}
-*/
 
 uint16_t convert_batt_capacity(uint32_t capacity)
 {
@@ -884,9 +876,6 @@ void get_thruster_batt_heartbeat()
 				//Serial.print(BATT1 + i);
 #endif
 			}
-#ifdef _SERIAL_
-			Serial.println("");
-#endif
 			thruster_heartbeat = thruster_heartbeat >> 1; // Move to next bit
 		}
 	}

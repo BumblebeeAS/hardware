@@ -18,7 +18,7 @@
 
 //FRISKY
 #define RC_INT 19
-#define RSSI_THRESHOLD 45
+#define RSSI_THRESHOLD 38
 
 #define FRISKY_FORWARD 2
 #define FRISKY_SIDE 1

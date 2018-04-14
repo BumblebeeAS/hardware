@@ -15,6 +15,7 @@ private:
 	static uint32_t delta;
 	static bool sync;
 	static int _ch;
+	static uint8_t counter;
 
 	static void readppm();
 
