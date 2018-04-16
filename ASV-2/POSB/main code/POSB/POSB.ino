@@ -612,9 +612,9 @@ void publishCAN_esc1_stats()
 	Serial.println(esc1_stats.fault_flags, BIN);*/
 	CAN.setupCANFrame(esc1_stat_buf, 0, 2, esc1_stats.motor_current1);
 	CAN.setupCANFrame(esc1_stat_buf, 2, 2, esc1_stats.motor_current2);
-	CAN.setupCANFrame(esc1_stat_buf, 3, 1, esc1_stats.motor_status_flags1);
-	CAN.setupCANFrame(esc1_stat_buf, 4, 1, esc1_stats.motor_status_flags2);
-	CAN.setupCANFrame(esc1_stat_buf, 5, 1, esc1_stats.fault_flags);
+	CAN.setupCANFrame(esc1_stat_buf, 4, 1, esc1_stats.motor_status_flags1);
+	CAN.setupCANFrame(esc1_stat_buf, 5, 1, esc1_stats.motor_status_flags2);
+	CAN.setupCANFrame(esc1_stat_buf, 6, 1, esc1_stats.fault_flags);
 	CAN.sendMsgBuf(CAN_esc1_motor_stats, 0, 7, esc1_stat_buf);
 }
 void publishCAN_esc2_stats()
@@ -622,9 +622,9 @@ void publishCAN_esc2_stats()
 	RoboteqStats esc2_stats = roboteq2.getRoboteqStats();
 	CAN.setupCANFrame(esc2_stat_buf, 0, 2, esc2_stats.motor_current1);
 	CAN.setupCANFrame(esc2_stat_buf, 2, 2, esc2_stats.motor_current2);
-	CAN.setupCANFrame(esc2_stat_buf, 3, 1, esc2_stats.motor_status_flags1);
-	CAN.setupCANFrame(esc2_stat_buf, 4, 1, esc2_stats.motor_status_flags2);
-	CAN.setupCANFrame(esc2_stat_buf, 5, 1, esc2_stats.fault_flags);
+	CAN.setupCANFrame(esc2_stat_buf, 4, 1, esc2_stats.motor_status_flags1);
+	CAN.setupCANFrame(esc2_stat_buf, 5, 1, esc2_stats.motor_status_flags2);
+	CAN.setupCANFrame(esc2_stat_buf, 6, 1, esc2_stats.fault_flags);
 	CAN.sendMsgBuf(CAN_esc2_motor_stats, 0, 7, esc2_stat_buf);
 }
 void publishCAN_batt1_stats()
