@@ -648,7 +648,7 @@ int calculate_rssi()
 	// Map from [1000 to 2000] to [0 to 100]
 	int cppm = constrain(rc.get_ch(FRISKY_RSSI), 1000, 2000);
 	cppm = ((cppm - 1500) / 500) * 100;
-	return map(cppm, 1000, 2000, 0, 100);
+	return map(cppm, 0, 500, 0, 100);
 }
 
 void get_controlmode()
