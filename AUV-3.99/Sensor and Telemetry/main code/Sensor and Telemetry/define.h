@@ -1,25 +1,47 @@
 #ifndef _DEFINES_H
 #define _DEFINES_H
 
-#define CAN_Chip_Select 54
+//I2C
+#define ADS_ADDR 0X48
+#define HUMIDITY_ADDR 0X27
+
+//CAN
+#define CAN_Chip_Select 8
+#define CAN_INT 2
 
 //SCREEN
-#define SCREEN_INT 25
-#define SCREEN_CS 22
-#define SCREEN_RESET 24
+#define SCREEN_INT 3
+#define SCREEN_CS 57
+#define SCREEN_RESET 66
+#define OFFSET 0 // 40 for ASV2.0 screen
 
-#define SCREEN_LOOP 1000
+//LED
+#define RED 23
+#define BLUE 24
+#define GREEN 22
 
+//Sensor
+#define Vref 5		//MPXH Vdd is the Vref
+#define LPF_CONSTANT 0.7
+#define ADS_DELAY 5
+#define LPF_LOOP 25
+
+//SONAR
+#define SONAR_IN 69
+#define SONAR_OUT 26
 
 //Internal stats
-#define INT_STAT_COUNT 6
+#define INT_STAT_COUNT 9
 
-#define INT_PRESS 0
-#define HUMIDITY 1
-#define CPU_TEMP 2
-#define POSB_TEMP 3
-#define RSSI_OCS 4
-#define RSSI_RC 5
+#define EXT_PRESS 0
+#define INT_PRESS 1
+#define PMB1_PRESS 2
+#define PMB2_PRESS 3 
+#define PMB1_TEMP 4
+#define PMB2_TEMP 5
+#define CPU_TEMP 6
+#define HUMIDITY 7
+#define ST_TEMP 8
 
 //Power stats
 #define POWER_STAT_COUNT 6
@@ -32,19 +54,12 @@
 #define BATT2_VOLTAGE 5
 
 //Heartbeat
-#define HB_COUNT 13
-#define BATT1 9
-#define BATT2 10
-#define ESC1 11
-#define ESC2 12
+#define HB_COUNT 9
 
 //TIMEOUTS
+#define SCREEN_LOOP 1000
 #define HB_TIMEOUT 3000
 #define HEARTBEAT_LOOP 500
-#define THRUSTER_TIMEOUT 100
-#define COMMLINK_TIMEOUT 4000
-#define FAILSAFE_TIMEOUT 3000
 #define STAT_TIMEOUT 2000
-
 
 #endif // _DEFINES_H

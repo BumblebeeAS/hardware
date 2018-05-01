@@ -80,13 +80,42 @@ void LCD::write_string(const char* var){
 void LCD::write_value_int(uint32_t var){
 	screen->fillRect(_x, _y, 130, 30, RA8875_BLACK);
 	screen->textTransparent(RA8875_YELLOW);
-	if (var == 255){
+	if (var == 0xFFFF){
 		write_value_string("N/A");
 	}else{
 		char buf[20] = {};
 		sprintf(buf, "%lu", var);
 		screen->textWrite(buf);
-	increment_row();
+		increment_row();
+	}
+}
+
+// var: variable 
+// dp:	number of deciaml place
+void LCD::write_value_with_dp(uint32_t var, uint32_t dp) {
+	screen->fillRect(_x, _y, 130, 30, RA8875_BLACK);
+	screen->textTransparent(RA8875_YELLOW);
+	if (var == 0xFFFF) {
+		write_value_string("N/A");
+	}
+	else {
+		if (dp > 0) {
+			char buf[20] = {};
+			char buf2[20] = {};
+			uint32_t dec = 0, whole = 0, index = 1;
+			index = power(index, dp);
+			whole = (uint32_t)(var / index);		// whole number
+			dec = (uint32_t)(var % index);	// decimals
+			sprintf(buf, "%lu", whole);
+			sprintf(buf2, "%lu", dec);
+			strcat(buf, ".");
+			strcat(buf, buf2);
+			screen->textWrite(buf);
+			increment_row();
+		}
+		else {
+			write_value_int(var);
+		}
 	}
 }
 
@@ -105,6 +134,13 @@ void LCD::write_value_string(const char* var){
 	}
 	screen->textWrite(var);
 	increment_row();
+}
+
+uint32_t LCD::power(uint32_t x, uint32_t y) {
+	for (int i = 0; i < y; i++) {
+		x *= 10;
+	}
+	return x;
 }
 
 

@@ -15,6 +15,7 @@ private:
 	Adafruit_RA8875* screen;
 	int _x;
 	int _y;
+	uint32_t power(uint32_t x, uint32_t y);
 
 #ifdef _SD_
 	// Draw bmp img
@@ -36,6 +37,7 @@ public:
 	void write_string(const char* var);
 	void write_value_int(uint32_t var);
 	void write_value_string(const char* var);
+	void write_value_with_dp(uint32_t var, uint32_t dp);
 
 	void screen_clear();
 	
