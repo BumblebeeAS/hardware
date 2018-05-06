@@ -38,7 +38,7 @@ void setup()
 
 	Serial.begin(115200);
 	/*********************************************/
-	while (!Serial);
+	//while (!Serial);
 	now = millis();
 
 	/* End of MCU Initialisation */
@@ -75,6 +75,7 @@ void loop()
 	//Check for soft off button
 	if (digitalRead(PIN_OFF)) {
 		digitalWrite(PIN_PMOS, LOW);
+		displayOffMessage();
 		saveDataToEeprom();
 		digitalWrite(PIN_RELAY, HIGH);
 		/* PMB is turned off */
@@ -123,7 +124,7 @@ void loop()
 
 void saveDataToEeprom() {
 	Serial.println("Saving data to EEPROM, wait for 5s for volt to stabilise");
-	delay(5000);
+	delay(3000);
 	for (int i = 0; i < ARR_SIZE; i++) {
 		voltage = rollVoltAvg(monIc.readVoltage());
 		delay(20);
@@ -224,6 +225,29 @@ void updateDisplay() {
 	//(batt_low) ? display.print("YES") : display.print("NO");
 }
 
+void displayOffMessage() {
+	display.clear();
+	display.setTextSize(1, 1);
+	display.setCursor(0, 0);
+	display.write("Battery PMB ");
+	//display.print(PMB_no);
+	display.setCursor(1, 0);
+	display.write("Batt %:      ");
+	display.setCursor(1, 48);
+	display.print(capacityLeft*100.0 / MAX_CAPACITY);
+	display.setCursor(2, 0);
+	display.write("Batt Volt: ");
+	display.print(voltage);
+	display.setCursor(3, 0);
+	display.write("Current drawn:        ");
+	display.setCursor(3, 88);
+	display.print(int(current));
+	display.print(".");
+	display.print(int(current * 100) % 100);
+	display.setCursor(4, 0);
+	display.write("Turning off...");
+	//display.print(capacity_left);
+}
 
 //void readVoltage(){
 //	uint8_t cmd = 0x88;
