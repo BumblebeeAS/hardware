@@ -76,7 +76,7 @@ static uint32_t stats_loop = 0;
 
 void setup()
 {
-	pinMode(SCREEN_CS, OUTPUT);		//CS screen
+	pinMode(SCREEN_CS, OUTPUT);				//CS screen
 	digitalWrite(SCREEN_CS, HIGH);
 	pinMode(CAN_Chip_Select, OUTPUT);		//CS CAN
 	digitalWrite(CAN_Chip_Select, HIGH);
@@ -423,6 +423,7 @@ void update_stats() {
 	readTempHumididty();
 	rawExtPressure = readExternalPressure();
 	internalStats[EXT_PRESS] = ExtPressure;
+	IntPressure = readInternalPressure();
 	internalStats[INT_PRESS] = readInternalPressure();
 	internalStats[HUMIDITY] = humidity;
 	internalStats[ST_TEMP] = temperature;
@@ -437,8 +438,8 @@ void update_stats() {
 //Return Internal Pressure 
 byte readInternalPressure() {
 	/*
-	VOUT = VS x(0.004 x P - 0.040) กำ (Pressure Error x Temp Factor x 0.004 x VS)
-	VS = 5.1 กำ 0.36 Vdc
+	VOUT = VS x(0.004 x P - 0.040) ฑ (Pressure Error x Temp Factor x 0.004 x VS)
+	VS = 5.1 ฑ 0.36 Vdc
 	*/
 	// internal   raw value 9690 = 1010mb = 101kPa
 	ads.set_continuous_conv(1);
@@ -510,7 +511,7 @@ void led_init() {
 //Blinks led if it is leaking
 bool leak() {
 	bool leaking = false;
-	if (InitialP - IntPressure > 10) {
+	if ((InitialP - IntPressure > 10) || humidity > 85) {
 		leaking = true;
 	}
 	if (leaking) {
