@@ -100,20 +100,18 @@ AtCommandResponse atResponse = AtCommandResponse();
 int count = 0;
 
 void setup() {
-	delay(1000);
 	pinMode(SCREEN_CS, OUTPUT);		//CS screen
 	digitalWrite(SCREEN_CS, HIGH);
 	pinMode(CAN_Chip_Select, OUTPUT);		//CS CAN
 	digitalWrite(CAN_Chip_Select, HIGH);
+
+	Serial.begin(115200);
 
 #ifdef _SERIAL_
 	Serial.begin(115200);
 	Serial.println("Hi, I'm telemetry!");
 	Serial.println("SPI set to 20MHz since the screen is fked");
 #endif 
-
-	SPI.beginTransaction(SPISettings(20000000, MSBFIRST, SPI_MODE0));	//20MHz
-	SPI.endTransaction();
 
 	// CAN INIT
 	CAN_init();
@@ -646,8 +644,8 @@ void get_rssi()
 int calculate_rssi()
 {
 	// Map from [1000 to 2000] to [0 to 100]
-	int cppm = constrain(rc.get_ch(FRISKY_RSSI), 1000, 2000);
-	cppm = ((cppm - 1500) / 500) * 100;
+	int cppm = constrain(rc.get_ch(FRISKY_RSSI), 1500, 2000);
+	cppm -= 1500;
 	return map(cppm, 0, 500, 0, 100);
 }
 
