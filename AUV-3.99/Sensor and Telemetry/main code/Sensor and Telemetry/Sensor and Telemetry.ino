@@ -438,8 +438,8 @@ void update_stats() {
 //Return Internal Pressure 
 byte readInternalPressure() {
 	/*
-	VOUT = VS x(0.004 x P - 0.040) ฑ (Pressure Error x Temp Factor x 0.004 x VS)
-	VS = 5.1 ฑ 0.36 Vdc
+	VOUT = VS x (0.004 x P - 0.040)กำ (Pressure Error x Temp Factor x 0.004 x VS)
+	VS = 5.1 กำ 0.36 Vdc
 	*/
 	// internal   raw value 9690 = 1010mb = 101kPa
 	ads.set_continuous_conv(1);

@@ -14,6 +14,7 @@
 // Written by Chia Che
 //
 // Change log v1: initial commit
+// Change log v1.1: add DNA stats, id = 10
 //
 //###################################################
 //###################################################
@@ -31,23 +32,24 @@
 #define CAN_ST_stats 7
 #define CAN_PCB_stats 8
 #define CAN_LED 9
-#define CAN_PMB1_stats 10
-#define CAN_PMB1_stats2 11
-#define CAN_PMB2_stats 12
-#define CAN_PMB2_stats2 13
-#define CAN_CPU 14
-#define CAN_MANI_BUS_stats 15
-#define CAN_thruster_BUS_stats 16
-#define CAN_ST_BUS_stats 17
-#define CAN_PMB1_BUS_stats 18
-#define CAN_PMB2_BUS_stats 19
-#define CAN_SBC_BUS_stats 20
+#define CAN_DNA_Stats 10
+#define CAN_PMB1_stats 11
+#define CAN_PMB1_stats2 12
+#define CAN_PMB2_stats 13
+#define CAN_PMB2_stats2 14
+#define CAN_CPU 15
+#define CAN_MANI_BUS_stats 16
+#define CAN_thruster_BUS_stats 17
+#define CAN_ST_BUS_stats 18
+#define CAN_PMB1_BUS_stats 19
+#define CAN_PMB2_BUS_stats 20
+#define CAN_SBC_BUS_stats 21
 //===================================   can delete?
-#define CAN_DVL_velocity 21
-#define CAN_earth_odometry 22
-#define CAN_relative_odometry 23
-#define CAN_imu_1 24
-#define CAN_imu_2 25
+#define CAN_DVL_velocity 22
+#define CAN_earth_odometry 23
+#define CAN_relative_odometry 24
+#define CAN_imu_1 25
+#define CAN_imu_2 26
 
 //CAN Heartbeat
 #define HEARTBEAT_SBC 1
