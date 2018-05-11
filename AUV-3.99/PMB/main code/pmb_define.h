@@ -1,0 +1,20 @@
+#define MAX_CURR 80
+#define SHUNT_RES 1 //mOhm
+#define ARR_SIZE 10
+
+//GPIO CONNECTIONS
+#define PIN_PMOS 68
+#define PIN_OLED_RESET 38
+#define PIN_OFF 4
+#define PIN_RELAY 61
+#define MAX_CAPACITY 3600000000 // 10000 * 60 * 60 * 100 (scaling fact)
+
+//EEPROM CONSTANTS  
+#define ADDR_CAPACITY 0
+#define ADDR_VOLTAGE 4
+#define VOLTAGE_DIFF 20 //200mV difference
+
+//BATT_STATES
+#define BATT_DISCHARGING 0
+#define BATT_CHARGING 1
+#define BATT_FULL 2
