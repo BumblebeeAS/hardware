@@ -21,12 +21,10 @@ void setup() {
   char input;
 
   motor1.attach(MOTOR_PIN1);
-  //motor2.attach(MOTOR_PIN2);
 
   // Send min output
   motor1.writeMicroseconds(STOP);
   motorspeed = STOP;
-  //motor2.writeMicroseconds(STOP);
 
   thruster1.init();
 }
@@ -53,29 +51,15 @@ void loop() {
     if (inputstr[0] == 'u')
     {
       Serial.println("+++");
-      int nextspeed = motorspeed + 50;
       motorspeed = motorspeed + 50;
       motor1.writeMicroseconds(motorspeed);
-      //thruster1.mov(motorspeed);
-      /*for(; motorspeed < nextspeed; motorspeed++)
-        {
-        delay(20);
-        motor1.writeMicroseconds(motorspeed);
-        }*/
       Serial.println(motorspeed);
     }
     else if (inputstr[0] == 'd')
     {
       Serial.println("---");
-      int nextspeed = motorspeed - 50;
       motorspeed = motorspeed - 50;
       motor1.writeMicroseconds(motorspeed);
-      //thruster1.mov(motorspeed);
-      /*for(; motorspeed > nextspeed; motorspeed--)
-        {
-        delay(20);
-        motor1.writeMicroseconds(motorspeed);
-        }*/
       Serial.println(motorspeed);
     }
     else if (isalpha(inputstr[0]))
@@ -83,14 +67,12 @@ void loop() {
       motor1.writeMicroseconds(STOP);
       motorspeed = STOP;
       Serial.println("STOP");
-      //thruster1.mov(motorspeed);
     }
     else
     {
       motorspeed = atoi(inputstr);
       Serial.println(motorspeed);
       motor1.writeMicroseconds(motorspeed);
-      //thruster1.mov(motorspeed);
     }
     serialidx = -1;
     Serial.println(millis());
