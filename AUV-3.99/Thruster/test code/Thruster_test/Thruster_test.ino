@@ -1,10 +1,11 @@
 #include <Servo.h>
+#include "Thrusters.h"
 
 #define MAX_SIGNAL 2000
 #define MIN_SIGNAL 1000
 #define STOP 1500
 #define MOTOR_PIN1 10
-#define MOTOR_PIN2 10
+#define MOTOR_PIN2 3
 
 int motorspeed;
 char inputstr[10] = { '\n' };
@@ -12,6 +13,7 @@ int serialidx = 0;
 
 Servo motor1;
 Servo motor2;
+Thrusters thruster1(2, motor2, MOTOR_PIN2, 2000, 1500, 1500, 1000);
 
 void setup() {
   Serial.begin(9600);
@@ -25,13 +27,16 @@ void setup() {
   motor1.writeMicroseconds(STOP);
   motorspeed = STOP;
   //motor2.writeMicroseconds(STOP);
+
+  thruster1.init();
 }
 
 
 void loop() {
   byte input;
   // put your main code here, to run repeatedly:
-  while (!Serial.available());
+  while (!Serial.available())
+      thruster1.mov(motorspeed);
   input = Serial.read();
   inputstr[serialidx] = input;
 
@@ -51,6 +56,7 @@ void loop() {
       int nextspeed = motorspeed + 50;
       motorspeed = motorspeed + 50;
       motor1.writeMicroseconds(motorspeed);
+      //thruster1.mov(motorspeed);
       /*for(; motorspeed < nextspeed; motorspeed++)
         {
         delay(20);
@@ -64,6 +70,7 @@ void loop() {
       int nextspeed = motorspeed - 50;
       motorspeed = motorspeed - 50;
       motor1.writeMicroseconds(motorspeed);
+      //thruster1.mov(motorspeed);
       /*for(; motorspeed > nextspeed; motorspeed--)
         {
         delay(20);
@@ -76,14 +83,17 @@ void loop() {
       motor1.writeMicroseconds(STOP);
       motorspeed = STOP;
       Serial.println("STOP");
+      //thruster1.mov(motorspeed);
     }
     else
     {
       motorspeed = atoi(inputstr);
       Serial.println(motorspeed);
       motor1.writeMicroseconds(motorspeed);
+      //thruster1.mov(motorspeed);
     }
     serialidx = -1;
+    Serial.println(millis());
   }
   serialidx++;
 }

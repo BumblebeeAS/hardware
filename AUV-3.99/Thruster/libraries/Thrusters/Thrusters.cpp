@@ -19,6 +19,7 @@ Thrusters::Thrusters(int thruster_num, Servo servo, int pwm_pin, int front_max, 
 void Thrusters::init()
 {
 	esc.attach(esc_pin);
+	esc.writeMicroseconds(THROTTLE_STOP);
 }
 
 // Increase throttle by RATE
@@ -36,10 +37,15 @@ int Thrusters::increment(int throttle_old, int throttle_new) {
 	}
 	// Don't do anything if both throttles are same
 
+	/*
 	Serial.print("ESC");
 	Serial.print(id);
-	Serial.print(" Throttle: ");
-	Serial.println(next_throttle);
+	Serial.print(" Throttle: old-");
+	Serial.print(throttle_old);
+	Serial.print(" next-");
+	Serial.print(next_throttle);
+	Serial.print(" final-");
+	Serial.println(throttle_new);*/
 	return next_throttle;
 }
 
@@ -58,7 +64,7 @@ void Thrusters::mov(int input_speed)
 	throttleOld = esc.readMicroseconds();
 	throttle = mapSpeed(input_speed);
 
-	acc(throttleOld, throttle);
+	increment(throttleOld, throttle);
 	return;
 }
 
@@ -85,5 +91,5 @@ int Thrusters::thrusterReverse(int input)
 
 int Thrusters::thrusterStop(void)
 {
-	return 1500;
+	return THROTTLE_STOP;
 }

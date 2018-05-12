@@ -4,6 +4,8 @@
 #include "Arduino.h"
 #include <Servo.h>
 
+#define THROTTLE_STOP 1500
+
 class Thrusters
 {
 public:
