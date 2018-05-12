@@ -31,7 +31,7 @@
 #define SONAR_OUT 26
 
 //Internal stats
-#define INT_STAT_COUNT 9
+#define INT_STAT_COUNT 10
 
 #define EXT_PRESS 0
 #define INT_PRESS 1
@@ -42,6 +42,7 @@
 #define CPU_TEMP 6
 #define HUMIDITY 7
 #define ST_TEMP 8
+#define DNA_PRESS 9
 
 //Power stats
 #define POWER_STAT_COUNT 6
