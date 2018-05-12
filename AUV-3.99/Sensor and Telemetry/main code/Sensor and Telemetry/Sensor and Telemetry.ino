@@ -71,8 +71,10 @@ bool sonar = false;
 static uint32_t pmb1_timeout = 0;
 static uint32_t	pmb2_timeout = 0;
 static uint32_t sbc_timeout = 0;
+static uint32_t dna_timeout = 0;
 static uint32_t heartbeat_loop = 0;
 static uint32_t stats_loop = 0;
+static uint16_t dna_pressure = 0;
 
 void setup()
 {
@@ -111,7 +113,7 @@ void setup()
 void loop()
 {
 	reset_stats();
-	update_stats();
+	update_ST_stats();
 
 	if ((millis() - loopTime) > SCREEN_LOOP) {	//	1000ms
 		screen_update();
@@ -212,6 +214,10 @@ void checkCANmsg() {
 		case CAN_LED:
 			lightColour = CAN.parseCANFrame(buf, 0, 1);
 			led.colour(lightColour);
+			break;
+		case CAN_DNA_Stats:
+			internalStats[DNA_PRESS] = CAN.parseCANFrame(buf, 2, 1);
+			sbc_timeout = millis();
 			break;
 		case CAN_PMB1_stats:
 			powerStats[BATT1_CURRENT] = CAN.parseCANFrame(buf, 0, 2);
@@ -317,10 +323,10 @@ void screen_prepare() {
 	screen.write_string("CPU temp:");
 	screen.write_string("Humidity:");
 	screen.write_string("ST temp:");
+	screen.write_string("DNA press: ");
 	screen.write_string("SBC OK:");
 	screen.write_string("SBC-CAN OK:");
 	screen.write_string("PCB OK:");
-	screen.write_string("Thruster OK:");
 	
 	screen.set_cursor(400 + OFFSET, 0);
 	screen.write_string("Batt1 capacity:");
@@ -329,6 +335,7 @@ void screen_prepare() {
 	screen.write_string("Batt2 current:");
 	screen.write_string("Batt1 voltage:");
 	screen.write_string("Batt2 voltage:");
+	screen.write_string("Thruster OK:");
 	screen.write_string("Manipulator OK:");
 	screen.write_string("PMB1 OK:");
 	screen.write_string("PMB2 OK:");
@@ -356,10 +363,10 @@ void screen_update() {
 
 void update_heartbeat()
 {
+	// row height 35,     increment_row()
 	int i;
-	/* CHECK FOR HEARTBEAT */
-	screen.set_cursor(200 + OFFSET, 315);
-	for (i = 1; i < 6; i++) {
+	screen.set_cursor(200 + OFFSET, 350);
+	for (i = 1; i < 4; i++) {
 		if (i != HEARTBEAT_ST) // Skip ST HB
 		{
 			if ((millis() - heartbeat_timeout[i]) > HB_TIMEOUT) {
@@ -372,11 +379,13 @@ void update_heartbeat()
 
 	screen.set_cursor(645 + OFFSET, 210);
 	for (; i < 9; i++) {
-		if ((millis() - heartbeat_timeout[i]) > HB_TIMEOUT) {
-			screen.write_value_string("NO");
+		if (i != HEARTBEAT_ST) { // Skip ST HB
+			if ((millis() - heartbeat_timeout[i]) > HB_TIMEOUT) {
+				screen.write_value_string("NO");
+			}
+			else
+				screen.write_value_string("YES");
 		}
-		else
-			screen.write_value_string("YES");
 	}
 }
 
@@ -413,13 +422,14 @@ void reset_pmb2_stat() {
 void reset_sbc_stat() {
 	if ((millis() - sbc_timeout) > STAT_TIMEOUT) {
 		internalStats[CPU_TEMP] = 0xFFFF;
+		internalStats[DNA_PRESS] = 0xFFFF;
 		sbc_timeout = millis();
 	}
 }
 
 //read Temperature, Humidity, External and Internal pressure
 // and assign them to array for update
-void update_stats() {
+void update_ST_stats() {
 	readTempHumididty();
 	rawExtPressure = readExternalPressure();
 	internalStats[EXT_PRESS] = ExtPressure;
