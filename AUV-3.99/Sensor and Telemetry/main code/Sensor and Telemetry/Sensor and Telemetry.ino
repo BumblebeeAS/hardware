@@ -529,8 +529,8 @@ bool leak() {
 		leaking = true;
 	}
 	if (leaking) {
-		led.colour(8);	//	8 for white
-		//led.blink(1, 8, 500);		// red white 500ms
+		//led.colour(8);	//	8 for white
+		led.blink(1, 8, 300);		// red white 500ms
 	}
 	return leaking;
 }
