@@ -76,6 +76,8 @@ static uint32_t heartbeat_loop = 0;
 static uint32_t stats_loop = 0;
 static uint16_t dna_pressure = 0;
 
+static uint32_t testing_time = 0;
+
 void setup()
 {
 	pinMode(SCREEN_CS, OUTPUT);				//CS screen
@@ -102,8 +104,8 @@ void setup()
 	InitialP = readInternalPressure();
 
 	//led init
-	//led_init();
-	//Serial.println("LED OK");
+	led_init();
+	Serial.println("LED OK");
 	
 	for (int i = 0; i < HB_COUNT; i++) {
 		heartbeat_timeout[i] = millis();
@@ -276,11 +278,13 @@ void publishCAN()
 	//publish heartbeat every 500ms
 	if (millis() - heartbeat_loop > 500) {
 		publishCAN_heartbeat(HEARTBEAT_ST);
+		heartbeat_loop = millis();
 	}
 
 	//publish ST stats every 1000ms
 	if (millis() - stats_loop > 1000) {
 		publishST_stats();
+		stats_loop = millis();
 	}
 }
 
@@ -301,7 +305,7 @@ void publishST_stats() {
 	CAN.setupCANFrame(buf, 0, 1, temperature);
 	CAN.setupCANFrame(buf, 1, 1, humidity);
 	CAN.setupCANFrame(buf, 2, 1, IntPressure);
-	leak ? CAN.setupCANFrame(buf, 3, 1, 1) : CAN.setupCANFrame(buf, 3, 1, 0);
+	leak() ? CAN.setupCANFrame(buf, 3, 1, 1) : CAN.setupCANFrame(buf, 3, 1, 0);
 	CAN.sendMsgBuf(CAN_ST_stats, 0, 4, buf);
 }
 
