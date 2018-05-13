@@ -1,10 +1,11 @@
-#include "can_defines.h"
+#include <can_defines.h>
 #include "can_auv_define.h"
 #include "define.h"
-#include "can.h"
+#include <can.h>
 #include <Arduino.h>
 #include <Servo.h>
 #include <SPI.h>
+#include "Thrusters.h"
 
 void CAN_init();
 void checkCANmsg();
@@ -22,46 +23,53 @@ uint16_t heartbeat_ctr = 0;
 
 MCP_CAN CAN(CAN_Chip_Select); //Set Chip Select to pin 8
 
-//smcDriver mDriver(&Serial1);
+// ESC	  - THRUSTER
+// RED	  - RED
+// YELLOW - WHITE
+// BLUE	  - GREEN
+
+Servo servo1, servo2, servo3, servo4, servo5, servo6, servo7, servo8;
+Thrusters thruster1(1, servo1, THRUSTER_1, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN, REVERSE_MAX);
+Thrusters thruster2(2, servo2, THRUSTER_2, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN, REVERSE_MAX);
+Thrusters thruster3(3, servo3, THRUSTER_3, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN, REVERSE_MAX);
+Thrusters thruster4(4, servo4, THRUSTER_4, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN, REVERSE_MAX);
+Thrusters thruster5(5, servo5, THRUSTER_5, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN, REVERSE_MAX);
+Thrusters thruster6(6, servo6, THRUSTER_6, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN, REVERSE_MAX);
+Thrusters thruster7(7, servo7, THRUSTER_7, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN, REVERSE_MAX);
+Thrusters thruster8(8, servo8, THRUSTER_8, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN, REVERSE_MAX);
 
 unsigned short Thruster_buf[8] = {1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500}; //buffer for Thrusters
 
 unsigned char len = 0; //length of CAN message, taken care by library
 unsigned char buf[8];  //Buffer for CAN message
 
-//boolean FLAGMsg = false;
-
-//Thrusters videoray(Videoray_1, Videoray_2); //initialise both videoray thrusters
 uint32_t test_time = 0;
 uint32_t heartbeat_loop = 0;
 uint8_t hb_buf[2];
 
-Servo thruster1, thruster2, thruster3, thruster4, thruster5, thruster6, thruster7, thruster8;
+#define _MANUAL_RUN_
+#ifdef _MANUAL_RUN_
+int motorspeed;
+char inputstr[10] = { '\n' };
+int serialidx = 0;
+#endif
+
 
 void setup(){
 	Serial.begin(115200);
+	Serial.println("Hi, I'm Thruster Board!");
 	Serial1.begin(19200);
 	CAN_init(); //initialise CAN
 	can_bus_loop = heartbeat_loop = millis();
-	//mDriver.init();
 	
-	thruster1.attach(THRUSTER_1);
-	//thruster1.writeMicroseconds(1500);
-	thruster2.attach(THRUSTER_2);
-	thruster3.attach(THRUSTER_3);
-	thruster4.attach(THRUSTER_4);
-	thruster5.attach(THRUSTER_5);
-	thruster6.attach(THRUSTER_6);
-	thruster7.attach(THRUSTER_7);
-	thruster8.attach(THRUSTER_8);
-	thruster1.writeMicroseconds(Thruster_buf[0]);
-	thruster2.writeMicroseconds(Thruster_buf[1]);
-	thruster3.writeMicroseconds(Thruster_buf[2]);
-	thruster4.writeMicroseconds(Thruster_buf[3]);
-	thruster5.writeMicroseconds(Thruster_buf[4]);
-	thruster6.writeMicroseconds(Thruster_buf[5]);
-	thruster7.writeMicroseconds(Thruster_buf[6]);
-	thruster8.writeMicroseconds(Thruster_buf[7]);
+	thruster1.init();
+	thruster2.init();
+	thruster3.init();
+	thruster4.init();
+	thruster5.init();
+	thruster6.init();
+	thruster7.init();
+	thruster8.init();
 }
 
 void loop()
@@ -74,11 +82,12 @@ void loop()
 	if ((millis() - heartbeat_loop) > HEARTBEAT_TIMEOUT)
 	{
 		CAN.setupCANFrame(hb_buf, 0, 1, HEARTBEAT_TB);
-		hb_buf[0] = HEARTBEAT_TB;
 		CAN.sendMsgBuf(CAN_heartbeat, 0, 1, hb_buf);
 		hb_local_timer = millis();
-		if (hb_local_timer - hb_sync_timer > 3000)
+		if(0)
+		//if (hb_local_timer - hb_sync_timer > 3000)
 		{
+			//no SBC heartbeat
 			Serial.print("dis:");
 			Serial.print(hb_local_timer);
 			Serial.print(" ");
@@ -113,44 +122,66 @@ void loop()
 	}
 	*/
 	
+#ifdef _MANUAL_RUN_
+	// To manually run thrusters if SBC not up
+	if (Serial.available())
+	{
+		byte input;
+		input = Serial.read();
+		inputstr[serialidx] = input;
+
+		/*
+		for (int i = 0; i <= serialidx; i++)
+		{
+		Serial.print(inputstr[i]);
+		}
+		Serial.println();
+		*/
+		if (input == '\n' || input == '\r')
+		{
+			inputstr[serialidx] = '\0';
+			if (inputstr[0] == 'u')
+			{
+				Serial.println("+++");
+				motorspeed = motorspeed + 100;
+				Serial.println(motorspeed);
+			}
+			else if (inputstr[0] == 'd')
+			{
+				Serial.println("---");
+				motorspeed = motorspeed - 100;
+				Serial.println(motorspeed);
+			}
+			else if (isalpha(inputstr[0]))
+			{
+				motorspeed = 0;
+				Serial.println("STOP");
+			}
+			else
+			{
+				motorspeed = atoi(inputstr);
+				Serial.println(motorspeed);
+			}
+			serialidx = -1;
+		}
+		serialidx++;
+	}
+#endif
+
 	currentTime = millis();
 	checkCANmsg();
 	if (currentTime > Thruster_loop_20 + 20){
-		/*
-		if (thruster_enable)
-		{
-		// move thrusters
 		
-		videoray.mov(Thruster_buf[0], Thruster_buf[1]);
-		mDriver.setMotorSpeed(THRUSTER_3, Thruster_buf[2]);
-		mDriver.setMotorSpeed(THRUSTER_4, Thruster_buf[3]);
-		mDriver.setMotorSpeed(THRUSTER_5, Thruster_buf[4]);
-		mDriver.setMotorSpeed(THRUSTER_6, Thruster_buf[5]);
-		mDriver.setMotorSpeed(THRUSTER_7, Thruster_buf[6]);
-		mDriver.setMotorSpeed(THRUSTER_8, Thruster_buf[7]);
-		}
-		else
-		{
-		// stop thrusters
-		Thruster_buf[0] = 0;
-		Thruster_buf[1] = 0;
-		Thruster_buf[2] = 0;
-		Thruster_buf[3] = 0;
-		Thruster_buf[4] = 0;
-		Thruster_buf[5] = 0;
-		Thruster_buf[6] = 0;
-		Thruster_buf[7] = 0;
-		
-		videoray.mov(0,0);
-		mDriver.setMotorSpeed(THRUSTER_3, 0);
-		mDriver.setMotorSpeed(THRUSTER_4, 0);
-		mDriver.setMotorSpeed(THRUSTER_5, 0);
-		mDriver.setMotorSpeed(THRUSTER_6, 0);
-		mDriver.setMotorSpeed(THRUSTER_7, 0);
-		mDriver.setMotorSpeed(THRUSTER_8, 0);
-		}*/
 		if(!thruster_enable){
-			//memset(Thruster_buf, 1500, sizeof(Thruster_buf[0]));
+			// stop thrusters
+			Thruster_buf[0] = 0;
+			Thruster_buf[1] = 0;
+			Thruster_buf[2] = 0;
+			Thruster_buf[3] = 0;
+			Thruster_buf[4] = 0;
+			Thruster_buf[5] = 0;
+			Thruster_buf[6] = 0;
+			Thruster_buf[7] = 0;
 		}
 		for(int i = 0; i < 8; i++)
 		{
@@ -161,14 +192,25 @@ void loop()
 		}
 		Serial.println("run");
 		
-		thruster1.writeMicroseconds(Thruster_buf[0]);
-		thruster2.writeMicroseconds(Thruster_buf[1]);
-		thruster3.writeMicroseconds(Thruster_buf[2]);
-		thruster4.writeMicroseconds(Thruster_buf[3]);
-		thruster5.writeMicroseconds(Thruster_buf[4]);
-		thruster6.writeMicroseconds(Thruster_buf[5]);
-		thruster7.writeMicroseconds(Thruster_buf[6]);
-		thruster8.writeMicroseconds(Thruster_buf[7]);
+#ifdef _MANUAL_RUN_
+		thruster1.mov(motorspeed);
+		thruster2.mov(motorspeed);
+		thruster3.mov(motorspeed);
+		thruster4.mov(motorspeed);
+		thruster5.mov(motorspeed);
+		thruster6.mov(motorspeed);
+		thruster7.mov(motorspeed);
+		thruster8.mov(motorspeed);
+#else
+		thruster1.mov(Thruster_buf[0]);
+		thruster2.mov(Thruster_buf[1]);
+		thruster3.mov(Thruster_buf[2]);
+		thruster4.mov(Thruster_buf[3]);
+		thruster5.mov(Thruster_buf[4]);
+		thruster6.mov(Thruster_buf[5]);
+		thruster7.mov(Thruster_buf[6]);
+		thruster8.mov(Thruster_buf[7]);
+#endif
 		
 		Thruster_loop_20 = millis();
 	}
@@ -212,33 +254,34 @@ void checkCANmsg()
 		
 		switch (CAN.getCanId()){
 			case CAN_thruster_1:{
+				Serial.print("thruster ");
 				for (int i = 0; i < 4; i++){
-					Serial.print("thruster ");
 					Serial.print(i);
 					Serial.print(": ");
 					Thruster_buf[i] = map(CAN.parseCANFrame(buf, i * 2, 2), 0, 6400, 1000, 2000);
-					Serial.println(Thruster_buf[i]);
+					Serial.print(Thruster_buf[i]);
+					Serial.print("\t");
 				}
+				Serial.println("");
 				break;
 			}
 			
 			case CAN_thruster_2:{
-				Serial.println("thruster 2!");
+				Serial.println("thruster ");
 				for (int i = 0; i < 4; i++)
-				Thruster_buf[i + 4] = map(CAN.parseCANFrame(buf, i * 2, 2), 0, 6400, 1000, 2000);
+				{
+					Serial.print(i+4);
+					Serial.print(": ");
+					Thruster_buf[i + 4] = map(CAN.parseCANFrame(buf, i * 2, 2), 0, 6400, 1000, 2000);
+					Serial.print(Thruster_buf[i + 4]);
+					Serial.print("\t");
+				}
+				Serial.println("");
 				break;
 			}
 			
-			case CAN_heartbeat:
-			/*
-			if (buf[0] == 5)
-			{
-			Serial.println(buf[0]);
-			Serial.println("heartbeat!");
-			hb_sync_timer = millis();
-			}*/
-			
-			if(CAN.parseCANFrame(buf, 0, 1) == HEARTBEAT_TB){
+			case CAN_heartbeat:			
+			if(CAN.parseCANFrame(buf, 0, 1) == HEARTBEAT_SBC){
 				Serial.println("heartbeat");
 				hb_sync_timer = millis();
 			}
@@ -247,46 +290,16 @@ void checkCANmsg()
 			case CAN_ST_stats:
 			if(CAN.parseCANFrame(buf, 3, 1) == 1){
 				Serial.println("Leaking");
-				thruster1.writeMicroseconds(1500);
-				thruster2.writeMicroseconds(1500);
-				thruster3.writeMicroseconds(1500);
-				thruster4.writeMicroseconds(1500);
-				thruster5.writeMicroseconds(1500);
-				thruster6.writeMicroseconds(1500);
-				thruster7.writeMicroseconds(1500);
-				thruster8.writeMicroseconds(1500);
+				thruster1.mov(THROTTLE_STOP);
+				thruster2.mov(THROTTLE_STOP);
+				thruster3.mov(THROTTLE_STOP);
+				thruster4.mov(THROTTLE_STOP);
+				thruster5.mov(THROTTLE_STOP);
+				thruster6.mov(THROTTLE_STOP);
+				thruster7.mov(THROTTLE_STOP);
+				thruster8.mov(THROTTLE_STOP);
 				while(1);
-			}
-			
-			/*
-			Serial.println("*************** SA CAN ********************");
-			Serial.print("le");
-			Serial.println(buf[3]);
-			Serial.print("CANID: ");
-			Serial.println(CAN.getCanId());
-			Serial.print("buflen: ");
-			Serial.println(len,HEX);
-			Serial.print("buf: ");
-			for(int i = 0; i < len; i++)
-			{
-			Serial.print(buf[i],HEX);
-			Serial.print(" ");
-			}
-			Serial.println("");
-			Serial.println("*******************************************");
-			if (buf[3] == 1)
-			{
-			while (1)
-			{
-			videoray.mov(0, 0);
-			mDriver.setMotorSpeed(THRUSTER_3, 1000);
-			mDriver.setMotorSpeed(THRUSTER_4, 1000);
-			mDriver.setMotorSpeed(THRUSTER_5, 1000);
-			mDriver.setMotorSpeed(THRUSTER_6, 1000);
-			mDriver.setMotorSpeed(THRUSTER_7, 0);
-			mDriver.setMotorSpeed(THRUSTER_8, 0);
-			}
-			}*/
+			}			
 			
 			default:
 			//TODO=>throw an error

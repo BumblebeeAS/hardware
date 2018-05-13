@@ -15,6 +15,11 @@
 #define THRUSTER_7 6
 #define THRUSTER_8 7
 
+#define FORWARD_MAX 2000
+#define FORWARD_MIN 1550
+#define REVERSE_MIN 1450
+#define REVERSE_MAX 1000
+
 #define HEARTBEAT_TIMEOUT 500
 
 #endif // _DEFINES_H
