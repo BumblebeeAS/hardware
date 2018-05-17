@@ -4,9 +4,33 @@
 #include <EEPROM.h>
 #include "INA233.h"
 #include <SSD1306_text.h>
+#include <can.h>
+#include "can_auv_define.h"
+
+#define CAN_HEARTBEAT_INTERVAL 500
+#define CAN_STATUS_INTERVAL 1000
+#define PRINT_INTERVAL 1000
+#define OLED_INTERVAL 500
+#define CURR_INTERVAL 10
+#define VOLT_INTERVAL 20
+
+#define PMB_NO 1
+
+#if (PMB_NO % 2 == 1)
+#define PMB_HEARTBEAT_ID HEARTBEAT_PMB1
+#define PMB_STATS_ID CAN_PMB1_stats
+#define PMB_STATS2_ID CAN_PMB1_stats2
+#else
+#define PMB_HEARTBEAT_ID HEARTBEAT_PMB2
+#define PMB_STATS_ID CAN_PMB2_stats
+#define PMB_STATS2_ID CAN_PMB2_stats2
+#endif
+
+#define CAN_CS_PIN 8
 
 INA233 monIc(MAX_CURR, SHUNT_RES);
 SSD1306_text display(PIN_OLED_RESET);
+MCP_CAN CAN(CAN_CS_PIN);
 
 uint8_t BATT_STATE = 0;
 uint16_t voltageArray[ARR_SIZE] = { 0 };
@@ -19,12 +43,19 @@ int16_t currByte;
 float current;
 uint32_t capacityLeft = MAX_CAPACITY;
 
+
 uint32_t voltTimer = 0;
 uint32_t currTimer = 0;
 uint32_t printTimer = 0;
+uint32_t oledTimer = 0;
 uint32_t onTimer;
 uint32_t now;
 
+uint32_t id = 0;
+uint8_t len = 0;
+uint8_t buf[8] = { 0 };
+uint32_t CanHeartbeatLoop = 0;
+uint32_t CanStatusLoop = 0;
 
 void setup()
 {
@@ -35,13 +66,18 @@ void setup()
 	digitalWrite(PIN_RELAY, LOW);
 	digitalWrite(PIN_PMOS, LOW);
 
-
 	Serial.begin(115200);
-	/*********************************************/
-	//while (!Serial);
-	now = millis();
-
 	/* End of MCU Initialisation */
+
+	/* CAN Initialisation*/
+
+	CAN_init();
+	// CAN Masking
+	//CAN.init_Mask(0, 0, 0x3FF);
+	//CAN.init_Mask(1, 0, 0x3FF);
+	//CAN.init_Filt(0, 0, CAN_POPB_control);
+
+	/* End of CAN Initialisation*/
 
 	/* Peripherals Initialisation */
 	Wire.begin();
@@ -80,15 +116,27 @@ void loop()
 		digitalWrite(PIN_RELAY, HIGH);
 		/* PMB is turned off */
 	}
+	now = millis();
+	// POPB Heartbeat
+	if ((millis() - CanHeartbeatLoop) > CAN_HEARTBEAT_INTERVAL) {
+		publishCanHB();
+		CanHeartbeatLoop = millis();
+	}
 
 	now = millis();
-	if (now - voltTimer > 20) {
+	if ((millis() - CanStatusLoop) > CAN_STATUS_INTERVAL) {
+		publishCanStatus();
+		CanStatusLoop = millis();
+	}
+
+	now = millis();
+	if (now - voltTimer > VOLT_INTERVAL) {
 		voltTimer = now;
 		voltage = rollVoltAvg(monIc.readVoltage());
 	}
 
 	now = millis();
-	if (now - currTimer > 10) {
+	if (now - currTimer > CURR_INTERVAL) {
 		currTimer = now;
 		shuntVolt = monIc.readShuntVoltage();
 		currByte = rollCurrAvg(monIc.readCurrent());
@@ -107,9 +155,8 @@ void loop()
 	}
 
 	now = millis();
-	if (now - printTimer > 1000) {
+	if (now - printTimer > PRINT_INTERVAL) {
 		printTimer = now;
-		updateDisplay();
 		Serial.print("V: ");
 		Serial.print(voltage / 100.0);
 		Serial.print(" | I: ");
@@ -118,9 +165,51 @@ void loop()
 		Serial.println(capacityLeft*100.0 / MAX_CAPACITY, 2);
 	}
 
+	now = millis();
+	if (now - oledTimer > OLED_INTERVAL) {
+		oledTimer = now;
+		updateDisplay();
+	}
 }
 
 //Methods
+
+void CAN_init()
+{
+START_INIT:
+	if (CAN_OK == CAN.begin(CAN_1000KBPS))                   // init can bus : baudrate = 1000Kbps
+	{
+		Serial.println("CAN BUS: OK");
+	}
+	else
+	{
+		Serial.println("CAN BUS: FAILED");
+		Serial.println("CAN BUS: Reinitializing");
+		delay(1000);
+		goto START_INIT;
+	}
+	Serial.println("INITIATING TRANSMISSION...");
+}
+
+void publishCanStatus() {
+	uint8_t PMB_stats1[8] = { 0 };
+	uint8_t PMB_stats2[8] = { 0 };
+	CAN.setupCANFrame(PMB_stats1, 0, 2, (int)(current*10));
+	CAN.setupCANFrame(PMB_stats1, 2, 2, voltage/10);
+
+	CAN.setupCANFrame(PMB_stats2, 0, 2, 0);
+	CAN.setupCANFrame(PMB_stats2, 2, 1,	capacityLeft*100.0/MAX_CAPACITY);
+	CAN.setupCANFrame(PMB_stats2, 3, 1, 0);
+	CAN.setupCANFrame(PMB_stats2, 4, 1, 0);
+
+	CAN.sendMsgBuf(PMB_STATS_ID, 0, 4, PMB_stats1);
+	CAN.sendMsgBuf(PMB_STATS2_ID, 0, 5, PMB_stats2);
+}
+
+void publishCanHB() {
+	uint8_t HB[1] = { PMB_HEARTBEAT_ID }; //HEARTBEAT_PMB2
+	CAN.sendMsgBuf(CAN_heartbeat, 0, 1, HB);
+}
 
 void saveDataToEeprom() {
 	Serial.println("Saving data to EEPROM, wait for 5s for volt to stabilise");
@@ -164,7 +253,7 @@ String getBattState(uint8_t BATT_STATE) {
 	else if (BATT_STATE == 1)
 		return "CHARGE";
 	else
-		return "FULL";
+		return "IDLE";
 }
 
 uint16_t rollVoltAvg(uint16_t newVolt) {
@@ -188,27 +277,34 @@ int16_t rollCurrAvg(int16_t newCurr) {
 }
 
 void updateDisplay() {
-	//display.clear();
 	display.setTextSize(1, 1);
 	display.setCursor(0, 0);
 	display.write("Battery PMB ");
-	//display.print(PMB_no);
+	display.print(PMB_NO);
 	display.setCursor(1, 0);
 	display.write("Batt %:      ");
+	display.setCursor(1, 48);
+	display.write("       ");
 	display.setCursor(1, 48);
 	display.print(capacityLeft*100.0 / MAX_CAPACITY);
 	display.setCursor(2, 0);
 	display.write("Batt Volt: ");
-	display.print(voltage);
+	display.setCursor(2, 68);
+	display.write("         ");
+	display.setCursor(2, 68);
+	display.print(voltage/100.0);
 	display.setCursor(3, 0);
-	display.write("Current drawn:        ");
-	display.setCursor(3, 88);
-	display.print(int(current));
-	display.print(".");
-	display.print(int(current * 100) % 100);
+	display.write("Current: ");
+	display.setCursor(3, 68);
+	display.write("         ");
+	display.setCursor(3, 68);
+	display.print(current);
 	display.setCursor(4, 0);
-	display.write("C: ");
-	//display.print(capacity_left);
+	display.write("State: ");
+	display.setCursor(4, 38);
+	display.write("              ");
+	display.setCursor(4, 38);
+	display.print((getBattState((current>0)?0:1)));
 	display.setCursor(5, 0);
 	display.write("Pod Temp: ");
 	//display.print(board_temperature);
@@ -216,11 +312,6 @@ void updateDisplay() {
 	display.write("Pod Pres: ");
 	//display.print(board_pressure);
 	display.setCursor(7, 0);
-	//	display.write("|| ");
-	//	display.print(reading);
-	//	display.write(" ||");
-	//	display.print(reading1);
-	//	display.write(" ||");
 	display.write("Low Batt: ");
 	//(batt_low) ? display.print("YES") : display.print("NO");
 }
@@ -230,23 +321,9 @@ void displayOffMessage() {
 	display.setTextSize(1, 1);
 	display.setCursor(0, 0);
 	display.write("Battery PMB ");
-	//display.print(PMB_no);
-	display.setCursor(1, 0);
-	display.write("Batt %:      ");
-	display.setCursor(1, 48);
-	display.print(capacityLeft*100.0 / MAX_CAPACITY);
-	display.setCursor(2, 0);
-	display.write("Batt Volt: ");
-	display.print(voltage);
-	display.setCursor(3, 0);
-	display.write("Current drawn:        ");
-	display.setCursor(3, 88);
-	display.print(int(current));
-	display.print(".");
-	display.print(int(current * 100) % 100);
+	display.print(PMB_NO);
 	display.setCursor(4, 0);
 	display.write("Turning off...");
-	//display.print(capacity_left);
 }
 
 //void readVoltage(){

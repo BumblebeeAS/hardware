@@ -49,6 +49,7 @@ void LEDS::blink(uint8_t a, uint8_t b, uint32_t period) {
 		else {
 			colour(b);
 		}
+		blink_on = !blink_on;
 		time = millis();
 	}
 }
