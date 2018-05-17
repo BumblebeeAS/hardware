@@ -89,13 +89,11 @@ uint8_t cmd[] = { 'D','B' };
 AtCommandRequest atRequest = AtCommandRequest();
 AtCommandResponse atResponse = AtCommandResponse();
 
-//#define _DEBUG_			//	uncomment to print debug
+#define _DEBUG_			//	uncomment to print debug
 //#define _XBEE_			//	uncomment to use xbee
-//#define _SERIAL_		//	uncomment to use serial 0
 
 #define _XBEE_DEBUG_	//	comment to debug xbee
 //#define _OFF_SCREEN_	//	comment to use screen
-//#define _HANG_
 
 int count = 0;
 
@@ -106,19 +104,11 @@ void setup() {
 	digitalWrite(CAN_Chip_Select, HIGH);
 
 	Serial.begin(115200);
-
-#ifdef _SERIAL_
-	Serial.begin(115200);
 	Serial.println("Hi, I'm telemetry!");
-	Serial.println("SPI set to 20MHz since the screen is fked");
-#endif 
 
 	// CAN INIT
 	CAN_init();
-#ifdef _SERIAL_
 	Serial.println("CAN OK");
-#endif 
-
 	
 	// CAN Masking
 	//CAN.init_Mask(0, 0, 0x3ff);// there are 2 mask in mcp2515,
@@ -145,15 +135,9 @@ void setup() {
 	CAN.init_Filt(5, 0, 0);
 
 	// LCD INIT
-#ifdef _OFF_SCREEN_
-#ifdef _SERIAL_
-	Serial.println("Skipping screen");
-#endif 
-#else
+#ifndef _OFF_SCREEN_
 	screen.screen_init();
-#ifdef _SERIAL_
 	Serial.println("Screen OK");
-#endif /
 	screen_prepare();
 #endif
 
@@ -163,9 +147,7 @@ void setup() {
 	// XBEE INIT
 	Serial2.begin(XBEE_BAUDRATE);
 	xbee.setSerial(Serial2);
-#ifdef _SERIAL_
 	Serial.println("INITIATING TRANSMISSION...");
-#endif 
 
 	// DAC INIT
 	Wire.begin();
@@ -181,9 +163,7 @@ void loop() {
 	//******* LCD SCREEN **********/
 
 	reset_stats();
-#ifdef _HANG_
-	Serial.println("resetted");
-#endif
+
 	if ((millis() - loopTime) > SCREEN_LOOP) {
 		
 #ifndef _OFF_SCREEN_
@@ -199,21 +179,15 @@ void loop() {
 		buf[2] = 3;
 		//forwardToXbee();
 	}
-#ifdef _HANG_
-	Serial.println("updated screen");
-#endif
+
 	/*************************************************/
 	/*					RC RX					     */
 	/* Read Frisky CPPM for Manual Thruster override */
 	/*************************************************/
 	get_controlmode_rc();
-#ifdef _HANG_
-	Serial.println("got control mode");
-#endif
+
 	get_rssi();
-#ifdef _HANG_
-	Serial.println("got rssi");
-#endif
+
 	if (control_mode == MANUAL_RC)
 	{
 		get_directions();
@@ -234,20 +208,14 @@ void loop() {
 	}
 	else if (control_mode == AUTONOMOUS)
 	{
-#ifdef _SERIAL_
 		Serial.println("AUTONOMOUS");
-#endif
 	}
 	else
 	{
-#ifdef _SERIAL_
 		Serial.println("STATION KEEP");
 #endif
-#endif
 	}
-#ifdef _HANG_
-	Serial.println("calculated directions");
-#endif
+
 	/********************************************/
 	/*					RC TX				    */
 	/* Send ASV Batt value to Frisky Controller */
@@ -257,9 +225,7 @@ void loop() {
 	uint16_t DAC_input = convert_batt_capacity(lower_batt);
 	//TODO set DAC refresh every 2s	
 	set_DAC(DAC_input);
-#ifdef _HANG_
-	Serial.println("sent back to frsky");
-#endif
+
 	/**********************************************/
 	/*					OCS RX					  */
 	/* Read OCS XBEE for Manual Thruster override */
@@ -334,9 +300,6 @@ void loop() {
 				forwardToCAN(payload);
 				break;
 			case CAN_POPB_control:
-#ifdef _SERIAL_
-				Serial.println("POPB Control Signal!");
-#endif
 				forwardToCAN(payload);
 				break;
 			default:
@@ -360,19 +323,13 @@ void loop() {
 	/**********************************************/
 	get_controlmode();
 	set_thruster_values();
-#ifdef _HANG_
-	Serial.println("set thruster");
-#endif
+
 	//******* CAN RX **********/
 	checkCANmsg();
-#ifdef _HANG_
-	Serial.println("got CAN msg");
-#endif
+
 	//******* CAN TX **********/
 	publishCAN();
-#ifdef _HANG_
-	Serial.println("sent CAN msg");
-#endif
+
 	//******* CAN ERROR REPORTING **********/
 	//  if((millis() - canStatsTime) > 1000){
 	//    test_time = millis();
@@ -473,7 +430,7 @@ void reset_batt2_stats()
 //==========================================
 
 void screen_prepare() {
-	screen.set_cursor(0, 0);
+	screen.set_cursor(0 + OFFSET, 0);
 	screen.write_string("Int press:");
 	screen.write_string("Humidity:");
 	screen.write_string("CPU temp:");
@@ -488,7 +445,7 @@ void screen_prepare() {
 	screen.write_string("OCS OK:");
 	screen.write_string("RC OK:");
 
-	screen.set_cursor(400, 0);
+	screen.set_cursor(400 + OFFSET, 0);
 	screen.write_string("Batt1 capacity:");
 	screen.write_string("Batt2 capacity:");
 	screen.write_string("Batt1 current:");
@@ -502,13 +459,13 @@ void screen_prepare() {
 }
 
 void screen_update() {
-	screen.set_cursor(150, 0);
+	screen.set_cursor(150 + OFFSET, 0);
 	for (int i = 0; i < INT_STAT_COUNT; i++)
 	{
 		screen.write_value_int(internalStats[i]);
 	}
 
-	screen.set_cursor(645, 0);
+	screen.set_cursor(645 + OFFSET, 0);
 	for (int i = 0; i < POWER_STAT_COUNT; i++)
 	{
 		screen.write_value_int(powerStats[i]);
@@ -521,7 +478,7 @@ void update_heartbeat()
 {
 	int i;
 	/* CHECK FOR HEARTBEAT */
-	screen.set_cursor(150, 210);
+	screen.set_cursor(150 + OFFSET, 210);
 	for (i = 1; i < 9; i++) {
 		if (i != HEARTBEAT_Tele) // Skip Telemetry HB
 		{
@@ -533,7 +490,7 @@ void update_heartbeat()
 		}
 	}
 
-	screen.set_cursor(550, 210);
+	screen.set_cursor(550 + OFFSET, 210);
 	for (; i < 13; i++) {
 		if ((millis() - heartbeat_timeout[i]) > HB_TIMEOUT) {
 			screen.write_value_string("NO");
@@ -823,10 +780,6 @@ void checkCANmsg() {
 			break;
 
 		default:
-#ifdef _SERIAL_
-			Serial.print("Others  ");
-			Serial.println(CAN.getCanId());
-#endif
 			break;
 		}
 		switch (CAN.getCanId()) {
@@ -870,9 +823,6 @@ void get_thruster_batt_heartbeat()
 			if (thruster_heartbeat & 1) // Check first bit
 			{
 				heartbeat_timeout[BATT1 + i] = millis();
-#ifdef _SERIAL_
-				//Serial.print(BATT1 + i);
-#endif
 			}
 			thruster_heartbeat = thruster_heartbeat >> 1; // Move to next bit
 		}
@@ -942,13 +892,13 @@ void publishCAN_controllink()
 	CAN.sendMsgBuf(CAN_control_link, 0, 3, buf);
 }
 
-void forwardToCAN(uint8_t payload[])
+void forwardToCAN(uint8_t buffer[])
 {
-	id = payload[2];
-	len = payload[3];
+	id = buffer[2];
+	len = buffer[3];
 	for (int i = 0; i < len; i++)
 	{
-		buf[i] = payload[4 + i];
+		buf[i] = buffer[4 + i];
 	}
 	CAN.sendMsgBuf(id, 0, len, buf);
 }

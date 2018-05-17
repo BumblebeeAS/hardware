@@ -13,6 +13,7 @@
 #define SCREEN_INT 25
 #define SCREEN_CS 22
 #define SCREEN_RESET 24
+#define OFFSET 40
 
 #define SCREEN_LOOP 1000
 
