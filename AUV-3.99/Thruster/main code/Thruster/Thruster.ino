@@ -1,3 +1,26 @@
+//###################################################
+//###################################################
+//
+//####     ####
+//#  #     #  #      ######  ######## ########
+//#  ####  #  ####   #    ## #  ##  # #  ##  #
+//#     ## #     ##  ####  # #  ##  # #  ##  #
+//#  ##  # #  ##  # ##     # #  ##  # #  ##  #
+//#  ##  # #  ##  # #  ##  # #  ##  # ##    ##
+//#     ## #     ## ##     # ##     #  ##  ##
+// # ####   # ####   #######  #######   ####    
+//
+//
+//Thruster for BBAUV 3.99
+//Firmware Version :             v1.0
+////
+// Written by Chong Yu and Ren Zhi
+// Change log v0.0:
+//
+//###################################################
+//###################################################
+
+
 #include <can_defines.h>
 #include "can_auv_define.h"
 #include "define.h"
@@ -47,7 +70,7 @@ uint32_t test_time = 0;
 uint32_t heartbeat_loop = 0;
 uint8_t hb_buf[2];
 
-#define _MANUAL_RUN_
+//#define _MANUAL_RUN_
 #ifdef _MANUAL_RUN_
 int motorspeed;
 char inputstr[10] = { '\n' };
@@ -84,6 +107,7 @@ void loop()
 		CAN.setupCANFrame(hb_buf, 0, 1, HEARTBEAT_TB);
 		CAN.sendMsgBuf(CAN_heartbeat, 0, 1, hb_buf);
 		hb_local_timer = millis();
+		Serial.println("SEND HEARTBEAT!");
 		if(0)
 		//if (hb_local_timer - hb_sync_timer > 3000)
 		{
@@ -288,19 +312,31 @@ void checkCANmsg()
 			break;
 			
 			case CAN_ST_stats:
+				Serial.print("id-");
+				Serial.print(CAN.getCanId());
+				Serial.print(": ");
+				for (int i = 0; i < len; i++)
+				{
+					Serial.print(buf[i]);
+					Serial.print(" ");
+				}
+				Serial.println("");
 			if(CAN.parseCANFrame(buf, 3, 1) == 1){
 				Serial.println("Leaking");
-				thruster1.mov(THROTTLE_STOP);
-				thruster2.mov(THROTTLE_STOP);
-				thruster3.mov(THROTTLE_STOP);
-				thruster4.mov(THROTTLE_STOP);
-				thruster5.mov(THROTTLE_STOP);
-				thruster6.mov(THROTTLE_STOP);
-				thruster7.mov(THROTTLE_STOP);
-				thruster8.mov(THROTTLE_STOP);
-				while(1);
+				while (1)
+				{
+					thruster1.mov(0);
+					thruster2.mov(0);
+					thruster3.mov(0);
+					thruster4.mov(0);
+					thruster5.mov(0);
+					thruster6.mov(0);
+					thruster7.mov(0);
+					thruster8.mov(0);
+				};
 			}			
-			
+				break;
+
 			default:
 			//TODO=>throw an error
 			break;

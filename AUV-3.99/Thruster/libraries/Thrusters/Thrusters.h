@@ -22,6 +22,8 @@ private:
 	
 	void acc(int input1, int input2);
 	int increment(int, int);
+	int increment_exp(int throttle_old, int throttle_new);
+	int increment_linear(int throttle_old, int throttle_new);
 
 	int mapSpeed(int speed);
 	int thrusterForward(int input);

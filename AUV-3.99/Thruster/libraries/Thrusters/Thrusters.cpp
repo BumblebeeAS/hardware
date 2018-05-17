@@ -3,7 +3,8 @@
 #include "Thrusters.h"
 #include <Math.h>
 
-#define RATE 0.05  /// MUST BE LESS THAN 1
+#define RATE_EXP 0.05  /// MUST BE LESS THAN 1
+#define RATE_LIN 50
 
 Thrusters::Thrusters(int thruster_num, Servo servo, int pwm_pin, int front_max, int front_min, int back_min, int back_max)
 {
@@ -25,18 +26,12 @@ void Thrusters::init()
 // Increase throttle by RATE
 int Thrusters::increment(int throttle_old, int throttle_new) {
 	int next_throttle;
-	if (throttle_new > throttle_old) {
-		// Forward
-		next_throttle = throttle_old + ceil(RATE * (throttle_new - throttle_old));
-		esc.writeMicroseconds(next_throttle);
-	}
-	else if (throttle_old > throttle_new) {
-		// Reverse
-		next_throttle = throttle_old - ceil(RATE * (throttle_old - throttle_new));
-		esc.writeMicroseconds(next_throttle);
-	}
 	// Don't do anything if both throttles are same
-
+	if (throttle_new != throttle_old)
+	{
+		next_throttle = increment_linear(throttle_old, throttle_new);
+		esc.writeMicroseconds(next_throttle);
+	}
 	/*
 	Serial.print("ESC");
 	Serial.print(id);
@@ -46,6 +41,34 @@ int Thrusters::increment(int throttle_old, int throttle_new) {
 	Serial.print(next_throttle);
 	Serial.print(" final-");
 	Serial.println(throttle_new);*/
+	return next_throttle;
+}
+
+int Thrusters::increment_linear(int throttle_old, int throttle_new)
+{
+	int next_throttle;
+	if (throttle_new > throttle_old) {
+		// Forward
+		next_throttle = throttle_old + ((throttle_new - throttle_old) > RATE_LIN ? RATE_LIN : (throttle_new - throttle_old));
+	}
+	else if (throttle_old > throttle_new) {
+		// Reverse
+		next_throttle = throttle_old - ((throttle_old - throttle_new) > RATE_LIN ? RATE_LIN : (throttle_old - throttle_new));
+	}
+	return next_throttle;
+}
+
+int Thrusters::increment_exp(int throttle_old, int throttle_new)
+{
+	int next_throttle;
+	if (throttle_new > throttle_old) {
+		// Forward
+		next_throttle = throttle_old + ceil(RATE_EXP * (throttle_new - throttle_old));
+	}
+	else if (throttle_old > throttle_new) {
+		// Reverse
+		next_throttle = throttle_old - ceil(RATE_EXP * (throttle_old - throttle_new));
+	}
 	return next_throttle;
 }
 
