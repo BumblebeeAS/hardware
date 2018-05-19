@@ -124,7 +124,7 @@ void loop()
 	}
 	
 	if (millis() - filter_loop > LPF_LOOP) {	//	25ms
-		externalPressureLPF();
+		//externalPressureLPF();
 		filter_loop = millis();
 	}
 
@@ -469,7 +469,8 @@ uint16_t readExternalPressure() {
 	// ==> 1-5V as shunt resistor is 250.0ohm
 	ads.set_continuous_conv(0);
 	delay(ADS_DELAY);
-	uint16_t adc0 = ads.readADC_Continuous();
+	uint16_t adc0 = 5480; //ads.readADC_Continuous();	// 101kPa = 5480
+	//4928		0.924V
 	
 	//psi to pascal
 	double temp_ext = 0.0;
@@ -491,7 +492,7 @@ void externalPressureLPF() {
 	{
 	rawExtPressure = rawExtPressure + LPF_CONSTANT * (float)(temp - rawExtPressure);
 	}
-
+	ExtPressure = rawExtPressure;
 }
 
 //Updates Temperature and Humidity
