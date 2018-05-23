@@ -24,15 +24,15 @@
 
 // Load Switch (NMOS)/ PMOS Bit Comparison
 
-#define ENABLE_SON 0x01
-#define ENABLE_NAV 0x02
-#define ENABLE_TAB 0x04
-#define ENABLE_STB 0x08
+#define ENABLE_TAB 0x01
+#define ENABLE_STB 0x02
+#define ENABLE_NAV 0x04
+#define ENABLE_SON 0x08
 
 // Interval Periods
 
 #define STAGGER_TIME 250
-#define CAN_HEARTBEAT_INTERVAL 100
+#define CAN_HEARTBEAT_INTERVAL 500
 #define CAN_STATUS_INTERVAL 1000
 #define SERIAL_STATUS_INTERVAL 5000
 
