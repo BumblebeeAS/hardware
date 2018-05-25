@@ -128,7 +128,7 @@ void loop()
 	// Receive CAN message
 
 	if (receiveCanMessage()) {
-		//updateSwitches();
+		updateSwitches();
 	}
 
 	// Print PCB Status via Serial
