@@ -63,7 +63,7 @@ static uint32_t filter_loop = 0;
 
 //LED
 LEDS led(RED, GREEN, BLUE);
-uint8_t lightColour = 9;	// 9 is off
+uint8_t lightColour = 0;	// 0 is off
 
 //Others
 uint8_t CPU_CoreTemp = 0;
@@ -105,8 +105,11 @@ void setup()
 
 	//led init
 	led_init();
+	pinMode(25, INPUT);
+	pinMode(26, INPUT);
+	pinMode(27, INPUT);
 	Serial.println("LED OK");
-	
+
 	for (int i = 0; i < HB_COUNT; i++) {
 		heartbeat_timeout[i] = millis();
 	}
@@ -201,7 +204,6 @@ void CANSetMask() {
 void checkCANmsg() {
 	if (CAN_MSGAVAIL == CAN.checkReceive()) {
 		CAN.readMsgBufID(&id, &len, buf);    // read data,  len: data length, buf: data buf
-		Serial.println(CAN.getCanId());
 		switch (CAN.getCanId()) {
 		case CAN_heartbeat: 
 		{
@@ -217,10 +219,10 @@ void checkCANmsg() {
 		}
 		case CAN_LED:
 			lightColour = CAN.parseCANFrame(buf, 0, 1);
-			led.colour(lightColour);
+			//led.colour(lightColour);
 			break;
 		case CAN_DNA_Stats:
-			internalStats[DNA_PRESS] = CAN.parseCANFrame(buf, 2, 1);
+			internalStats[DNA_PRESS] = CAN.parseCANFrame(buf, 0, 1);
 			sbc_timeout = millis();
 			break;
 		case CAN_PMB1_stats:
@@ -258,6 +260,7 @@ void checkCANmsg() {
 				}
 			}
 			CPU_CoreTemp = max;
+			internalStats[CPU_TEMP] = CPU_CoreTemp;
 			sbc_timeout = millis();
 			break;
 		}
@@ -471,7 +474,7 @@ uint16_t readExternalPressure() {
 	// ==> 1-5V as shunt resistor is 250.0ohm
 	ads.set_continuous_conv(0);
 	delay(ADS_DELAY);
-	uint16_t adc0 = 5480; //ads.readADC_Continuous();	// 101kPa = 5480
+	uint16_t adc0 = ads.readADC_Continuous();	// 101kPa = 5480
 	//4928		0.924V
 	
 	//psi to pascal
