@@ -16,6 +16,11 @@ LEDS::LEDS(int pin1,int pin2,int pin3)
 
 void LEDS::setcolour(int red, int green, int blue)
 {
+	analogWrite(RedPin, red);
+	analogWrite(GreenPin, green);
+	analogWrite(BluePin, blue);
+
+	/*
 	if (red == 1) {
 		digitalWrite(RedPin, HIGH);
 	}
@@ -34,6 +39,7 @@ void LEDS::setcolour(int red, int green, int blue)
 	else {
 		digitalWrite(BluePin, LOW);
 	}
+	*/
 }
 
 // a for first colour,	b for second colour,
@@ -54,6 +60,49 @@ void LEDS::blink(uint8_t a, uint8_t b, uint32_t period) {
 	}
 }
 
+
+// 9 for off
+void LEDS::colour(int col)
+{
+	switch (col)
+	{
+	case 1://Red
+		setcolour(255, 0, 0);
+		break;
+	case 2://Orange
+		setcolour(255, 35, 0);
+		break;
+	case 3://Yellow
+		setcolour(255, 60, 0);
+		break;
+	case 4://Green
+		setcolour(0, 255, 0);
+		break;
+	case 5://Blue
+		setcolour(0, 0, 255);
+		break;
+	case 6://indigo
+		setcolour(25, 10, 200);
+		break;
+	case 7://violet
+		setcolour(50, 0, 80);
+		break;
+	case 8://white
+		setcolour(255, 255, 255);
+		break;
+	case 9://off
+		setcolour(0, 0, 0);
+		break;
+	case 10://pink
+		setcolour(255, 0, 100);
+		break;
+	default:
+		setcolour(0, 0, 0);
+		break;
+	}
+}
+
+/*
 // 9 for off
 void LEDS::colour(int col)
 {
@@ -94,6 +143,7 @@ void LEDS::colour(int col)
 		break;
 	}
 }
+*/
 
 /*
 void LEDS::colour(int col)

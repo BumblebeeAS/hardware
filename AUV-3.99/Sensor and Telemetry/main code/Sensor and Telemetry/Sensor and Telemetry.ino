@@ -124,7 +124,7 @@ void loop()
 	}
 	
 	if (millis() - filter_loop > LPF_LOOP) {	//	25ms
-		externalPressureLPF();
+		//externalPressureLPF();
 		filter_loop = millis();
 	}
 
@@ -173,16 +173,16 @@ void CANSetMask() {
 	Filt decide which bit to accept
 	*/
 
-	CAN.init_Mask(0, 0, 0xE);	//	check	111X
+	CAN.init_Mask(0, 0, 0xA);	//	check	11XX
 	CAN.init_Mask(1, 0, 0xF);	//	check	all bit
 
-	CAN.init_Filt(0, 0, 0xA);	// let	101X pass (10,11)
-	CAN.init_Filt(1, 0, 0xC);	// let	110X pass (12,13)
+	CAN.init_Filt(0, 0, 0x8);	// let	10XX pass (8, 9)
+	CAN.init_Filt(1, 0, 0xA);	// let	11XX pass (10 to 15)
 
 	CAN.init_Filt(2, 0, 0x3);	// let	0011 pass (3)
 	CAN.init_Filt(3, 0, 0x4);	// let	0100 pass (4)
-	CAN.init_Filt(4, 0, 0x9);	// let	1001 pass (9)
-	CAN.init_Filt(5, 0, 0xE);	// let	1110 pass (14)
+	CAN.init_Filt(4, 0, 0xF);	// let	1111 pass (15)
+	CAN.init_Filt(5, 0, 0xF);	// let	1111 pass (15)
 	
 }
 
@@ -190,16 +190,18 @@ void CANSetMask() {
 3:	Heartbeat: SBC, SBC_CAN, PCB, TB, ST, MANI, PMB1, PMB2
 4:	Sonar trigger
 9:	LED
-10:	PMB1 stat1
-11:	PMB1 stat2
-12:	PMB2 stat1
-13:	PMB2 stat2
-14:	CPU Temp
+10:	CAN_DNA_Stats 
+11:	PMB1 stat1
+12:	PMB1 stat2
+13:	PMB2 stat1
+14:	PMB2 stat2
+15:	CPU Temp
 */
 
 void checkCANmsg() {
 	if (CAN_MSGAVAIL == CAN.checkReceive()) {
 		CAN.readMsgBufID(&id, &len, buf);    // read data,  len: data length, buf: data buf
+		Serial.println(CAN.getCanId());
 		switch (CAN.getCanId()) {
 		case CAN_heartbeat: 
 		{
@@ -210,7 +212,7 @@ void checkCANmsg() {
 		case CAN_SONAR: 
 		{
 			uint8_t temp = CAN.parseCANFrame(buf, 0, 1);
-			temp == 1 ? sonar = true : sonar = false;
+			(temp == 1) ? sonar = true : sonar = false;
 			break;
 		}
 		case CAN_LED:
@@ -469,7 +471,8 @@ uint16_t readExternalPressure() {
 	// ==> 1-5V as shunt resistor is 250.0ohm
 	ads.set_continuous_conv(0);
 	delay(ADS_DELAY);
-	uint16_t adc0 = ads.readADC_Continuous();
+	uint16_t adc0 = 5480; //ads.readADC_Continuous();	// 101kPa = 5480
+	//4928		0.924V
 	
 	//psi to pascal
 	double temp_ext = 0.0;
@@ -491,7 +494,7 @@ void externalPressureLPF() {
 	{
 	rawExtPressure = rawExtPressure + LPF_CONSTANT * (float)(temp - rawExtPressure);
 	}
-
+	ExtPressure = rawExtPressure;
 }
 
 //Updates Temperature and Humidity

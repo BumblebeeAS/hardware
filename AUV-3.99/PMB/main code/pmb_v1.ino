@@ -5,7 +5,9 @@
 #include "INA233.h"
 #include <SSD1306_text.h>
 #include <can.h>
-#include "can_auv_define.h"
+#include "can_auv_define.h"			
+#include <TempAD7414.h>
+#include <Adafruit_ADS1015.h>
 
 #define CAN_HEARTBEAT_INTERVAL 500
 #define CAN_STATUS_INTERVAL 1000
@@ -13,8 +15,10 @@
 #define OLED_INTERVAL 500
 #define CURR_INTERVAL 10
 #define VOLT_INTERVAL 20
+#define TEMP_INTERVAL 1000
+#define PRESSURE_INTERVAL 1000
 
-#define PMB_NO 1
+#define PMB_NO 4
 
 #if (PMB_NO % 2 == 1)
 #define PMB_HEARTBEAT_ID HEARTBEAT_PMB1
@@ -49,6 +53,8 @@ uint32_t currTimer = 0;
 uint32_t printTimer = 0;
 uint32_t oledTimer = 0;
 uint32_t onTimer;
+uint32_t tempTimer = 0;
+uint32_t pressureTimer = 0;
 uint32_t now;
 
 uint32_t id = 0;
@@ -56,6 +62,13 @@ uint8_t len = 0;
 uint8_t buf[8] = { 0 };
 uint32_t CanHeartbeatLoop = 0;
 uint32_t CanStatusLoop = 0;
+
+float board_temperature = 0;
+TempAD7414 TempSensor(CONFIG_TEMP_SENS, ADDR_TEMP_SENS);
+
+float board_pressure = 0;
+Adafruit_ADS1115 ads;
+int16_t adc1;
 
 void setup()
 {
@@ -85,6 +98,14 @@ void setup()
 	/* Display Init */
 	Serial.println("Initialising Display");
 	display.init();
+
+	/* Temp Sensor Init*/
+	Serial.println("Initialising Temp Sensor");
+	TempSensor.initTempAD7414();
+
+	/* Pressure Sensor Init*/
+	Serial.println("Initialising Pressure Sensor");
+	ads.begin();
 
 	/* INA233 Init */
 	Serial.println("Initialising Current IC");
@@ -155,6 +176,19 @@ void loop()
 	}
 
 	now = millis();
+	if (now - tempTimer > TEMP_INTERVAL) {
+		tempTimer = now;
+		board_temperature = TempSensor.getTemp();
+	}
+
+	now = millis();
+	if (now - pressureTimer > PRESSURE_INTERVAL) {
+		pressureTimer = now;
+		adc1 = ads.readADC_SingleEnded(1);
+		board_pressure = ((float)adc1*0.0001875) / (INTPRES_REF * 0.0040) + 10;
+	}
+
+	now = millis();
 	if (now - printTimer > PRINT_INTERVAL) {
 		printTimer = now;
 		Serial.print("V: ");
@@ -199,8 +233,8 @@ void publishCanStatus() {
 
 	CAN.setupCANFrame(PMB_stats2, 0, 2, 0);
 	CAN.setupCANFrame(PMB_stats2, 2, 1,	capacityLeft*100.0/MAX_CAPACITY);
-	CAN.setupCANFrame(PMB_stats2, 3, 1, 0);
-	CAN.setupCANFrame(PMB_stats2, 4, 1, 0);
+	CAN.setupCANFrame(PMB_stats2, 3, 1, uint8_t(board_temperature));
+	CAN.setupCANFrame(PMB_stats2, 4, 1, uint8_t(board_pressure));
 
 	CAN.sendMsgBuf(PMB_STATS_ID, 0, 4, PMB_stats1);
 	CAN.sendMsgBuf(PMB_STATS2_ID, 0, 5, PMB_stats2);
@@ -307,10 +341,10 @@ void updateDisplay() {
 	display.print((getBattState((current>0)?0:1)));
 	display.setCursor(5, 0);
 	display.write("Pod Temp: ");
-	//display.print(board_temperature);
+	display.print(board_temperature);
 	display.setCursor(6, 0);
 	display.write("Pod Pres: ");
-	//display.print(board_pressure);
+	display.print(board_pressure);
 	display.setCursor(7, 0);
 	display.write("Low Batt: ");
 	//(batt_low) ? display.print("YES") : display.print("NO");
