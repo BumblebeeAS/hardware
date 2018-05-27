@@ -90,9 +90,9 @@ AtCommandRequest atRequest = AtCommandRequest();
 AtCommandResponse atResponse = AtCommandResponse();
 
 #define _DEBUG_			//	uncomment to print debug
-//#define _XBEE_			//	uncomment to use xbee
+#define _XBEE_			//	uncomment to use xbee
 
-#define _XBEE_DEBUG_	//	comment to debug xbee
+//#define _XBEE_DEBUG_	//	comment to debug xbee
 //#define _OFF_SCREEN_	//	comment to use screen
 
 int count = 0;
@@ -159,6 +159,8 @@ void setup() {
 	}
 }
 
+bool blink = true;
+
 void loop() {
 	//******* LCD SCREEN **********/
 
@@ -169,6 +171,8 @@ void loop() {
 #ifndef _OFF_SCREEN_
 		screen_update();
 		update_heartbeat();
+		screen.write_value_string(blink ? "YES" : "NO");
+		blink = !blink;
 #endif
 		loopTime = millis();
 
@@ -232,7 +236,7 @@ void loop() {
 	/**********************************************/
 #ifdef _XBEE_
 	xbee.readPacket();
-	if (xbee.getResponse().isAvailable())
+	if (xbee.getResponse().isAvailable())//xbee.readPacket(25))
 	{
 		if (xbee.getResponse().getApiId() == ZB_RX_RESPONSE)
 		{
@@ -608,7 +612,7 @@ int calculate_rssi()
 
 void get_controlmode()
 {
-	/*if (((millis() - heartbeat_timeout[HEARTBEAT_Cogswell]) > FAILSAFE_TIMEOUT)
+	if (((millis() - heartbeat_timeout[HEARTBEAT_Cogswell]) > FAILSAFE_TIMEOUT)
 		|| ((millis() - heartbeat_timeout[HEARTBEAT_POKB]) > FAILSAFE_TIMEOUT)) // Lost SBC or POKB heartbeat
 	{
 
@@ -622,7 +626,7 @@ void get_controlmode()
 			control_mode = MANUAL_OCS;
 		}
 	}
-	else*/ if (((millis() - heartbeat_timeout[HEARTBEAT_RC]) > COMMLINK_TIMEOUT) &&
+	else if (((millis() - heartbeat_timeout[HEARTBEAT_RC]) > COMMLINK_TIMEOUT) &&
 		((millis() - heartbeat_timeout[HEARTBEAT_OCS]) > COMMLINK_TIMEOUT)) // Both rc & ocs loss comms
 	{
 		control_mode = STATION_KEEP;
@@ -950,7 +954,7 @@ void forwardToXbee()
 {
 	forwardToXbeeAddr(addr64);
 	//if((id == 111) || (id == 112))
-	//forwardToXbeeAddr(addr64spare);
+	forwardToXbeeAddr(addr64spare);
 }
 void forwardToXbeeAddr(XBeeAddress64 addr) {
 	//START_BYTE x2, len, id, buf
