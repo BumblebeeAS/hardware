@@ -24,15 +24,15 @@
 
 // Load Switch (NMOS)/ PMOS Bit Comparison
 
-#define ENABLE_SON 0x01
-#define ENABLE_NAV 0x02
-#define ENABLE_TAB 0x04
-#define ENABLE_STB 0x08
+#define ENABLE_TAB 0x01
+#define ENABLE_STB 0x02
+#define ENABLE_NAV 0x04
+#define ENABLE_SON 0x08
 
 // Interval Periods
 
-#define STAGGER_TIME 250
-#define CAN_HEARTBEAT_INTERVAL 100
+#define STAGGER_TIME 500
+#define CAN_HEARTBEAT_INTERVAL 500
 #define CAN_STATUS_INTERVAL 1000
 #define SERIAL_STATUS_INTERVAL 5000
 
@@ -60,7 +60,7 @@ uint32_t serialStatusTime = 0;
 
 // Switch On/Off Indication
 
-uint8_t pcbControl = 0x0F;	// Bit 0 to 4: SON, NAV, TAB, STB
+uint8_t pcbControl = 0x0F;	// Bit 0 to 3: SON, NAV, TAB, STB
 
 void setup()
 {
@@ -96,14 +96,15 @@ void setup()
 	digitalWrite(STB_GATE, HIGH);
 
 	// Switch on SON, NAV, TAB and STB in sequence
-
+	delay(STAGGER_TIME);
 	digitalWrite(SON_GATE, HIGH);
 	delay(STAGGER_TIME);
 	digitalWrite(NAV_GATE, HIGH);
 	delay(STAGGER_TIME);
-	digitalWrite(TAB_GATE, LOW);
-	delay(STAGGER_TIME);
 	digitalWrite(STB_GATE, LOW);
+	delay(5000);
+	digitalWrite(TAB_GATE, LOW);
+	
 }
 
 void loop()
