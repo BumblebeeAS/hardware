@@ -29,8 +29,8 @@ MCP_CAN CAN(CAN_Chip_Select); //Set Chip Select to pin 8
 // BLUE	  - GREEN
 
 Servo servo1, servo2, servo3, servo4, servo5, servo6, servo7, servo8;
-Thrusters thruster1(1, servo1, THRUSTER_1, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN, REVERSE_MAX);
-Thrusters thruster2(2, servo2, THRUSTER_2, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN, REVERSE_MAX);
+Thrusters thruster1(1, servo1, THRUSTER_1, REVERSE_MAX, REVERSE_MIN, FORWARD_MIN, FORWARD_MAX);
+Thrusters thruster2(2, servo2, THRUSTER_2, REVERSE_MAX, REVERSE_MIN, FORWARD_MIN, FORWARD_MAX);
 Thrusters thruster3(3, servo3, THRUSTER_3, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN, REVERSE_MAX);
 Thrusters thruster4(4, servo4, THRUSTER_4, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN, REVERSE_MAX);
 Thrusters thruster5(5, servo5, THRUSTER_5, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN, REVERSE_MAX);
@@ -38,7 +38,7 @@ Thrusters thruster6(6, servo6, THRUSTER_6, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN
 Thrusters thruster7(7, servo7, THRUSTER_7, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN, REVERSE_MAX);
 Thrusters thruster8(8, servo8, THRUSTER_8, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN, REVERSE_MAX);
 
-unsigned short Thruster_buf[8] = {1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500}; //buffer for Thrusters
+short Thruster_buf[8] = {0, 0, 0, 0, 0, 0, 0, 0}; //buffer for Thrusters
 
 unsigned char len = 0; //length of CAN message, taken care by library
 unsigned char buf[8];  //Buffer for CAN message
@@ -47,7 +47,7 @@ uint32_t test_time = 0;
 uint32_t heartbeat_loop = 0;
 uint8_t hb_buf[2];
 
-#define _MANUAL_RUN_
+//#define _MANUAL_RUN_
 #ifdef _MANUAL_RUN_
 int motorspeed;
 char inputstr[10] = { '\n' };
@@ -84,25 +84,29 @@ void loop()
 		CAN.setupCANFrame(hb_buf, 0, 1, HEARTBEAT_TB);
 		CAN.sendMsgBuf(CAN_heartbeat, 0, 1, hb_buf);
 		hb_local_timer = millis();
+#ifdef _MANUAL_RUN_
+		// ignore heartbeat
 		if(0)
-		//if (hb_local_timer - hb_sync_timer > 3000)
+#else
+		if (hb_local_timer - hb_sync_timer > 3000)
+#endif
 		{
 			//no SBC heartbeat
-			Serial.print("dis:");
+			/*Serial.print("dis:");
 			Serial.print(hb_local_timer);
 			Serial.print(" ");
-			Serial.println(hb_sync_timer);
-			Serial.println("disabled");
+			Serial.println(hb_sync_timer);*/
+			Serial.println("disabled - no SBC hb");
 			thruster_enable = 0;
 		}
 		else
 		{
-			thruster_enable = 1;
-			Serial.print("ena:");
+			/*Serial.print("ena:");
 			Serial.print(hb_local_timer);
 			Serial.print(" ");
-			Serial.println(hb_sync_timer);
+			Serial.println(hb_sync_timer);*/
 			Serial.println("enabled");
+			thruster_enable = 1;
 		}
 		heartbeat_loop = millis();
 	}
@@ -183,6 +187,7 @@ void loop()
 			Thruster_buf[6] = 0;
 			Thruster_buf[7] = 0;
 		}
+		
 		for(int i = 0; i < 8; i++)
 		{
 			Serial.print(i);
@@ -258,7 +263,7 @@ void checkCANmsg()
 				for (int i = 0; i < 4; i++){
 					Serial.print(i);
 					Serial.print(": ");
-					Thruster_buf[i] = map(CAN.parseCANFrame(buf, i * 2, 2), 0, 6400, 1000, 2000);
+					Thruster_buf[i] = CAN.parseCANFrame(buf, i * 2, 2) - 3200;
 					Serial.print(Thruster_buf[i]);
 					Serial.print("\t");
 				}
@@ -272,7 +277,7 @@ void checkCANmsg()
 				{
 					Serial.print(i+4);
 					Serial.print(": ");
-					Thruster_buf[i + 4] = map(CAN.parseCANFrame(buf, i * 2, 2), 0, 6400, 1000, 2000);
+					Thruster_buf[i + 4] = CAN.parseCANFrame(buf, i * 2, 2) - 3200;
 					Serial.print(Thruster_buf[i + 4]);
 					Serial.print("\t");
 				}
@@ -290,15 +295,17 @@ void checkCANmsg()
 			case CAN_ST_stats:
 			if(CAN.parseCANFrame(buf, 3, 1) == 1){
 				Serial.println("Leaking");
-				thruster1.mov(THROTTLE_STOP);
-				thruster2.mov(THROTTLE_STOP);
-				thruster3.mov(THROTTLE_STOP);
-				thruster4.mov(THROTTLE_STOP);
-				thruster5.mov(THROTTLE_STOP);
-				thruster6.mov(THROTTLE_STOP);
-				thruster7.mov(THROTTLE_STOP);
-				thruster8.mov(THROTTLE_STOP);
-				while(1);
+				while (1)
+				{
+					thruster1.mov(0);
+					thruster2.mov(0);
+					thruster3.mov(0);
+					thruster4.mov(0);
+					thruster5.mov(0);
+					thruster6.mov(0);
+					thruster7.mov(0);
+					thruster8.mov(0);
+				}
 			}			
 			
 			default:
