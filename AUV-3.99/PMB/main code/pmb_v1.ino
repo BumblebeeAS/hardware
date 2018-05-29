@@ -9,29 +9,6 @@
 #include <TempAD7414.h>
 #include <Adafruit_ADS1015.h>
 
-#define CAN_HEARTBEAT_INTERVAL 500
-#define CAN_STATUS_INTERVAL 1000
-#define PRINT_INTERVAL 1000
-#define OLED_INTERVAL 500
-#define CURR_INTERVAL 10
-#define VOLT_INTERVAL 20
-#define TEMP_INTERVAL 1000
-#define PRESSURE_INTERVAL 1000
-
-#define PMB_NO 4
-
-#if (PMB_NO % 2 == 1)
-#define PMB_HEARTBEAT_ID HEARTBEAT_PMB1
-#define PMB_STATS_ID CAN_PMB1_stats
-#define PMB_STATS2_ID CAN_PMB1_stats2
-#else
-#define PMB_HEARTBEAT_ID HEARTBEAT_PMB2
-#define PMB_STATS_ID CAN_PMB2_stats
-#define PMB_STATS2_ID CAN_PMB2_stats2
-#endif
-
-#define CAN_CS_PIN 8
-
 INA233 monIc(MAX_CURR, SHUNT_RES);
 SSD1306_text display(PIN_OLED_RESET);
 MCP_CAN CAN(CAN_CS_PIN);
@@ -86,9 +63,7 @@ void setup()
 
 	CAN_init();
 	// CAN Masking
-	//CAN.init_Mask(0, 0, 0x3FF);
-	//CAN.init_Mask(1, 0, 0x3FF);
-	//CAN.init_Filt(0, 0, CAN_POPB_control);
+	
 
 	/* End of CAN Initialisation*/
 
@@ -232,7 +207,7 @@ void publishCanStatus() {
 	CAN.setupCANFrame(PMB_stats1, 2, 2, voltage/10);
 
 	CAN.setupCANFrame(PMB_stats2, 0, 2, 0);
-	CAN.setupCANFrame(PMB_stats2, 2, 1,	capacityLeft*100.0/MAX_CAPACITY);
+	CAN.setupCANFrame(PMB_stats2, 2, 1,	capacityLeft*100/MAX_CAPACITY);
 	CAN.setupCANFrame(PMB_stats2, 3, 1, uint8_t(board_temperature));
 	CAN.setupCANFrame(PMB_stats2, 4, 1, uint8_t(board_pressure));
 
@@ -241,12 +216,12 @@ void publishCanStatus() {
 }
 
 void publishCanHB() {
-	uint8_t HB[1] = { PMB_HEARTBEAT_ID }; //HEARTBEAT_PMB2
+	uint8_t HB[1] = { PMB_HEARTBEAT_ID }; //HEARTBEAT_PMB
 	CAN.sendMsgBuf(CAN_heartbeat, 0, 1, HB);
 }
 
 void saveDataToEeprom() {
-	Serial.println("Saving data to EEPROM, wait for 5s for volt to stabilise");
+	Serial.println("Saving data to EEPROM, wait for 3s for volt to stabilise");
 	delay(3000);
 	for (int i = 0; i < ARR_SIZE; i++) {
 		voltage = rollVoltAvg(monIc.readVoltage());
