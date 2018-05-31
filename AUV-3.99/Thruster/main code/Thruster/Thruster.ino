@@ -1,3 +1,26 @@
+//###################################################
+//###################################################
+//
+//####     ####
+//#  #     #  #      ######  ######## ########
+//#  ####  #  ####   #    ## #  ##  # #  ##  #
+//#     ## #     ##  ####  # #  ##  # #  ##  #
+//#  ##  # #  ##  # ##     # #  ##  # #  ##  #
+//#  ##  # #  ##  # #  ##  # #  ##  # ##    ##
+//#     ## #     ## ##     # ##     #  ##  ##
+// # ####   # ####   #######  #######   ####    
+//
+//
+//Thruster for BBAUV 3.99
+//Firmware Version :             v1.0
+////
+// Written by Chong Yu and Ren Zhi
+// Change log v0.0:
+//
+//###################################################
+//###################################################
+
+
 #include <can_defines.h>
 #include "can_auv_define.h"
 #include "define.h"
@@ -29,8 +52,8 @@ MCP_CAN CAN(CAN_Chip_Select); //Set Chip Select to pin 8
 // BLUE	  - GREEN
 
 Servo servo1, servo2, servo3, servo4, servo5, servo6, servo7, servo8;
-Thrusters thruster1(1, servo1, THRUSTER_1, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN, REVERSE_MAX);
-Thrusters thruster2(2, servo2, THRUSTER_2, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN, REVERSE_MAX);
+Thrusters thruster1(1, servo1, THRUSTER_1, REVERSE_MAX, REVERSE_MIN, FORWARD_MIN, FORWARD_MAX);
+Thrusters thruster2(2, servo2, THRUSTER_2, REVERSE_MAX, REVERSE_MIN, FORWARD_MIN, FORWARD_MAX);
 Thrusters thruster3(3, servo3, THRUSTER_3, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN, REVERSE_MAX);
 Thrusters thruster4(4, servo4, THRUSTER_4, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN, REVERSE_MAX);
 Thrusters thruster5(5, servo5, THRUSTER_5, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN, REVERSE_MAX);
@@ -38,7 +61,7 @@ Thrusters thruster6(6, servo6, THRUSTER_6, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN
 Thrusters thruster7(7, servo7, THRUSTER_7, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN, REVERSE_MAX);
 Thrusters thruster8(8, servo8, THRUSTER_8, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN, REVERSE_MAX);
 
-unsigned short Thruster_buf[8] = {1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500}; //buffer for Thrusters
+short Thruster_buf[8] = { 0, 0, 0, 0, 0, 0, 0, 0 }; //buffer for Thrusters
 
 unsigned char len = 0; //length of CAN message, taken care by library
 unsigned char buf[8];  //Buffer for CAN message
@@ -47,7 +70,7 @@ uint32_t test_time = 0;
 uint32_t heartbeat_loop = 0;
 uint8_t hb_buf[2];
 
-#define _MANUAL_RUN_
+//#define _MANUAL_RUN_
 #ifdef _MANUAL_RUN_
 int motorspeed;
 char inputstr[10] = { '\n' };
@@ -55,13 +78,13 @@ int serialidx = 0;
 #endif
 
 
-void setup(){
+void setup() {
 	Serial.begin(115200);
 	Serial.println("Hi, I'm Thruster Board!");
 	Serial1.begin(19200);
 	CAN_init(); //initialise CAN
 	can_bus_loop = heartbeat_loop = millis();
-	
+
 	thruster1.init();
 	thruster2.init();
 	thruster3.init();
@@ -84,25 +107,29 @@ void loop()
 		CAN.setupCANFrame(hb_buf, 0, 1, HEARTBEAT_TB);
 		CAN.sendMsgBuf(CAN_heartbeat, 0, 1, hb_buf);
 		hb_local_timer = millis();
-		if(0)
-		//if (hb_local_timer - hb_sync_timer > 3000)
+#ifdef _MANUAL_RUN_
+		// ignore heartbeat
+		if (0)
+#else
+		if (hb_local_timer - hb_sync_timer > 3000)
+#endif
 		{
 			//no SBC heartbeat
-			Serial.print("dis:");
+			/*Serial.print("dis:");
 			Serial.print(hb_local_timer);
 			Serial.print(" ");
-			Serial.println(hb_sync_timer);
-			Serial.println("disabled");
+			Serial.println(hb_sync_timer);*/
+			Serial.println("disabled - no SBC hb");
 			thruster_enable = 0;
 		}
 		else
 		{
-			thruster_enable = 1;
-			Serial.print("ena:");
+			/*Serial.print("ena:");
 			Serial.print(hb_local_timer);
 			Serial.print(" ");
-			Serial.println(hb_sync_timer);
+			Serial.println(hb_sync_timer);*/
 			Serial.println("enabled");
+			thruster_enable = 1;
 		}
 		heartbeat_loop = millis();
 	}
@@ -110,7 +137,7 @@ void loop()
 	/*****************************************/
 	/*  Transmit CAN Diagnostics			 */
 	/*****************************************/
-	
+
 	/*
 	if ((millis() - can_bus_loop) > 1000)
 	{
@@ -121,7 +148,7 @@ void loop()
 	can_bus_loop = millis();
 	}
 	*/
-	
+
 #ifdef _MANUAL_RUN_
 	// To manually run thrusters if SBC not up
 	if (Serial.available())
@@ -170,9 +197,9 @@ void loop()
 
 	currentTime = millis();
 	checkCANmsg();
-	if (currentTime > Thruster_loop_20 + 20){
-		
-		if(!thruster_enable){
+	if (currentTime > Thruster_loop_20 + 20) {
+
+		if (!thruster_enable) {
 			// stop thrusters
 			Thruster_buf[0] = 0;
 			Thruster_buf[1] = 0;
@@ -183,7 +210,8 @@ void loop()
 			Thruster_buf[6] = 0;
 			Thruster_buf[7] = 0;
 		}
-		for(int i = 0; i < 8; i++)
+
+		for (int i = 0; i < 8; i++)
 		{
 			Serial.print(i);
 			Serial.print(": ");
@@ -191,7 +219,7 @@ void loop()
 			Serial.print("\t");
 		}
 		Serial.println("run");
-		
+
 #ifdef _MANUAL_RUN_
 		thruster1.mov(motorspeed);
 		thruster2.mov(motorspeed);
@@ -211,24 +239,24 @@ void loop()
 		thruster7.mov(Thruster_buf[6]);
 		thruster8.mov(Thruster_buf[7]);
 #endif
-		
+
 		Thruster_loop_20 = millis();
 	}
 }
 
-void CAN_init(){
-	START_INIT:
-	if (CAN_OK == CAN.begin(CAN_1000KBPS)){                   // init can bus : baudrate = 500k
-		#if DEBUG_MODE == NORMAL
+void CAN_init() {
+START_INIT:
+	if (CAN_OK == CAN.begin(CAN_1000KBPS)) {                   // init can bus : baudrate = 500k
+#if DEBUG_MODE == NORMAL
 		Serial.println("CAN init ok!");
-		#endif
+#endif
 	}
-	else{
-		#if DEBUG_MODE == NORMAL
+	else {
+#if DEBUG_MODE == NORMAL
 		Serial.println("CAN init fail");
 		Serial.println("Init CAN again");
 		delay(1000);
-		#endif
+#endif
 		goto START_INIT;
 	}
 
@@ -239,7 +267,7 @@ void CAN_init(){
 	CAN.init_Filt(1, 0, CAN_thruster_2);	//2nd Thruster Message
 	CAN.init_Filt(2, 0, CAN_heartbeat);	//Heartbeat Message
 	CAN.init_Filt(3, 0, CAN_ST_stats);	//Heartbeat Message
-	
+
 }
 
 void checkCANmsg()
@@ -251,61 +279,73 @@ void checkCANmsg()
 		//read where is it from
 		CAN.readMsgBuf(&len, buf);    // read data,  len: data length, buf: data buf
 		//Serial.println(CAN.getCanId());
-		
-		switch (CAN.getCanId()){
-			case CAN_thruster_1:{
-				Serial.print("thruster ");
-				for (int i = 0; i < 4; i++){
-					Serial.print(i);
-					Serial.print(": ");
-					Thruster_buf[i] = map(CAN.parseCANFrame(buf, i * 2, 2), 0, 6400, 1000, 2000);
-					Serial.print(Thruster_buf[i]);
-					Serial.print("\t");
-				}
-				Serial.println("");
-				break;
+
+		switch (CAN.getCanId()) {
+		case CAN_thruster_1: {
+			Serial.print("thruster ");
+			for (int i = 0; i < 4; i++) {
+				Serial.print(i);
+				Serial.print(": ");
+				Thruster_buf[i] = CAN.parseCANFrame(buf, i * 2, 2) - 3200;
+				Serial.print(Thruster_buf[i]);
+				Serial.print("\t");
 			}
-			
-			case CAN_thruster_2:{
-				Serial.println("thruster ");
-				for (int i = 0; i < 4; i++)
-				{
-					Serial.print(i+4);
-					Serial.print(": ");
-					Thruster_buf[i + 4] = map(CAN.parseCANFrame(buf, i * 2, 2), 0, 6400, 1000, 2000);
-					Serial.print(Thruster_buf[i + 4]);
-					Serial.print("\t");
-				}
-				Serial.println("");
-				break;
+			Serial.println("");
+			break;
+		}
+
+		case CAN_thruster_2: {
+			Serial.println("thruster ");
+			for (int i = 0; i < 4; i++)
+			{
+				Serial.print(i + 4);
+				Serial.print(": ");
+				Thruster_buf[i + 4] = CAN.parseCANFrame(buf, i * 2, 2) - 3200;
+				Serial.print(Thruster_buf[i + 4]);
+				Serial.print("\t");
 			}
-			
-			case CAN_heartbeat:			
-			if(CAN.parseCANFrame(buf, 0, 1) == HEARTBEAT_SBC){
+			Serial.println("");
+			break;
+		}
+
+		case CAN_heartbeat:
+			if (CAN.parseCANFrame(buf, 0, 1) == HEARTBEAT_SBC) {
 				Serial.println("heartbeat");
 				hb_sync_timer = millis();
 			}
 			break;
-			
-			case CAN_ST_stats:
-			if(CAN.parseCANFrame(buf, 3, 1) == 1){
+
+		case CAN_ST_stats:
+			Serial.print("id-");
+			Serial.print(CAN.getCanId());
+			Serial.print(": ");
+			for (int i = 0; i < len; i++)
+			{
+				Serial.print(buf[i]);
+				Serial.print(" ");
+			}
+			Serial.println("");
+			if (CAN.parseCANFrame(buf, 3, 1) == 1) {
 				Serial.println("Leaking");
-				thruster1.mov(THROTTLE_STOP);
-				thruster2.mov(THROTTLE_STOP);
-				thruster3.mov(THROTTLE_STOP);
-				thruster4.mov(THROTTLE_STOP);
-				thruster5.mov(THROTTLE_STOP);
-				thruster6.mov(THROTTLE_STOP);
-				thruster7.mov(THROTTLE_STOP);
-				thruster8.mov(THROTTLE_STOP);
-				while(1);
-			}			
-			
-			default:
+				while (1)
+				{
+					thruster1.mov(0);
+					thruster2.mov(0);
+					thruster3.mov(0);
+					thruster4.mov(0);
+					thruster5.mov(0);
+					thruster6.mov(0);
+					thruster7.mov(0);
+					thruster8.mov(0);
+				};
+			}
+			break;
+
+		default:
 			//TODO=>throw an error
 			break;
 		}
-		
+
 		CAN.clearMsg();
 	}
 }
