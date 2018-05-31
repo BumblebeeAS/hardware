@@ -54,12 +54,12 @@ MCP_CAN CAN(CAN_Chip_Select); //Set Chip Select to pin 8
 Servo servo1, servo2, servo3, servo4, servo5, servo6, servo7, servo8;
 Thrusters thruster1(1, servo1, THRUSTER_1, REVERSE_MAX, REVERSE_MIN, FORWARD_MIN, FORWARD_MAX);
 Thrusters thruster2(2, servo2, THRUSTER_2, REVERSE_MAX, REVERSE_MIN, FORWARD_MIN, FORWARD_MAX);
-Thrusters thruster3(3, servo3, THRUSTER_3, REVERSE_MAX, REVERSE_MIN, FORWARD_MIN, FORWARD_MAX);
-Thrusters thruster4(4, servo4, THRUSTER_4, REVERSE_MAX, REVERSE_MIN, FORWARD_MIN, FORWARD_MAX);
-Thrusters thruster5(5, servo5, THRUSTER_5, REVERSE_MAX, REVERSE_MIN, FORWARD_MIN, FORWARD_MAX);
-Thrusters thruster6(6, servo6, THRUSTER_6, REVERSE_MAX, REVERSE_MIN, FORWARD_MIN, FORWARD_MAX);
-Thrusters thruster7(7, servo7, THRUSTER_7, REVERSE_MAX, REVERSE_MIN, FORWARD_MIN, FORWARD_MAX);
-Thrusters thruster8(8, servo8, THRUSTER_8, REVERSE_MAX, REVERSE_MIN, FORWARD_MIN, FORWARD_MAX);
+Thrusters thruster3(3, servo3, THRUSTER_3, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN, REVERSE_MAX);
+Thrusters thruster4(4, servo4, THRUSTER_4, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN, REVERSE_MAX);
+Thrusters thruster5(5, servo5, THRUSTER_5, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN, REVERSE_MAX);
+Thrusters thruster6(6, servo6, THRUSTER_6, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN, REVERSE_MAX);
+Thrusters thruster7(7, servo7, THRUSTER_7, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN, REVERSE_MAX);
+Thrusters thruster8(8, servo8, THRUSTER_8, FORWARD_MAX, FORWARD_MIN, REVERSE_MIN, REVERSE_MAX);
 
 short Thruster_buf[8] = { 0, 0, 0, 0, 0, 0, 0, 0 }; //buffer for Thrusters
 
