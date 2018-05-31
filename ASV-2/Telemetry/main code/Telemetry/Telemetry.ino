@@ -90,14 +90,15 @@ AtCommandRequest atRequest = AtCommandRequest();
 AtCommandResponse atResponse = AtCommandResponse();
 
 //#define _DEBUG_			//	uncomment to print debug
-//#define _XBEE_			//	uncomment to use xbee
-//#define _SERIAL_		//	uncomment to use serial 0
+#define _XBEE_			//	uncomment to use xbee
+#define _SERIAL_		//	uncomment to use serial 0
 
 #define _XBEE_DEBUG_	//	comment to debug xbee
 //#define _OFF_SCREEN_	//	comment to use screen
-//#define _HANG_
 
 int count = 0;
+
+bool blink = false;
 
 void setup() {
 	pinMode(SCREEN_CS, OUTPUT);		//CS screen
@@ -110,7 +111,6 @@ void setup() {
 #ifdef _SERIAL_
 	Serial.begin(115200);
 	Serial.println("Hi, I'm telemetry!");
-	Serial.println("SPI set to 20MHz since the screen is fked");
 #endif 
 
 	// CAN INIT
@@ -181,14 +181,14 @@ void loop() {
 	//******* LCD SCREEN **********/
 
 	reset_stats();
-#ifdef _HANG_
-	Serial.println("resetted");
-#endif
+
 	if ((millis() - loopTime) > SCREEN_LOOP) {
 		
 #ifndef _OFF_SCREEN_
 		screen_update();
 		update_heartbeat();
+		blink ? screen.write_value_string("YES") : screen.write_value_string("NO");
+		blink = !blink;
 #endif
 		loopTime = millis();
 
@@ -199,21 +199,15 @@ void loop() {
 		buf[2] = 3;
 		//forwardToXbee();
 	}
-#ifdef _HANG_
-	Serial.println("updated screen");
-#endif
+
 	/*************************************************/
 	/*					RC RX					     */
 	/* Read Frisky CPPM for Manual Thruster override */
 	/*************************************************/
 	get_controlmode_rc();
-#ifdef _HANG_
-	Serial.println("got control mode");
-#endif
+
 	get_rssi();
-#ifdef _HANG_
-	Serial.println("got rssi");
-#endif
+
 	if (control_mode == MANUAL_RC)
 	{
 		get_directions();
@@ -245,9 +239,7 @@ void loop() {
 #endif
 #endif
 	}
-#ifdef _HANG_
-	Serial.println("calculated directions");
-#endif
+
 	/********************************************/
 	/*					RC TX				    */
 	/* Send ASV Batt value to Frisky Controller */
@@ -257,9 +249,7 @@ void loop() {
 	uint16_t DAC_input = convert_batt_capacity(lower_batt);
 	//TODO set DAC refresh every 2s	
 	set_DAC(DAC_input);
-#ifdef _HANG_
-	Serial.println("sent back to frsky");
-#endif
+
 	/**********************************************/
 	/*					OCS RX					  */
 	/* Read OCS XBEE for Manual Thruster override */
@@ -360,19 +350,13 @@ void loop() {
 	/**********************************************/
 	get_controlmode();
 	set_thruster_values();
-#ifdef _HANG_
-	Serial.println("set thruster");
-#endif
+
 	//******* CAN RX **********/
 	checkCANmsg();
-#ifdef _HANG_
-	Serial.println("got CAN msg");
-#endif
+
 	//******* CAN TX **********/
 	publishCAN();
-#ifdef _HANG_
-	Serial.println("sent CAN msg");
-#endif
+
 	//******* CAN ERROR REPORTING **********/
 	//  if((millis() - canStatsTime) > 1000){
 	//    test_time = millis();
@@ -473,7 +457,7 @@ void reset_batt2_stats()
 //==========================================
 
 void screen_prepare() {
-	screen.set_cursor(0, 0);
+	screen.set_cursor(0 + OFFSET, 0);
 	screen.write_string("Int press:");
 	screen.write_string("Humidity:");
 	screen.write_string("CPU temp:");
@@ -488,7 +472,7 @@ void screen_prepare() {
 	screen.write_string("OCS OK:");
 	screen.write_string("RC OK:");
 
-	screen.set_cursor(400, 0);
+	screen.set_cursor(400 + OFFSET, 0);
 	screen.write_string("Batt1 capacity:");
 	screen.write_string("Batt2 capacity:");
 	screen.write_string("Batt1 current:");
@@ -502,13 +486,13 @@ void screen_prepare() {
 }
 
 void screen_update() {
-	screen.set_cursor(150, 0);
+	screen.set_cursor(150 + OFFSET, 0);
 	for (int i = 0; i < INT_STAT_COUNT; i++)
 	{
 		screen.write_value_int(internalStats[i]);
 	}
 
-	screen.set_cursor(645, 0);
+	screen.set_cursor(645 + OFFSET, 0);
 	for (int i = 0; i < POWER_STAT_COUNT; i++)
 	{
 		screen.write_value_int(powerStats[i]);
@@ -521,7 +505,7 @@ void update_heartbeat()
 {
 	int i;
 	/* CHECK FOR HEARTBEAT */
-	screen.set_cursor(150, 210);
+	screen.set_cursor(150 + OFFSET, 210);
 	for (i = 1; i < 9; i++) {
 		if (i != HEARTBEAT_Tele) // Skip Telemetry HB
 		{
@@ -533,7 +517,7 @@ void update_heartbeat()
 		}
 	}
 
-	screen.set_cursor(550, 210);
+	screen.set_cursor(550 + OFFSET, 210);
 	for (; i < 13; i++) {
 		if ((millis() - heartbeat_timeout[i]) > HB_TIMEOUT) {
 			screen.write_value_string("NO");
@@ -541,6 +525,8 @@ void update_heartbeat()
 		else
 			screen.write_value_string("YES");
 	}
+
+
 }
 
 //==========================================
@@ -651,7 +637,7 @@ int calculate_rssi()
 
 void get_controlmode()
 {
-	/*if (((millis() - heartbeat_timeout[HEARTBEAT_Cogswell]) > FAILSAFE_TIMEOUT)
+	if (((millis() - heartbeat_timeout[HEARTBEAT_Cogswell]) > FAILSAFE_TIMEOUT)
 		|| ((millis() - heartbeat_timeout[HEARTBEAT_POKB]) > FAILSAFE_TIMEOUT)) // Lost SBC or POKB heartbeat
 	{
 
@@ -665,7 +651,7 @@ void get_controlmode()
 			control_mode = MANUAL_OCS;
 		}
 	}
-	else*/ if (((millis() - heartbeat_timeout[HEARTBEAT_RC]) > COMMLINK_TIMEOUT) &&
+	else if (((millis() - heartbeat_timeout[HEARTBEAT_RC]) > COMMLINK_TIMEOUT) &&
 		((millis() - heartbeat_timeout[HEARTBEAT_OCS]) > COMMLINK_TIMEOUT)) // Both rc & ocs loss comms
 	{
 		control_mode = STATION_KEEP;
@@ -1014,7 +1000,7 @@ void forwardToXbeeAddr(XBeeAddress64 addr) {
 		xbee_buf[i] = buf[j];
 	}
 	xbee.send(zbTx);
-	if (xbee.readPacket(100))
+	if (xbee.readPacket(25))
 	{
 		// got a response!
 		// should be a znet tx status      
