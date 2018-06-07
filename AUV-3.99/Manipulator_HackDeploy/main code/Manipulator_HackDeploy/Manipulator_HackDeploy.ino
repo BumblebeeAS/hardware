@@ -36,6 +36,7 @@ void dropper();
 void top_torpedo();
 void bot_torpedo();
 void manipulate();
+void reset_manipulate();
 
 MCP_CAN CAN(CAN_Chip_Select); //Set Chip Select to pin 8
 
@@ -51,9 +52,10 @@ uint32_t torpedoBotTimer = 0;
 uint32_t serialStatusTimer = 0;
 uint32_t heartbeatTimer = 0;
 
-int reload = 0;
+int fired_dropper = 0;
 int fired_top = 0;
 int fired_bot = 0;
+
 
 int incomingByte = 0;   // for incoming serial data; test code
 
@@ -77,8 +79,9 @@ void loop()
 	if (receiveCanMessage()) {
 		manipulate();
 	}
+	reset_manipulate();
 
-	if (DEBUG_MODE && ((millis() - serialStatusTimer) > SERIAL_STATUS_INTERVAL)) {
+	if ((millis() - serialStatusTimer) > SERIAL_STATUS_INTERVAL) {
 		Serial.print("Manipulator Status: ");
 		for (int i = 7; i >= 0; i--)
 		{
@@ -100,16 +103,18 @@ void loop()
 
 		if (incomingByte == 49) //if 1 is typed in terminal, do top torpedo
 		{
-			top_torpedo();
+			maniControl |= FIRE_TOP_TORPEDO;
 		}
 		else if (incomingByte == 50) //if 2 is typed in terminal, do bot torpedo
 		{
-			bot_torpedo();
+			maniControl |= FIRE_BOT_TORPEDO;
 		}
 		else if (incomingByte == 51) //if 3 is typed in terminal, do dropper
 		{
-			dropper();
+			maniControl |= FIRE_DROPPER;
 		}
+		manipulate();
+		reset_manipulate();
 	}
 }
 
@@ -148,18 +153,8 @@ void dropper()
 	//Turn on solenoid to fire dropper
 	digitalWrite(MANI_5, HIGH);
 	
+	fired_dropper = 1;
 	dropperTimer = millis();
-	reload = 0;
-
-	while (reload == 0)
-	{
-		if (millis() - dropperTimer > DROPPER_INTERVAL)
-		{
-			//Turn off solenoid to reload dropper
-			digitalWrite(MANI_5, LOW);
-			reload = 1;
-		}
-	}
 }
 
 void top_torpedo()
@@ -167,19 +162,9 @@ void top_torpedo()
 	//GPIO pin 22
 	//Turn on top solenoid to fire top torpedo
 	digitalWrite(TORP1, HIGH);
+	
 	fired_top = 1;
-
 	torpedoTopTimer = millis();
-
-	while (fired_top == 1)
-	{
-		if (millis() - torpedoTopTimer > TORPEDO_INTERVAL)
-		{
-			//Turn off top solenoid
-			digitalWrite(TORP1, LOW);
-			fired_top = 0;
-		}
-	}
 }
 
 void bot_torpedo()
@@ -187,33 +172,54 @@ void bot_torpedo()
 	//GPIO pin 23
 	//Turn on bot solenoid to fire bot torpedo
 	digitalWrite(TORP2, HIGH);
+	
 	fired_bot = 1;
-
 	torpedoBotTimer = millis();
-
-	while (fired_bot == 1)
-	{
-		if (millis() - torpedoBotTimer > TORPEDO_INTERVAL)
-		{
-			//Turn off bot solenoid
-			digitalWrite(TORP2, LOW);
-			fired_bot = 0;
-		}
-	}
 }
 
 void manipulate() 
 {
 	if (maniControl & FIRE_TOP_TORPEDO) {
 		top_torpedo();
+		Serial.println("Fired top torpedo");
 	}
 
-	else if (maniControl & FIRE_BOT_TORPEDO) {
+	if (maniControl & FIRE_BOT_TORPEDO) {
 		bot_torpedo();
+		Serial.println("Fired bot torpedo");
 	}
 
-	else if (maniControl & FIRE_DROPPER) {
+	if (maniControl & FIRE_DROPPER) {
 		dropper();
+		Serial.println("Fired dropper");
+	}
+	maniControl = 0;
+}
+
+void reset_manipulate()
+{
+	if (fired_dropper && (millis() - dropperTimer) > DROPPER_INTERVAL)
+	{
+		//Turn off solenoid to reload dropper
+		digitalWrite(MANI_5, LOW);
+		fired_dropper = 0;
+		Serial.println("Closed dropper");
+	}
+
+	if (fired_top && (millis() - torpedoTopTimer) > TORPEDO_INTERVAL)
+	{
+		//Turn off top solenoid
+		digitalWrite(TORP1, LOW);
+		fired_top = 0;
+		Serial.println("Closed top torpedo");
+	}
+
+	if (fired_bot && (millis() - torpedoBotTimer) > TORPEDO_INTERVAL)
+	{
+		//Turn off bot solenoid
+		digitalWrite(TORP2, LOW);
+		fired_bot = 0;
+		Serial.println("Closed bot torpedo");
 	}
 }
 
