@@ -1,6 +1,6 @@
 #include "LEDS.h"
 
-LEDS::LEDS(int pin1,int pin2,int pin3)
+LEDS::LEDS(int pin1, int pin2, int pin3)
 {
 	RedPin = pin1;
 	GreenPin = pin2;
@@ -11,7 +11,7 @@ LEDS::LEDS(int pin1,int pin2,int pin3)
 	pinMode(BluePin, OUTPUT);
 
 	time = 0;
-	blink_on = 0;
+	blink_on = false;
 }
 
 void LEDS::setcolour(int pin1, int pin2, int pin3)
@@ -24,7 +24,7 @@ void LEDS::setcolour(int pin1, int pin2, int pin3)
 // a for first colour,	b for second colour,
 // period in ms
 void LEDS::blink(uint8_t a, uint8_t b, uint32_t period) {
-	if (a > 9 || b > 9) {
+	if (a > 10 || b > 10) {
 		return;
 	}
 	if (millis() - time > period) {

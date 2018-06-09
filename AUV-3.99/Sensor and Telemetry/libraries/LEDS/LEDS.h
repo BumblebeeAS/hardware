@@ -8,7 +8,7 @@ class LEDS
 private:
 	int RedPin, GreenPin, BluePin;
 	uint32_t time;
-	int blink_on;
+	bool blink_on;
 
 public:
 	LEDS(int pin1,int pin2,int pin3);

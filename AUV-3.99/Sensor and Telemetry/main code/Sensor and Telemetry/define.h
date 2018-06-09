@@ -16,9 +16,9 @@
 #define OFFSET 0 // 40 for ASV2.0 screen
 
 //LED
-#define RED 12		//23
-#define BLUE 10		//24
-#define GREEN 11	//22
+#define RED 23//12		//23
+#define BLUE 24//10		//24
+#define GREEN 22//11	//22
 
 //Sensor
 #define Vref 5		//MPXH Vdd is the Vref

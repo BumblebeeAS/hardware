@@ -25,7 +25,6 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_ADS1015.h>
 #include <HIH613x.h>
-#include "LEDS.h"
 #include "LCD_Driver.h"
 #include "define.h"
 #include <can_defines.h>
@@ -33,6 +32,16 @@
 #include <SPI.h> //for CAN controller
 #include <can.h>
 #include "can_auv_define.h"
+
+#define SOFTPWM
+
+#ifdef SOFTPWM
+#include "SoftPWM.h"
+#else
+#include "LEDS.h"
+#endif // SOFTPWM
+
+
 
 // CAN variable
 MCP_CAN CAN(CAN_Chip_Select);
@@ -62,8 +71,23 @@ static uint32_t pressure_loop = 0;
 static uint32_t filter_loop = 0;
 
 //LED
+#ifndef SOFTPWM
 LEDS led(RED, GREEN, BLUE);
+#else
+//LED Hackjob Software PWM
+
+//==========!!!!!!!!!!		Read this before use		!!!!!!!!!!==========
+//				https://github.com/Palatis/arduino-softpwm
+
+SOFTPWM_DEFINE_CHANNEL(22, DDRA, PORTA, PORTA0);  //Arduino pin 22
+SOFTPWM_DEFINE_CHANNEL(23, DDRA, PORTA, PORTA1);  //Arduino pin 23
+SOFTPWM_DEFINE_CHANNEL(24, DDRA, PORTA, PORTA2);  //Arduino pin 24
+SOFTPWM_DEFINE_OBJECT(255);
+bool blink_on = false;
+uint32_t time = 0;
+#endif
 uint8_t lightColour = 0;	// 0 is off
+
 
 //Others
 uint8_t CPU_CoreTemp = 0;
@@ -105,9 +129,6 @@ void setup()
 
 	//led init
 	led_init();
-	pinMode(25, INPUT);
-	pinMode(26, INPUT);
-	pinMode(27, INPUT);
 	Serial.println("LED OK");
 
 	for (int i = 0; i < HB_COUNT; i++) {
@@ -219,7 +240,11 @@ void checkCANmsg() {
 		}
 		case CAN_LED:
 			lightColour = CAN.parseCANFrame(buf, 0, 1);
+#ifdef SOFTPWM
+			colour(lightColour);
+#else
 			//led.colour(lightColour);
+#endif
 			break;
 		case CAN_DNA_Stats:
 			internalStats[DNA_PRESS] = CAN.parseCANFrame(buf, 0, 1);
@@ -482,6 +507,7 @@ uint16_t readExternalPressure() {
 	temp_ext = 6895 * ((15.0 * (adc0 / 10684.0) - 7.498596031));	//Convert to Pascal
 	temp_ext = temp_ext + 99973.98; //plus 1 ATM
 	ExtPressure = (uint16_t)(temp_ext / 1000);
+	
 	if (ExtPressure < 80 || ExtPressure > 350) {
 		ExtPressure = 0xFFFF;
 	}
@@ -520,11 +546,20 @@ void readTempHumididty() {
 
 //Blinks through all colour
 void led_init() {
-	for (int i = 0; i < 11; i++) {
+#ifdef SOFTPWM
+	SoftPWM.begin(490);	//490Hz
+	for (int i = 0; i < 10; i++) {
+		colour(i);
+		delay(200);
+	}
+	colour(lightColour);
+#else
+	for (int i = 0; i < 10; i++) {
 		led.colour(i);
 		delay(200);
 	}
 	led.colour(lightColour);
+#endif
 }
 
 //Return bool to indicate whether is it leaking
@@ -535,8 +570,13 @@ bool leak() {
 		leaking = true;
 	}
 	if (leaking) {
+#ifdef SOFTPWM
+		//colour(8);		//  8 for white
+		blink(1, 8, 300);
+#else
 		//led.colour(8);	//	8 for white
 		led.blink(1, 8, 300);		// red white 500ms
+#endif
 	}
 	return leaking;
 }
@@ -553,4 +593,82 @@ void sonar_init() {
 void sonar_update() {
 	digitalWrite(SONAR_OUT, LOW);
 	sonar ? digitalWrite(SONAR_IN, HIGH) : digitalWrite(SONAR_IN, LOW);
+}
+
+
+
+
+
+
+//=========================================================================================
+
+
+
+
+
+
+
+void setcolour(int red, int green, int blue) {
+	SoftPWM.set(RED, red);
+	SoftPWM.set(GREEN, green);
+	SoftPWM.set(BLUE, blue);
+}
+
+// 9 for off
+void colour(int colour)
+{
+	switch (colour)
+	{
+	case 0://Off
+		setcolour(0, 0, 0);
+		break;
+	case 1://Red
+		setcolour(255, 0, 0);
+		break;
+	case 2://Violet
+		setcolour(238, 130, 238);
+		break;
+	case 3://Indigo
+		setcolour(75, 0, 130);
+		break;
+	case 4://Blue
+		setcolour(0, 0, 255);
+		break;
+	case 5://Green
+		setcolour(0, 255, 0);
+		break;
+	case 6://Cyan
+		setcolour(0, 255, 255);
+		break;
+	case 7://Bluish-Green
+		setcolour(5, 60, 73);
+		break;
+	case 8://White
+		setcolour(255, 255, 255);
+		break;
+	case 9://Yellow
+		setcolour(255, 255, 0);
+		break;
+	default:
+		setcolour(0, 0, 0);
+		break;
+	}
+}
+
+// a for first colour,	b for second colour,
+// period in ms
+void blink(uint8_t a, uint8_t b, uint32_t period) {
+	if (a > 10 || b > 10) {
+		return;
+	}
+	if (millis() - time > period) {
+		if (blink_on) {
+			colour(a);
+		}
+		else {
+			colour(b);
+		}
+		blink_on = !blink_on;
+		time = millis();
+	}
 }
