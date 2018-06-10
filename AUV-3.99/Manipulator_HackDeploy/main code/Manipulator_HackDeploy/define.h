@@ -3,7 +3,7 @@
 
 //Timer interval definitions
 #define DROPPER_INTERVAL 500
-#define TORPEDO_INTERVAL 500
+#define TORPEDO_INTERVAL 1000
 #define SERIAL_STATUS_INTERVAL 1000
 
 ///Manipulator definitions
