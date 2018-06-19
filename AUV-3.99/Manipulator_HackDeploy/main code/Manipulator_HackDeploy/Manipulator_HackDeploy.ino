@@ -35,6 +35,8 @@ void manipulators_init();
 void dropper();
 void top_torpedo();
 void bot_torpedo();
+void retract_grabber();
+void extend_grabber();
 void manipulate();
 void reset_manipulate();
 
@@ -44,7 +46,7 @@ uint32_t id = 0;
 uint8_t len = 0;
 uint8_t buf[8] = { 0 };
 
-uint8_t maniControl = 0x00;	// Bit 0 to 7: XXTXTXDX
+uint8_t maniControl = 0x00;	// Bit 0 to 7: RETXTXDX
 
 uint32_t dropperTimer = 0;
 uint32_t torpedoTopTimer = 0;
@@ -113,8 +115,17 @@ void loop()
 		{
 			maniControl |= FIRE_DROPPER;
 		}
+		else if (incomingByte == 52) //if 4 is typed in terminal, retract grabber
+		{
+			maniControl |= RETRACT_GRABBER;
+		}
+		else if (incomingByte == 53) //if 5 is typed in terminal, extend grabber
+		{
+			maniControl |= EXTEND_GRABBER;
+		}
+
 		manipulate();
-		reset_manipulate();
+		reset_manipulate();	
 	}
 }
 
@@ -149,9 +160,9 @@ void manipulators_init()
 
 void dropper()
 {
-	//Mapped to pin 34
+	//Mapped to pin 32
 	//Turn on solenoid to fire dropper
-	digitalWrite(MANI_5, HIGH);
+	digitalWrite(MANI_3, HIGH);
 	
 	fired_dropper = 1;
 	dropperTimer = millis();
@@ -159,9 +170,9 @@ void dropper()
 
 void top_torpedo()
 {
-	//GPIO pin 22
+	//Mapped to pin 33
 	//Turn on top solenoid to fire top torpedo
-	digitalWrite(TORP1, HIGH);
+	digitalWrite(MANI_4, HIGH);
 	
 	fired_top = 1;
 	torpedoTopTimer = millis();
@@ -169,12 +180,26 @@ void top_torpedo()
 
 void bot_torpedo()
 {
-	//GPIO pin 23
+	//Mapped to pin 34
 	//Turn on bot solenoid to fire bot torpedo
-	digitalWrite(TORP2, HIGH);
+	digitalWrite(MANI_5, HIGH);
 	
 	fired_bot = 1;
 	torpedoBotTimer = millis();
+}
+
+void retract_grabber() 
+{
+	//Mapped to pin 41
+	//Turn off solenoid to retract grabber (default state off)
+	digitalWrite(MANI_6, LOW);
+}
+
+void extend_grabber()
+{
+	//Mapped to pin 41
+	//Turn on solenoid to extend grabber
+	digitalWrite(MANI_6, HIGH);
 }
 
 void manipulate() 
@@ -193,6 +218,17 @@ void manipulate()
 		dropper();
 		Serial.println("Fired dropper");
 	}
+
+	if (maniControl & RETRACT_GRABBER) {
+		retract_grabber();
+		Serial.println("Retracted grabber");
+	}
+
+	if (maniControl & EXTEND_GRABBER) {
+		extend_grabber();
+		Serial.println("Extended grabber");
+	}
+
 	maniControl = 0;
 }
 
@@ -201,7 +237,7 @@ void reset_manipulate()
 	if (fired_dropper && (millis() - dropperTimer) > DROPPER_INTERVAL)
 	{
 		//Turn off solenoid to reload dropper
-		digitalWrite(MANI_5, LOW);
+		digitalWrite(MANI_3, LOW);
 		fired_dropper = 0;
 		Serial.println("Closed dropper");
 	}
@@ -209,7 +245,7 @@ void reset_manipulate()
 	if (fired_top && (millis() - torpedoTopTimer) > TORPEDO_INTERVAL)
 	{
 		//Turn off top solenoid
-		digitalWrite(TORP1, LOW);
+		digitalWrite(MANI_4, LOW);
 		fired_top = 0;
 		Serial.println("Closed top torpedo");
 	}
@@ -217,7 +253,7 @@ void reset_manipulate()
 	if (fired_bot && (millis() - torpedoBotTimer) > TORPEDO_INTERVAL)
 	{
 		//Turn off bot solenoid
-		digitalWrite(TORP2, LOW);
+		digitalWrite(MANI_5, LOW);
 		fired_bot = 0;
 		Serial.println("Closed bot torpedo");
 	}
