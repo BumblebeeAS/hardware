@@ -190,16 +190,16 @@ void bot_torpedo()
 
 void retract_grabber() 
 {
-	//Mapped to pin 41
+	//Mapped to pin 31
 	//Turn off solenoid to retract grabber (default state off)
-	digitalWrite(MANI_6, LOW);
+	digitalWrite(MANI_2, LOW);
 }
 
 void extend_grabber()
 {
-	//Mapped to pin 41
+	//Mapped to pin 31
 	//Turn on solenoid to extend grabber
-	digitalWrite(MANI_6, HIGH);
+	digitalWrite(MANI_2, HIGH);
 }
 
 void manipulate() 

@@ -8,11 +8,11 @@
 
 ///Manipulator definitions
 #define MANI_1 30
-#define MANI_2 31
+#define MANI_2 31 // Map to grabber
 #define MANI_3 32 // Map to dropper
 #define MANI_4 33 // Map to top torpedo
 #define MANI_5 34 // Map to bot torpedo
-#define MANI_6 41 // Map to grabber
+#define MANI_6 41 
 #define MANI_7 40
 #define MANI_8 37
 #define MANI_9 36
