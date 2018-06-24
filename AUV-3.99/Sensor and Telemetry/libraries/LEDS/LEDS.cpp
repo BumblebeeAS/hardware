@@ -54,8 +54,8 @@ void LEDS::colour(int colour)
 	case 2://Violet
 		setcolour(238, 130, 238);
 		break;
-	case 3://Indigo
-		setcolour(75, 0, 130);
+	case 3://Pink
+		setcolour(255, 204, 255);
 		break;
 	case 4://Blue
 		setcolour(0, 0, 255);
@@ -66,8 +66,8 @@ void LEDS::colour(int colour)
 	case 6://Cyan
 		setcolour(0, 255, 255);
 		break;
-	case 7://Bluish-Green
-		setcolour(5, 60, 73);
+	case 7://Maroon
+		setcolour(128, 0, 0);
 		break;
 	case 8://White
 		setcolour(255, 255, 255);
