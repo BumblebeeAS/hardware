@@ -87,6 +87,7 @@ bool blink_on = false;
 uint32_t time = 0;
 #endif
 uint8_t lightColour = 0;	// 0 is off
+uint8_t selfSetColour[3] = { 0 };
 
 
 //Others
@@ -239,13 +240,29 @@ void checkCANmsg() {
 			break;
 		}
 		case CAN_LED:
-			lightColour = CAN.parseCANFrame(buf, 0, 1);
+		{
+			bool ruthSet = false;
+			(CAN.parseCANFrame(buf, 4, 1) == 1) ? ruthSet = true : ruthSet = false;
+			if (!ruthSet) {
+				lightColour = CAN.parseCANFrame(buf, 0, 1);
+			}
+			else if (ruthSet) {
+					selfSetColour[0] = CAN.parseCANFrame(buf, 1, 1);
+					selfSetColour[1] = CAN.parseCANFrame(buf, 2, 1);
+					selfSetColour[2] = CAN.parseCANFrame(buf, 3, 1);
+			}
 #ifdef SOFTPWM
-			colour(lightColour);
+			if (!ruthSet) {
+				colour(lightColour);
+			}
+			else if (ruthSet) {
+				setcolour(selfSetColour[0], selfSetColour[1], selfSetColour[2]);
+			}
 #else
 			//led.colour(lightColour);
 #endif
 			break;
+		}
 		case CAN_DNA_Stats:
 			internalStats[DNA_PRESS] = CAN.parseCANFrame(buf, 0, 1);
 			sbc_timeout = millis();
