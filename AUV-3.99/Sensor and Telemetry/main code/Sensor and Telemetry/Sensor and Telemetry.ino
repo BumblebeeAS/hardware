@@ -241,9 +241,9 @@ void checkCANmsg() {
 		}
 		case CAN_LED:
 		{
-			selfSetColour[0] = CAN.parseCANFrame(buf, 1, 1);
-			selfSetColour[1] = CAN.parseCANFrame(buf, 2, 1);
-			selfSetColour[2] = CAN.parseCANFrame(buf, 3, 1);
+			selfSetColour[0] = CAN.parseCANFrame(buf, 0, 1);
+			selfSetColour[1] = CAN.parseCANFrame(buf, 1, 1);
+			selfSetColour[2] = CAN.parseCANFrame(buf, 2, 1);
 #ifdef SOFTPWM
 			setcolour(selfSetColour[0], selfSetColour[1], selfSetColour[2]);
 #else
