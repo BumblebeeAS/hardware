@@ -87,7 +87,7 @@ bool blink_on = false;
 uint32_t time = 0;
 #endif
 uint8_t lightColour = 0;	// 0 is off
-uint8_t selfSetColour[6] = { 0 };
+uint8_t selfSetColour[3] = { 0 };
 
 
 //Others
@@ -241,27 +241,11 @@ void checkCANmsg() {
 		}
 		case CAN_LED:
 		{
-			bool remoteSet = false;
-			(CAN.parseCANFrame(buf, 7, 1) == 1) ? remoteSet = true : remoteSet = false;
-			if (!remoteSet) {
-				lightColour = CAN.parseCANFrame(buf, 0, 1);
-			}
-			else if (remoteSet) {
-					selfSetColour[0] = CAN.parseCANFrame(buf, 1, 1);
-					selfSetColour[1] = CAN.parseCANFrame(buf, 2, 1);
-					selfSetColour[2] = CAN.parseCANFrame(buf, 3, 1);
-					selfSetColour[3] = CAN.parseCANFrame(buf, 4, 1);
-					selfSetColour[4] = CAN.parseCANFrame(buf, 5, 1);
-					selfSetColour[5] = CAN.parseCANFrame(buf, 6, 1);
-			}
+			selfSetColour[0] = CAN.parseCANFrame(buf, 1, 1);
+			selfSetColour[1] = CAN.parseCANFrame(buf, 2, 1);
+			selfSetColour[2] = CAN.parseCANFrame(buf, 3, 1);
 #ifdef SOFTPWM
-			if (!remoteSet) {
-				colour(lightColour);
-			}
-			else if (remoteSet) {
-				setcolour(selfSetColour[0] << 8 | selfSetColour[1], selfSetColour[2] << 8 | selfSetColour[3],
-					selfSetColour[4] << 8 | selfSetColour[5]);
-			}
+			setcolour(selfSetColour[0], selfSetColour[1], selfSetColour[2]);
 #else
 			//led.colour(lightColour);
 #endif
