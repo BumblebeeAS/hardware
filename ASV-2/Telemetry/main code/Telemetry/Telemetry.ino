@@ -273,8 +273,8 @@ void loop() {
 							switch (read_id)
 							{
 							case CAN_control_link:
-								control_mode_ocs = read_buffer[4];
-								internalStats[RSSI_OCS] = read_buffer[6];
+								control_mode_ocs = read_buffer[2];
+								internalStats[RSSI_OCS] = read_buffer[4];
 								break;
 							case CAN_manual_thruster:
 #ifdef _DEBUG_
@@ -283,10 +283,10 @@ void loop() {
 #endif
 								if (control_mode == MANUAL_OCS)
 								{
-									speed1 = (uint16_t(CAN.parseCANFrame(read_buffer, 4, 2))) - 3200;
-									speed2 = (uint16_t(CAN.parseCANFrame(read_buffer, 6, 2))) - 3200;
-									speed3 = (uint16_t(CAN.parseCANFrame(read_buffer, 8, 2))) - 3200;
-									speed4 = (uint16_t(CAN.parseCANFrame(read_buffer, 10, 2))) - 3200;
+									speed1 = (uint16_t(CAN.parseCANFrame(read_buffer, 2, 2))) - 3200;
+									speed2 = (uint16_t(CAN.parseCANFrame(read_buffer, 4, 2))) - 3200;
+									speed3 = (uint16_t(CAN.parseCANFrame(read_buffer, 6, 2))) - 3200;
+									speed4 = (uint16_t(CAN.parseCANFrame(read_buffer, 8, 2))) - 3200;
 									/*
 									//Serial.print(" Speed1: ");
 									//Serial.print(speed1);
@@ -295,7 +295,7 @@ void loop() {
 								}
 								break;
 							case CAN_heartbeat:
-								if (read_buffer[4] == HEARTBEAT_OCS)
+								if (read_buffer[2] == HEARTBEAT_OCS)
 								{
 #ifdef _DEBUG_
 									Serial.println("OCS Heartbeat");
