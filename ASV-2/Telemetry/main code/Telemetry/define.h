@@ -31,6 +31,7 @@
 
 //OCS
 #define XBEE_BAUDRATE 115200
+#define N2420_BAUDRATE 9600
 #define START_BYTE 0xFE
 
 //Internal stats

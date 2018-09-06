@@ -5,14 +5,14 @@
 // Receive buffer
 int16_t incoming_data = 0; 
 uint8_t read_flag = 0;
-char read_buffer[11]; // Takes [id,len,data,crc] no FE FE
+uint8_t read_buffer[11]; // Takes [id,len,data,crc] no FE FE
 uint8_t read_size;
 uint8_t read_id;
 uint8_t read_ctr; // Counts size of incoming_data without FE FE
 
 // Send
-char some_data[] = "HELLO";
-char some_other_data[] = "BYE BYE";
+uint8_t some_data[] = "HELLO";
+uint8_t some_other_data[] = "BYE BYE";
 uint32_t curr_time;
 
 void setup() {
