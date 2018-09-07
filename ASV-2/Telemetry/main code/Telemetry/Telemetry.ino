@@ -80,7 +80,7 @@ uint8_t read_flag = 0;
 uint8_t read_buffer[11];
 uint8_t read_size;
 uint8_t read_id;
-uint8_t read_counter; // Counts size of incoming_data without FE FE
+uint8_t read_counter = 0; // Counts size of incoming_data without FE FE
 
 #define _DEBUG_			//	uncomment to print debug
 //#define _OFF_SCREEN_	//	comment to use screen
@@ -225,7 +225,7 @@ void loop() {
 	/***********************************************/
 
 #ifdef _RADIO_
-	if (Serial2.available())
+	if (Serial2.available() > 0)
 	{
 		//read
 		while (incoming_data > -1)
@@ -245,21 +245,21 @@ void loop() {
 				read_flag++;
 				read_flag = 2;
 			}
-			else if (read_flag == 2)
+			else if (read_flag == 2)	// this means FEFE was received
 			{
-				if (read_counter == 0)
+				if (read_counter == 0)	//	feed id
 				{
 					read_id = incoming_data;
 					read_buffer[read_counter] = incoming_data;
 					read_counter++;
 				}
-				else if (read_counter == 1)
+				else if (read_counter == 1)	// feed len
 				{
 					read_size = incoming_data;
 					read_buffer[read_counter] = incoming_data;
 					read_counter++;
 				}
-				else if (read_counter >= 2)
+				else if (read_counter >= 2)	// feed the rest
 				{
 					read_buffer[read_counter] = incoming_data;
 					if (read_counter == (2 + read_size))
@@ -287,11 +287,11 @@ void loop() {
 									speed2 = (uint16_t(CAN.parseCANFrame(read_buffer, 4, 2))) - 3200;
 									speed3 = (uint16_t(CAN.parseCANFrame(read_buffer, 6, 2))) - 3200;
 									speed4 = (uint16_t(CAN.parseCANFrame(read_buffer, 8, 2))) - 3200;
-									/*
-									//Serial.print(" Speed1: ");
-									//Serial.print(speed1);
-									//Serial.print(" Speed2: ");
-									//Serial.print(speed2);*/
+									
+									Serial.print(" Speed1: ");
+									Serial.print(speed1);
+									Serial.print(" Speed2: ");
+									Serial.print(speed2);
 								}
 								break;
 							case CAN_heartbeat:
@@ -822,7 +822,7 @@ void checkCANmsg() {
 		case CAN_POPB_stats:
 			CAN.parseCANFrame(buf, 0, len);
 
-			forwardToRadio(id, len, buf);
+			//forwardToRadio(id, len, buf);
 			break;
 		default:
 			break;

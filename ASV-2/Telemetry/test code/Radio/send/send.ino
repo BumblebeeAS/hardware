@@ -11,7 +11,7 @@ uint8_t read_id;
 uint8_t read_ctr; // Counts size of incoming_data without FE FE
 
 // Send
-uint8_t some_data[] = "HELLO";
+uint8_t some_data[] = {7};
 uint8_t some_other_data[] = "BYE BYE";
 uint32_t curr_time;
 
@@ -29,7 +29,7 @@ void loop() {
   // SEND
   if(millis() - curr_time > 500)
   {
-    forwardToRadio(111, 5, some_data);
+    forwardToRadio(104, 1, some_data);
     forwardToRadio(222, 7, some_other_data);
     curr_time = millis();
   }
