@@ -3,7 +3,7 @@
 #include "can_asv_defines.h"
 #include "defines.h"
 #include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
+#include "Adafruit_SSD1306.h"
 
 uint8_t heartbeat;
 uint8_t sbc_bus_stats[3];
@@ -56,7 +56,7 @@ uint8_t read_ctr;
 // Serial buffer from radio
 int16_t radio_incoming_data = 0;
 uint8_t radio_read_flag = 0;
-char radio_read_buffer[11]; // Takes [id,len,data,crc] no FE FE
+uint8_t radio_read_buffer[11]; // Takes [id,len,data,crc] no FE FE
 uint8_t radio_read_size;
 uint8_t radio_read_id;
 uint8_t radio_read_ctr; // Counts size of incoming_data without FE FE
