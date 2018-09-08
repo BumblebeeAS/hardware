@@ -18,7 +18,7 @@ uint32_t curr_time;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
-  Serial2.begin(9600);
+  Serial1.begin(9600);
   curr_time = millis();
 
   Serial.print("START~");
@@ -35,13 +35,12 @@ void loop() {
 //  }
 
 
-  if (Serial2.available())
+  if (Serial1.available() > 0)
   {
     //read
     while(incoming_data > -1)
     {
-      incoming_data = Serial2.read();
-      //Serial.print(incoming_data,HEX);
+      incoming_data = Serial1.read();
       if (incoming_data == -1)
       {
         incoming_data = 0;
@@ -80,6 +79,7 @@ void loop() {
               // Full packet received
               // Do stuff here
 
+              //if((read_id != 140) || (read_id != 103) || (read_id != 104) || (read_id != 106)) {
               // Print out received msg
               Serial.print("id: ");
               Serial.print(read_id);
@@ -92,6 +92,7 @@ void loop() {
                 Serial.print(" ");
               }
               Serial.println("");
+          
             }
             read_flag = 0;
             read_ctr = 0;
@@ -122,11 +123,11 @@ void forwardToRadio(int id, int len, uint8_t data[]) {
   temp[len+4] = crc;
   
   for(int i = 0;i<len+5;i++) {
-    Serial2.write(temp[i]);
+    Serial1.write(temp[i]);
     //Serial.print(temp[i],HEX);
     //Serial.print(" ");
   }
-  Serial2.flush();
+  Serial1.flush();
     //Serial.println();
   //Serial.print("SEND");
 }

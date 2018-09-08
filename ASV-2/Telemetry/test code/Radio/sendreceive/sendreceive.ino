@@ -5,20 +5,20 @@
 // Receive buffer
 int16_t incoming_data = 0; 
 uint8_t read_flag = 0;
-char read_buffer[11]; // Takes [id,len,data,crc] no FE FE
+uint8_t read_buffer[11]; // Takes [id,len,data,crc] no FE FE
 uint8_t read_size;
 uint8_t read_id;
 uint8_t read_ctr; // Counts size of incoming_data without FE FE
 
 // Send
-char some_data[] = "HELLO";
-char some_other_data[] = "BYE BYE";
+uint8_t some_data[] = {0};
+uint8_t some_other_data[] = "BYE BYE";
 uint32_t curr_time;
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
-  Serial2.begin(9600);
+  Serial1.begin(9600);
   curr_time = millis();
 
   Serial.print("START~");
@@ -29,18 +29,18 @@ void loop() {
 //  SEND
   if(millis() - curr_time > 500)
   {
-    forwardToRadio(111, 5, some_data);
+    forwardToRadio(111, 1, some_data);
     forwardToRadio(222, 7, some_other_data);
     curr_time = millis();
   }
 
 // RECEIVE
-  if (Serial2.available())
+  if (Serial1.available())
   {
     //read
     while(incoming_data > -1)
     {
-      incoming_data = Serial2.read();
+      incoming_data = Serial1.read();
       //Serial.print(incoming_data,HEX);
       if (incoming_data == -1)
       {
@@ -122,11 +122,11 @@ void forwardToRadio(int id, int len, uint8_t data[]) {
   temp[len+4] = crc;
   
   for(int i = 0;i<len+5;i++) {
-    Serial2.write(temp[i]);
+    Serial1.write(temp[i]);
     //Serial.print(temp[i],HEX);
     //Serial.print(" ");
   }
-  Serial2.flush();
+  Serial1.flush();
     //Serial.println();
   //Serial.print("SEND");
 }
