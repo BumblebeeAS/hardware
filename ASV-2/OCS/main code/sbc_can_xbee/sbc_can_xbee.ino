@@ -24,7 +24,7 @@ void setup()
 {
 	/* add setup code here */
 	Serial.begin(115200);
-	Serial1.begin(115200);
+	Serial1.begin(9600);
 	sbc_bus_loop = millis();
 	heartbeat_loop = millis();
 	screen_loop = millis();
@@ -182,14 +182,13 @@ void loop()
 	/******************************************************/
 
 	// RECEIVE
-	if (Serial1.available())
+	if (Serial1.available() > 0)
 	{
 		asv_heartbeat = millis();
 		//read
 		while (radio_incoming_data > -1)
 		{
 			radio_incoming_data = Serial1.read();
-			//Serial.print(radio_incoming_data,HEX);
 			if (radio_incoming_data == -1)
 			{
 				radio_incoming_data = 0;
@@ -229,17 +228,17 @@ void loop()
 							// Full packet received
 							forwardToOcs(radio_read_size, radio_read_buffer);
 							// Print out received msg
-							//Serial.print("id: ");
-							//Serial.print(radio_read_id);
-							//Serial.print(" size: ");
-							//Serial.print(radio_read_size);
-							//Serial.print(" data: ");
-							//for (int i = 2; i < radio_read_ctr; i++)
-							//{
-							//	Serial.print(radio_read_buffer[i]);
-							//	Serial.print(" ");
-							//}
-							//Serial.println("");
+//							Serial.print("id: ");
+//							Serial.print(radio_read_id);
+//							Serial.print(" size: ");
+//							Serial.print(radio_read_size);
+//							Serial.print(" data: ");
+//							for (int i = 2; i < radio_read_ctr; i++)
+//							{
+//								Serial.print(radio_read_buffer[i]);
+//								Serial.print(" ");
+//							}
+//							Serial.println("");
 						}
 						radio_read_flag = 0;
 						radio_read_ctr = 0;
@@ -286,7 +285,7 @@ void forwardToOcs(int len, uint8_t data[]) {
 	}
 
 	for (int i = 0; i<len + 4; i++) {
-		Serial.write(temp[i]);
+		//Serial.write(temp[i]);
 		//Serial.print(temp[i],HEX);
 		//Serial.print(" ");
 	}
