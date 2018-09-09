@@ -78,8 +78,6 @@ void loop() {
             {
               // Full packet received
               // Do stuff here
-
-              //if((read_id != 140) || (read_id != 103) || (read_id != 104) || (read_id != 106)) {
               // Print out received msg
               Serial.print("id: ");
               Serial.print(read_id);
@@ -92,7 +90,6 @@ void loop() {
                 Serial.print(" ");
               }
               Serial.println("");
-          
             }
             read_flag = 0;
             read_ctr = 0;
