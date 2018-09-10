@@ -96,6 +96,8 @@ AtCommandResponse atResponse = AtCommandResponse();
 #define _XBEE_DEBUG_	//	comment to debug xbee
 //#define _OFF_SCREEN_	//	comment to use screen
 
+#define _DEBUG_RC
+
 int count = 0;
 
 bool blink = false;
@@ -132,11 +134,17 @@ void setup() {
 
 	*/
 
-	//Bit set here will be pass into filter
+	//Bit set here will be pass into filter //0x600
 	CAN.init_Mask(0, 0, 0x600);
 	CAN.init_Mask(1, 0, 0x600);
 
 	//If mask of this bit is 1 and Filt is 0, it will filter out
+	/*CAN.init_Filt(0, 0, 0x68);
+	CAN.init_Filt(1, 0, 0x6F);
+	CAN.init_Filt(2, 0, 0x70);
+	CAN.init_Filt(3, 0, 0x76);
+	CAN.init_Filt(4, 0, 0x77);
+	CAN.init_Filt(5, 0, 0x77);*/
 	CAN.init_Filt(0, 0, 0);
 	CAN.init_Filt(1, 0, 0);
 	CAN.init_Filt(2, 0, 0);
@@ -198,6 +206,39 @@ void loop() {
 		buf[1] = 2;
 		buf[2] = 3;
 		//forwardToXbee();
+#ifdef _DEBUG_RC
+		char temp[2] = "";
+		switch (control_mode_rc) {
+		case 1:
+			temp[0] = '1';
+			break;
+		case 2:
+			temp[0] = '2';
+			break;
+		case 3:
+			temp[0] = '3';
+			break;
+		case 4:
+			temp[0] = '4';
+			break;
+		}
+		screen.write_value_string(temp);
+		switch (control_mode) {
+		case 1:
+			temp[0] = '1';
+			break;
+		case 2:
+			temp[0] = '2';
+			break;
+		case 3:
+			temp[0] = '3';
+			break;
+		case 4:
+			temp[0] = '4';
+			break;
+		}
+		screen.write_value_string(temp);
+#endif
 	}
 
 	/*************************************************/
@@ -483,6 +524,11 @@ void screen_prepare() {
 	screen.write_string("Batt2 OK:");
 	screen.write_string("ESC1 OK:");
 	screen.write_string("ESC2 OK:");
+#ifdef _DEBUG_RC
+	screen.write_string("");
+	screen.write_string("Ctrl rc:");
+	screen.write_string("Ctrl:");
+#endif
 }
 
 void screen_update() {
@@ -497,8 +543,6 @@ void screen_update() {
 	{
 		screen.write_value_int(powerStats[i]);
 	}
-	//screen.write_value_int(count);
-	//count = (count + 1) % 10;
 }
 
 void update_heartbeat()
@@ -647,7 +691,9 @@ void get_controlmode()
 		}
 		else
 		{
+#ifdef _DEBUG_
 			Serial.println("SBC TIMEOUT");
+#endif
 			control_mode = MANUAL_OCS;
 		}
 	}
@@ -761,7 +807,7 @@ void checkCANmsg() {
 #endif
 			if (device == HEARTBEAT_Cogswell)
 			{
-				Serial.println("*********SBC**********");
+				//Serial.println("*********SBC**********");
 			}
 			heartbeat_timeout[device] = millis();
 			get_thruster_batt_heartbeat();
@@ -816,8 +862,6 @@ void checkCANmsg() {
 			break;
 		}
 		switch (CAN.getCanId()) {
-
-		case CAN_remote_kill_stats:
 		case CAN_heartbeat:
 		case CAN_e_stop:
 		case CAN_wind_speed:
@@ -825,6 +869,7 @@ void checkCANmsg() {
 		case CAN_battery2_stats:
 		case CAN_esc1_motor_stats:
 		case CAN_esc2_motor_stats:
+		case CAN_remote_kill_stats:
 		case CAN_INS_stats:
 		case CAN_GPS_stats:
 		case CAN_cpu_temp:
@@ -921,9 +966,6 @@ void publishCAN_controllink()
 	len = 3;
 	buf[0] = control_mode;
 	buf[1] = internalStats[RSSI_RC];
-	/*buf[2] = getXbeeRssi();
-	Serial.print("RSSI: ");
-	Serial.println(buf[2]);*/
 	buf[2] = internalStats[RSSI_OCS];
 	CAN.sendMsgBuf(CAN_control_link, 0, 3, buf);
 }
@@ -1026,24 +1068,3 @@ void forwardToXbeeAddr(XBeeAddress64 addr) {
 	}
 }
 #endif
-
-// Not used
-// XBee RSSI retrieved from ocs side instead
-uint8_t getXbeeRssi() {
-	atRequest.setCommand(cmd);
-	xbee.send(atRequest);
-
-	// wait up to 5 seconds for the status response
-	if (xbee.readPacket(100)) {
-		// got a response!
-
-		// should be an AT command response
-		if (xbee.getResponse().getApiId() == AT_COMMAND_RESPONSE) {
-			xbee.getResponse().getAtCommandResponse(atResponse);
-
-			if (atResponse.isOk()) {
-				return atResponse.getValue()[0];
-			}
-		}
-	}
-}

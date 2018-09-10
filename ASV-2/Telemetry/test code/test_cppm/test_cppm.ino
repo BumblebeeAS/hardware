@@ -1,11 +1,11 @@
-int ppm[6] ={0}; 
+volatile int ppm[6] ={0};
 
 const int cppm = 19; // pin in for cppm
 
-unsigned long prev = 1000000;  // to always discard first frame
-unsigned long delta = 0;
-bool sync = false;
-int ch = 0;
+volatile unsigned long prev = 1000000;  // to always discard first frame
+volatile unsigned long delta = 0;
+volatile bool sync = false;
+volatile int ch = 0;
 
 void setup() {
   Serial.begin(115200);
@@ -24,12 +24,27 @@ void printppm() {
   Serial.println("");
 //  delay(500);
 }
-
+long long time = 0;
 void loop() {
-  printppm(); 
-  if (ppm[0] > 1200) {
-    Serial.println("**************DED**************");
-    //Serial.println(micros());
+  if (millis() - time > 500) {
+    checkppm();
+    printppm(); 
+    time = millis();
+  }
+//  if (ppm[0] > 1200) {
+//    Serial.println("**************DED**************");
+//    //Serial.println(micros());
+//  }
+}
+
+void checkppm() {
+  for (int i = 0; i < 6; i++) {
+    if (ppm[i] > 2500) {
+      for (int j = 0; j < 6; j++) {
+        ppm[j] = 1500;
+      }
+      break;
+    }
   }
 }
 
