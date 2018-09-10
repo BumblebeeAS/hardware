@@ -83,7 +83,7 @@ HIH613x humidTempSensor(0x27);
 static uint32_t Temp_Humid_loop = 0; //250ms loop Publish temp and humidity
 uint8_t humid_ctr = 0;
 
-#define _TELE_DED_
+//#define _TELE_DED_
 
 //#define _TEST_
 #ifdef _TEST_
