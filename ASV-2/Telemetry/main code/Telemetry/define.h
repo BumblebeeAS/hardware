@@ -54,7 +54,7 @@
 #define BATT2_VOLTAGE 5
 
 //Heartbeat
-#define HB_COUNT 13
+#define HB_COUNT 14
 #define BATT1 9
 #define BATT2 10
 #define ESC1 11

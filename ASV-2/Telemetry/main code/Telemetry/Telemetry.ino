@@ -96,9 +96,7 @@ AtCommandResponse atResponse = AtCommandResponse();
 #define _XBEE_DEBUG_	//	comment to debug xbee
 //#define _OFF_SCREEN_	//	comment to use screen
 
-#define _DEBUG_RC
-
-int count = 0;
+//#define _DEBUG_RC
 
 bool blink = false;
 
@@ -189,9 +187,7 @@ void loop() {
 	//******* LCD SCREEN **********/
 
 	reset_stats();
-
 	if ((millis() - loopTime) > SCREEN_LOOP) {
-		
 #ifndef _OFF_SCREEN_
 		screen_update();
 		update_heartbeat();
@@ -524,6 +520,7 @@ void screen_prepare() {
 	screen.write_string("Batt2 OK:");
 	screen.write_string("ESC1 OK:");
 	screen.write_string("ESC2 OK:");
+	screen.write_string("MANI OK:");
 #ifdef _DEBUG_RC
 	screen.write_string("");
 	screen.write_string("Ctrl rc:");
@@ -562,7 +559,7 @@ void update_heartbeat()
 	}
 
 	screen.set_cursor(550 + OFFSET, 210);
-	for (; i < 13; i++) {
+	for (; i < 14; i++) {
 		if ((millis() - heartbeat_timeout[i]) > HB_TIMEOUT) {
 			screen.write_value_string("NO");
 		}
