@@ -44,6 +44,7 @@
 #define CAN_POPB_BUS_stats 123
 #define CAN_Tele_BUS_stats 124
 #define CAN_LARS_BUS_stats 125
+#define CAN_MANI_stats 126
 
 //CAN Heartbeat
 #define HEARTBEAT_POSB 1
