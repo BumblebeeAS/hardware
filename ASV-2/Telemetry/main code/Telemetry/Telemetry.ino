@@ -516,11 +516,11 @@ void screen_prepare() {
 	screen.write_string("Batt2 current:");
 	screen.write_string("Batt1 voltage:");
 	screen.write_string("Batt2 voltage:");
+	screen.write_string("MANI OK:");
 	screen.write_string("Batt1 OK:");
 	screen.write_string("Batt2 OK:");
 	screen.write_string("ESC1 OK:");
 	screen.write_string("ESC2 OK:");
-	screen.write_string("MANI OK:");
 #ifdef _DEBUG_RC
 	screen.write_string("");
 	screen.write_string("Ctrl rc:");
@@ -861,7 +861,7 @@ void checkCANmsg() {
 		switch (CAN.getCanId()) {
 		case CAN_heartbeat:
 		case CAN_e_stop:
-		case CAN_wind_speed:
+//		case CAN_wind_speed:
 		case CAN_battery1_stats:
 		case CAN_battery2_stats:
 		case CAN_esc1_motor_stats:

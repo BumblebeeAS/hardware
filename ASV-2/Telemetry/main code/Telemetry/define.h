@@ -55,10 +55,10 @@
 
 //Heartbeat
 #define HB_COUNT 14
-#define BATT1 9
-#define BATT2 10
-#define ESC1 11
-#define ESC2 12
+#define BATT1 10
+#define BATT2 11
+#define ESC1 12
+#define ESC2 13
 
 //TIMEOUTS
 #define HB_TIMEOUT 3000
