@@ -1,230 +1,357 @@
-/*
- Name:		POKB_Main.ino
- Created:	12/16/2017 9:55:06 PM
- Author:	RJ
-*/
-
-#include "XBee.h"
-#include "defines.h"
-#include "can_asv_defines.h"
+//#include <XBee.h>
 #include <can.h>
-#include <can_defines.h>
+#include "can_asv_defines.h"
 
-MCP_CAN CAN(CAN_Chip_Select);               //Set Chip Select to pin 8
-unsigned char len = 0; //length of CAN message, taken care by library
-uint8_t buf[8];  //Buffer for CAN message
+#define CAN_CHIP_SELECT 8
+
+#define SERIAL_BAUD_RATE 115200
+//#define XBEE_BAUD_RATE 115200
+#define N2420_BAUD_RATE 9600
+#define START_BYTE 0xFE
+
+#define CONTACTOR_CONTROL 11  // NMOS, Active High 
+#define ONBOARD_SWITCH 21      
+
+#define RECEIVE_REMOTE_KILL_TIMEOUT 500
+#define RECEIVE_POSB_HEARTBEAT_TIMEOUT 3000
+#define UPDATE_CONTACTOR_TIMEOUT 100
+#define SEND_POKB_HEARTBEAT_TIMEOUT 500
+#define SEND_POKB_STATUS_TIMEOUT 1000
+
+// CAN Setup
 uint32_t id = 0;
+uint8_t len = 0;
+uint8_t buf[8];
 
-XBee xbee = XBee();
+MCP_CAN CAN(CAN_CHIP_SELECT);
 
-// create reusable response objects for responses we expect to handle 
-XBeeResponse response = XBeeResponse();
-ZBRxResponse rx = ZBRxResponse();
-ModemStatusResponse msr = ModemStatusResponse();
+//// XBee Setup
+//XBee xbee = XBee();
+//ZBRxResponse zbRx = ZBRxResponse();
+//uint8_t inByte = 0;
+//int noData = 0;
 
-static uint32_t xbee_loop = 0;
-static uint32_t heartbeat_loop = 0;
-static uint32_t estop_loop = 0;
-static uint32_t can_loop = 0;
-static uint32_t posb_hb_loop = 0;
+// Radio Setup
+int16_t incomingData = 0;
+uint8_t readFlag = 0;
+uint8_t readBuffer[11];
+uint8_t readSize;
+uint8_t readId;
+uint8_t readCounter = 0; // Counts size of incoming data without 0xFE 0xFE
+int noData = 0;
 
-uint8_t incomingByte = 0;
-int no_data = 0;
-bool hard_kill = 0;		// Onboard
-bool remote_kill = 0;	// Remote kill box
-bool soft_kill = 0;		// From OCS
+// Time Counter Variables
+uint32_t receiveRemoteKillTime = 0;
+uint32_t receivePOSBHeartbeatTime = 0;
+uint32_t updateContactorTime = 0;
+uint32_t sendPOKBHeartbeatTime = 0;
+uint32_t sendPOKBStatusTime = 0;
+
+// Control Variables
+bool onboardKill = false;
+bool remoteKill = false;
+bool softwareKill = false;
 
 void setup() {
-	
-	// put your setup code here, to run once:
-	Serial.begin(SERIAL_BAUDRATE);
-	Serial1.begin(XBEE_BAUDRATE);
-	xbee.setSerial(Serial1);
-	pinMode(NMOS_CONTACTOR, OUTPUT);
-	digitalWrite(NMOS_CONTACTOR, LOW);
+	// Put your setup code here, to run once:
+	Serial.begin(SERIAL_BAUD_RATE);
+	//Serial1.begin(XBEE_BAUD_RATE);
+	Serial1.begin(N2420_BAUD_RATE);
+	//xbee.setSerial(Serial1);
 
-	Serial.println("Hi I am POKB!");
-	Serial.println("reset");
+	pinMode(CONTACTOR_CONTROL, OUTPUT);
+	digitalWrite(CONTACTOR_CONTROL, LOW);
 
-	CAN_init();
-	Serial.println("CAN OK");
+	pinMode(ONBOARD_SWITCH, INPUT);
 
-	xbee_loop = millis();
-	heartbeat_loop = millis();
-	estop_loop = millis();
-	can_loop = millis();
-	posb_hb_loop = millis();
+	Serial.println("Plenty of Kill Board.");
 
-  pinMode(HARDKILL_IN, INPUT);
+	canInitialise();
+
+	receiveRemoteKillTime = millis();
+	receivePOSBHeartbeatTime = millis();
+	updateContactorTime = millis();
+	sendPOKBHeartbeatTime = millis();
+	sendPOKBStatusTime = millis();
 }
 
 void loop() {
-	// Read incoming remote kill
-	if ((millis() - xbee_loop) > XBEE_TIMEOUT){
-		xbee_receive();
-		xbee_loop = millis();
-	}
-	
-	// Send current kill status via CAN
-	if ((millis() - can_loop) > CAN_TIMEOUT)
-	{
-#ifdef _HACKJOB_
-		readHardKill();
-		if (hard_kill || remote_kill || soft_kill)
-#else
-		if (remote_kill || soft_kill)
-#endif
-		{
-			publishCAN_estop(true);
-		}
-		else
-		{
-			publishCAN_estop(false);
-		}
-		can_loop = millis();
-	}
-	// Set current kill
-	setKill();
-	
-	// Send POKB heartbeat via CAN
-	if ((millis() - heartbeat_loop) > HEARTBEAT_TIMEOUT) {
-		publishCAN_heartbeat();
-		heartbeat_loop = millis();
+	// Receive Onboard Kill via ATmega 2560 Input Pin
+	onboardKill = !digitalRead(ONBOARD_SWITCH);
+
+	// Receive Remote Kill via Radio
+	if ((millis() - receiveRemoteKillTime) > RECEIVE_REMOTE_KILL_TIMEOUT) {
+		receiveRemoteKill();
+		receiveRemoteKillTime = millis();
 	}
 
-	checkCANmsg();
-}
+	// Receive Software Kill and POSB Heartbeat via CAN
+	receiveCanMessage();
 
-void readHardKill() {
-	hard_kill = digitalRead(HARDKILL_IN) ? false : true;
-	/*
-	Serial.print("KILL STAT: ");
-	Serial.print(hard_kill);
-	Serial.print(" ");
-	Serial.println(remote_kill);*/
-}
+	// Update contactor
+	updateContactor();
 
-void setKill() {
-	// Check POSB heartbeat for failsafe
-	if ((millis() - posb_hb_loop) > FAILSAFE_TIMEOUT) {
-		Kill_Contactor();
+	// Send POKB Heartbeat via CAN
+	if ((millis() - sendPOKBHeartbeatTime) > SEND_POKB_HEARTBEAT_TIMEOUT) {
+		sendPOKBHeartbeat();
+		sendPOKBHeartbeatTime = millis();
 	}
-	// On kill, if any source of kill is activated
-	else if ((millis() - estop_loop) > ESTOP_TIMEOUT)
-	{
-		Serial.print("SET ");
-		if (remote_kill || soft_kill)
-		{
-			Serial.print("REMOTE: ");
-			Serial.print(remote_kill);
-			Serial.print(" SOFT: ");
-			Serial.println(soft_kill);
-			Kill_Contactor();
+
+	// Send POKB Status via CAN
+	if ((millis() - sendPOKBStatusTime) > SEND_POKB_STATUS_TIMEOUT) {
+		if (onboardKill || remoteKill || softwareKill) {
+			sendPOKBStatus(true);
 		}
-		else
-		{
-			Serial.println("NORMAL");
-			On_Contactor();
+
+		else {
+			sendPOKBStatus(false);
 		}
-		estop_loop = millis();
+
+		sendPOKBStatusTime = millis();
 	}
 }
 
-void On_Contactor() {
-	digitalWrite(NMOS_CONTACTOR, HIGH);
-	//Serial.println("normal");
-}
-
-void Kill_Contactor() {
-	digitalWrite(NMOS_CONTACTOR, LOW);
-	//Serial.println("KILL!");
-}
-
-void xbee_receive(){
-	xbee.readPacket();
-
-	if (xbee.getResponse().isAvailable()) {
-		//Serial.println("Available");
-		if (xbee.getResponse().getApiId() == ZB_RX_RESPONSE){
-			xbee.getResponse().getZBRxResponse(rx);
-			// get data
-			incomingByte = rx.getData(0);
-			//Serial.print("Incoming Byte: ");
-			//Serial.println(incomingByte, HEX);
-
-			if (incomingByte == 0x15) {
-				remote_kill = false;
-			}
-
-			else {
-				remote_kill = true;
-			}
-			no_data = 0;
-		}
-	}
-	else {
-		no_data++;
-		Serial.print("Count: ");
-		Serial.println(no_data);
-
-		if (no_data == 20) {
-			remote_kill = true;
-			Serial.println("Connection Time-out KILL");
-		}
-		Serial.println("Nothing Available");
-	}
-}
-
-
-//========== CAN ==========//
-
-void CAN_init() {
+void canInitialise() {
 START_INIT:
-	if (CAN_OK == CAN.begin(CAN_1000KBPS)) {                   // init can bus : baudrate = 500k
-#if DEBUG_MODE == NORMAL
-		Serial.println("CAN init: OK");
-#endif           
+	if (CAN.begin(CAN_1000KBPS) == CAN_OK) {
+		Serial.println("CAN Bus: Initialisation successful.");
 	}
+
 	else {
-#if DEBUG_MODE == NORMAL
-		Serial.println("CAN init: FAILED");
-		Serial.println("reinitialising CAN...");
+		Serial.println("CAN Bus: Initialisation failed.");
+		Serial.println("CAN Bus: Re-initialising.");
 		delay(1000);
-#endif           
 		goto START_INIT;
 	}
+
+	Serial.println("Starting transmission...");
 }
 
-void publishCAN_heartbeat()
-{
+/*
+void receiveRemoteKill() {
+// Continuously read packets
+xbee.readPacket();
+
+if (xbee.getResponse().isAvailable()) {
+// Serial.println("Response available.");
+
+if (xbee.getResponse().getApiId() == ZB_RX_RESPONSE) {
+
+// Got zb rx response
+// Fill zb rx response object
+xbee.getResponse().getZBRxResponse(zbRx);
+
+// Get data
+inByte = zbRx.getData(0);
+Serial.print("inByte: ");
+Serial.println(inByte, HEX);
+
+remoteKill = (inByte == 0x15) ? false : true;
+noData = 0;
+}
+}
+
+else {
+noData++;
+Serial.print("noData: ");
+Serial.println(noData);
+
+if (noData >= 20) {
+remoteKill = true;
+noData = 0;
+Serial.println("Connection timeout kill.");
+}
+}
+}
+*/
+
+void receiveRemoteKill() {
+	if (Serial1.available()) {
+		while (incomingData > -1) {
+			incomingData = Serial1.read();
+
+			if (incomingData == -1) {
+				incomingData = 0;
+				break;
+			}
+
+			if (incomingData == START_BYTE && readFlag == 0) {
+				readFlag = 1;
+			}
+
+			else if (incomingData == START_BYTE && readFlag == 1) {
+				readFlag = 2;
+			}
+
+			else if (readFlag == 2) {
+				if (readCounter == 0) {
+					readId = incomingData;
+					readBuffer[readCounter] = incomingData;
+					readCounter++;
+				}
+
+				else if (readCounter == 1) {
+					readSize = incomingData;
+					readBuffer[readCounter] = incomingData;
+					readCounter++;
+				}
+
+				else if (readCounter >= 2) {
+					readBuffer[readCounter] = incomingData;
+					if (readCounter == (2 + readSize)) {
+						if (isValidCrc(readBuffer, readCounter)) {
+							len = readSize;
+							if (readId == CAN_remote_kill_stats) {
+								remoteKill = (readBuffer[2] == 0x15) ? false : true;
+								noData = 0;
+							}
+						}
+					}
+					readFlag = 0;
+					readCounter = 0;
+				}
+				else {
+					readBuffer[readCounter] = incomingData;
+					readCounter++;
+				}
+			}
+		}
+	}
+
+	else {
+		noData++;
+		Serial.print("noData: ");
+		Serial.println(noData);
+
+		if (noData >= 20) {
+			remoteKill = true;
+			noData = 0;
+			Serial.println("Connection timeout kill.");
+		}
+	}
+}
+
+void receiveCanMessage() {
+	if (CAN.checkReceive() == CAN_MSGAVAIL) {
+		CAN.readMsgBufID(&id, &len, buf);
+
+		switch (id) {
+		case CAN_heartbeat:
+			if (buf[0] == HEARTBEAT_POSB)
+				receivePOSBHeartbeatTime = millis();
+			break;
+		case CAN_soft_e_stop:
+			softwareKill = !buf[0];
+			break;
+		default:
+			break;
+		}
+
+		CAN.clearMsg();
+	}
+}
+
+void updateContactor() {
+	// Failsafe
+	// Check POSB Heartbeat 
+
+	/*
+	if ((millis() - receivePOSBHeartbeatTime) > RECEIVE_POSB_HEARTBEAT_TIMEOUT) {
+	// digitalWrite(CONTACTOR_CONTROL, LOW);
+	}
+	*/
+
+	// else if ((millis() - updateContactorTime) > UPDATE_CONTACTOR_TIMEOUT) {
+	if ((millis() - updateContactorTime) > UPDATE_CONTACTOR_TIMEOUT) {
+		// Serial.print("Onboard Kill: ");
+		// Serial.print(onboardKill);
+		// Serial.print(" | ");
+		// Serial.print("Remote Kill: ");
+		// Serial.print(remoteKill);
+		// Serial.print(" | ");
+		// Serial.print("Software Kill: ");
+		// Serial.println(softwareKill);
+
+		if (onboardKill || remoteKill || softwareKill) {
+			digitalWrite(CONTACTOR_CONTROL, LOW);
+			// Serial.println("Contactor switched off.");
+		}
+
+		else {
+			digitalWrite(CONTACTOR_CONTROL, HIGH);
+			// Serial.println("Contactor switched on.");
+		}
+
+		updateContactorTime = millis();
+	}
+}
+
+void sendPOKBHeartbeat() {
 	CAN.setupCANFrame(buf, 0, 1, HEARTBEAT_POKB);
 	CAN.sendMsgBuf(CAN_heartbeat, 0, 1, buf);
 }
 
-void publishCAN_estop(bool estop_status)
-{
-	CAN.setupCANFrame(buf, 0, 1, estop_status);
+void sendPOKBStatus(bool pokbStatus) {
+	CAN.setupCANFrame(buf, 0, 1, pokbStatus);
 	CAN.sendMsgBuf(CAN_e_stop, 0, 1, buf);
-	Serial.println(estop_status ? "KILL" : "NORMAL");
 }
 
-void checkCANmsg() {
-	if (CAN_MSGAVAIL == CAN.checkReceive()) {
-		CAN.readMsgBufID(&id, &len, buf);    // read data,  len: data length, buf: data buf
-		switch (id) {
-		case CAN_heartbeat:
-			if (buf[0] == HEARTBEAT_POSB)
-				posb_hb_loop = millis();
-			break;
-		case CAN_soft_e_stop:
-			soft_kill = !buf[0];
-			//Serial.print("*** RX *** SOFT: ");
-			//Serial.println(soft_kill);
-			break;
-		default:
-			//Serial.println("Others");
-			break;
-		}
-		CAN.clearMsg();
+// Radio Functions
+
+void forwardToRadio(int canID, int dataLength, uint8_t data[]) {
+
+	// Data Format: START_BYTE, START_BYTE, canID, dataLength, data (up to 8 bytes), checksum
+
+	uint8_t temp[13] = { 0 };
+
+	temp[0] = START_BYTE;
+	temp[1] = START_BYTE;
+	temp[2] = canID;
+	temp[3] = dataLength;
+
+	for (int i = 4, j = 0; j < dataLength; i++, j++) {
+		temp[i] = data[j];
 	}
+
+	// Calculate checksum of [canID, dataLength, data] in case either canID or dataLength is erroraneous
+
+	uint8_t crc = checksum(temp + 2, dataLength + 2);
+
+	temp[dataLength + 4] = crc;
+
+	for (int i = 0; i < dataLength + 5; i++) {
+		Serial2.write(temp[i]);
+	}
+
+	Serial2.flush();
+}
+
+// Compare calculated crc and actual last byte 
+// buffer[] is [canID, dataLength, data, checksum]
+
+bool isValidCrc(uint8_t buffer[], int bufferLength) {
+	uint8_t crc = checksum(buffer, bufferLength);
+
+	if (crc == buffer[bufferLength]) {
+		return true;
+	}
+
+	return false;
+}
+
+// Compute checksum based on buffer[] and bufferLength
+// buffer[] is [canID, dataLength, data, checksum]
+
+uint8_t checksum(uint8_t buffer[], uint8_t bufferLength) {
+	uint8_t crc = 0;
+	uint8_t i = 0;
+
+	while (bufferLength != 0) {
+		// Byte XOR
+		crc = crc ^ buffer[i];
+		i++;
+		bufferLength--;
+	}
+
+	return crc;
 }
