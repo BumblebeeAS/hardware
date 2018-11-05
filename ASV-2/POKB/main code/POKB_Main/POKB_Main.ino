@@ -12,6 +12,7 @@
 #define CONTACTOR_CONTROL 11  // NMOS, Active High 
 #define ONBOARD_SWITCH 21      
 
+#define SEND_REMOTE_KILL_TIMEOUT 500
 #define RECEIVE_REMOTE_KILL_TIMEOUT 500
 #define RECEIVE_POSB_HEARTBEAT_TIMEOUT 3000
 #define UPDATE_CONTACTOR_TIMEOUT 100
@@ -41,6 +42,7 @@ uint8_t readCounter = 0; // Counts size of incoming data without 0xFE 0xFE
 int noData = 0;
 
 // Time Counter Variables
+uint32_t sendRemoteKillTime = 0;
 uint32_t receiveRemoteKillTime = 0;
 uint32_t receivePOSBHeartbeatTime = 0;
 uint32_t updateContactorTime = 0;
@@ -68,6 +70,7 @@ void setup() {
 
 	canInitialise();
 
+	sendRemoteKillTime = millis();
 	receiveRemoteKillTime = millis();
 	receivePOSBHeartbeatTime = millis();
 	updateContactorTime = millis();
@@ -78,6 +81,12 @@ void setup() {
 void loop() {
 	// Receive Onboard Kill via ATmega 2560 Input Pin
 	onboardKill = !digitalRead(ONBOARD_SWITCH);
+
+	// Send Remote Kill via Radio
+	if ((millis() - sendRemoteKillTime) > SEND_REMOTE_KILL_TIMEOUT) {
+		sendRemoteKill();
+		sendRemoteKillTime = millis();
+	}
 
 	// Receive Remote Kill via Radio
 	if ((millis() - receiveRemoteKillTime) > RECEIVE_REMOTE_KILL_TIMEOUT) {
@@ -229,6 +238,13 @@ void receiveRemoteKill() {
 			Serial.println("Connection timeout kill.");
 		}
 	}
+}
+
+void sendRemoteKill() {
+	int canID = CAN_remote_kill_stats;
+	int dataLength = 1;
+	uint8_t data[1] = { 0xFF };
+	forwardToRadio(canID, dataLength, data);
 }
 
 void receiveCanMessage() {
