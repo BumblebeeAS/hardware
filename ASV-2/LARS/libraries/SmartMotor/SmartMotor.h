@@ -21,8 +21,10 @@
 				REQUEST TYPE
 	-------------------------------------------------------*/
 	#define REQUEST_POSITION 1
-	#define REQUEST_VELOCITY 2
-	#define REQUEST_ACCELERATION 3
+	#define REQUEST_GOAL 2
+	#define REQUEST_VELOCITY 3
+	#define REQUEST_ACCELERATION 4
+	#define REQUEST_TRAJECTORY_FLAG 5
 	// Add on other stuff you want to request
 
 	typedef struct {
@@ -30,6 +32,7 @@
 	int32_t acceleration;
 	int32_t velocity;
 	int32_t position;
+	int32_t goal;
 	int16_t mode;
 	
 	} MotorDrive;
@@ -39,6 +42,8 @@ typedef struct {
 	int32_t acceleration;
 	int32_t velocity;
 	int32_t position;
+	int32_t goal;
+	int32_t trajectory_flag;
 	int16_t mode;
 	
 } MotorState;
@@ -50,13 +55,11 @@ private:
 	MotorState _motorState;
 
 	int request_type;
-	uint8_t motorstats[8];
-	uint8_t batterystats[6];
-	uint8_t rangestats[6];
 
 	bool msgStart  = false;
 	byte data[MAX_PACKET_SIZE];
 	int len = 0; //length of packet body including header
+	int32_t data_integer;
 
 public:
 	int startUpCount = 0;
@@ -68,14 +71,19 @@ public:
 	void startup();
 
 	void setPosition(int32_t value);
+	void setPositionRelative(int32_t value);
 	void setVelocity(int32_t value);
 	void setAcceleration(int32_t value);
 	void requestPosition();
+	void requestGoal();
 	void requestVelocity();
 	void requestAcceleration();
+	void requestTrajectoryFlag();
 	int32_t getPosition();
+	int32_t getGoal();
 	int32_t getVelocity();
 	int32_t getAcceleration();
+	int8_t getTrajectoryFlag();
 	void setRun(bool run_status);
 	
 	bool readMessage();
@@ -85,7 +93,7 @@ public:
 
 private:
 	void EncodeMessage();
-	bool decodeMessage();
+	void decodeMessage();
 };
 
 #endif
