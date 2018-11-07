@@ -1,37 +1,9 @@
-//###################################################
-//###################################################
-//####     ####
-//#  #     #  #      ######  ######## ########
-//#  ####  #  ####   #    ## #  ##  # #  ##  #
-//#     ## #     ##  ####  # #  ##  # #  ##  #
-//#  ##  # #  ##  # ##     # #  ##  # #  ##  #
-//#  ##  # #  ##  # #  ##  # #  ##  # ##    ##
-//#     ## #     ## ##     # ##     #  ##  ##
-// # ####   # ####   #######  #######   ####
-//
-////SBC to CAN interface for BBAUV 3.0
-//Firmware Version :             v1.1
-//
-// Written by Goh Eng Wei
-// Change Log for v1.1:
-// - Added heartbeat to sbc CAN
-// - Removed CAN status messsages to be sent out. Redundant.
-//###################################################
-//###################################################
-//###################################################
-
 #include <can.h>
 #include <SPI.h>
-#include <XBee.h>
 #include "can_asv_defines.h"
 #include "defines.h"
 #include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-
-MCP_CAN CAN(8);
-uint8_t buf[8];
-uint32_t id = 0;
-uint8_t len = 0;
+#include "Adafruit_SSD1306.h"
 
 uint8_t heartbeat;
 uint8_t sbc_bus_stats[3];
@@ -44,19 +16,6 @@ uint32_t screen_loop = 0;
 uint32_t ocs_heartbeat = 0;
 uint32_t asv_heartbeat = 0;
 
-//Xbee setup
-XBee xbee = XBee();
-XBeeResponse response = XBeeResponse();
-// create reusable response objects for responses we expect to handle 
-ZBRxResponse rx = ZBRxResponse();
-XBeeAddress64 addr64 = XBeeAddress64(0x0013A200, 0x416B9783); //Telemetry
-//XBeeAddress64 addr64spare = XBeeAddress64(0x0013A200, 0x416B96A1); //Telemetry
-XBeeAddress64 addr64spare = XBeeAddress64(0x0013A200, 0x416B96A3); //Spare1
-ZBTxRequest zbTx;
-ZBTxStatusResponse txStatus = ZBTxStatusResponse();
-AtCommandRequest atRequest = AtCommandRequest();
-AtCommandResponse atResponse = AtCommandResponse();
-
 //Oled setup
 #define OLED_RESET 4
 Adafruit_SSD1306 display(OLED_RESET);
@@ -65,8 +24,7 @@ void setup()
 {
 	/* add setup code here */
 	Serial.begin(115200);
-	Serial1.begin(115200);
-	xbee.begin(Serial1);
+	Serial1.begin(9600);
 	sbc_bus_loop = millis();
 	heartbeat_loop = millis();
 	screen_loop = millis();
@@ -87,7 +45,7 @@ void setup()
 uint8_t led_buf[9] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 uint16_t cur_time = 0;
 
-//Serial read frame
+//Serial buffer from odroid
 int16_t incoming_data = 0;
 uint8_t read_flag = 0;
 uint8_t read_buffer[13];
@@ -95,6 +53,13 @@ uint8_t read_size;
 uint8_t read_id;
 uint8_t read_ctr;
 
+// Serial buffer from radio
+int16_t radio_incoming_data = 0;
+uint8_t radio_read_flag = 0;
+uint8_t radio_read_buffer[11]; // Takes [id,len,data,crc] no FE FE
+uint8_t radio_read_size;
+uint8_t radio_read_id;
+uint8_t radio_read_ctr; // Counts size of incoming_data without FE FE
 bool blink = true;
 
 void loop()
@@ -122,41 +87,11 @@ void loop()
 
 		screen_loop = millis();
 	}
-
-	/*
-	/*****************************************/
-	/*  Heartbeat							 */
-	/*  Maintain comms with SBC				 */
-	/*****************************************/
-
-	if ((millis() - heartbeat_loop) > HEARTBEAT_TIMEOUT)
-	{
-		//CAN.setupCANFrame(buf, 0, 0, HEARTBEAT_OCS);
-		//buf[0] = HEARTBEAT_OCS;
-		//CAN.sendMsgBuf(CAN_heartbeat, 0, 1, buf);
-		heartbeat_loop = millis();
-	}
-
-	/*****************************************/
-	/*  Transmit CAN Diagnostics			 */
-	/*****************************************/
-
-
-	if ((millis() - sbc_bus_loop) > 1000)
-	{
-		//CAN.setupCANFrame(sbc_bus_stats, 0, 1, CAN.checkError());
-		//CAN.setupCANFrame(sbc_bus_stats, 1, 1, CAN.checkTXStatus(0));
-		//CAN.setupCANFrame(sbc_bus_stats, 2, 1, CAN.checkTXStatus(1));
-		//CAN.sendMsgBuf(CAN_SBC_BUS_stats, 0, 4, sbc_bus_stats);
-
-		sbc_bus_loop = millis();
-	}
-
-
-	/*****************************************/
-	/*  Check for incoming commands from SBC */
-	/*  Transmit commands to XBee			 */
-	/*****************************************/
+	
+	/********************************************/
+	/* Check for incoming commands from Odroid	*/
+	/*  Transmit commands to Radio				*/
+	/********************************************/
 	if (Serial.available())
 	{
 		ocs_heartbeat = millis();
@@ -226,13 +161,8 @@ void loop()
 					read_buffer[read_ctr + 1] = incoming_data;
 					if (read_ctr == (2 + read_size))
 					{
-						//Check for HEARTBEAT from SBC
-						if (read_id == CAN_heartbeat)
-						{
-							//Serial.println("hb!");
-						}
 						//Serial.println(" SEND");
-						sendXbeeMsg();
+						forwardToRadio(read_id, read_size, read_buffer);
 						read_flag = 0;
 						read_ctr = 0;
 					}
@@ -246,22 +176,80 @@ void loop()
 		}
 	}
 
-	/**********************************************/
-	/*Check for incoming CAN messages from Xbee in CAN Format*/
-	/*			 Transmit CAN messages to SBC     */
-	/**********************************************/
+	/******************************************************/
+	/*Check for incoming messages from Radio in CAN Format*/
+	/*			 Transmit Radio messages to Odroid		  */
+	/******************************************************/
 
-	xbee.readPacket();
-
-	if (xbee.getResponse().isAvailable()) {
-		if (xbee.getResponse().getApiId() == ZB_RX_RESPONSE)
+	// RECEIVE
+	if (Serial1.available() > 0)
+	{
+		asv_heartbeat = millis();
+		//read
+		while (radio_incoming_data > -1)
 		{
-			asv_heartbeat = millis();
-			// got a zb rx packet
-			// now fill our zb rx class
-			xbee.getResponse().getZBRxResponse(rx);
-			uint8_t len = rx.getDataLength();
-			for (int i = 0; i < len; i++)	Serial.write(rx.getData(i));
+			radio_incoming_data = Serial1.read();
+			if (radio_incoming_data == -1)
+			{
+				radio_incoming_data = 0;
+				break;
+			}
+			if (radio_incoming_data == START_BYTE && !radio_read_flag)
+			{
+				radio_read_flag = 1;
+			}
+			else if (radio_incoming_data == START_BYTE && radio_read_flag == 1)
+			{
+				radio_read_flag++;
+				radio_read_flag = 2;
+			}
+			else if (radio_read_flag == 2)
+			{
+				if (radio_read_ctr == 0)
+				{
+					radio_read_id = radio_incoming_data;
+					radio_read_buffer[radio_read_ctr] = radio_incoming_data;
+					radio_read_ctr++;
+				}
+				else if (radio_read_ctr == 1)
+				{
+					radio_read_size = radio_incoming_data;
+					radio_read_buffer[radio_read_ctr] = radio_incoming_data;
+					radio_read_ctr++;
+				}
+				else if (radio_read_ctr >= 2)
+				{
+					radio_read_buffer[radio_read_ctr] = radio_incoming_data;
+					if (radio_read_ctr == (2 + radio_read_size))
+					{
+						// Forward to ocs only if crc is correct
+						if (isValidCrc(radio_read_buffer, radio_read_ctr))
+						{
+							// Full packet received
+							forwardToOcs(radio_read_size, radio_read_buffer);
+							// Print out received msg
+//							Serial.print("id: ");
+//							Serial.print(radio_read_id);
+//							Serial.print(" size: ");
+//							Serial.print(radio_read_size);
+//							Serial.print(" data: ");
+//							for (int i = 2; i < radio_read_ctr; i++)
+//							{
+//								Serial.print(radio_read_buffer[i]);
+//								Serial.print(" ");
+//							}
+//							Serial.println("");
+						}
+						radio_read_flag = 0;
+						radio_read_ctr = 0;
+					}
+					else {
+						radio_read_buffer[radio_read_ctr] = radio_incoming_data;
+						radio_read_ctr++;
+						//Serial.print("|");
+					}
+				}
+			}
 		}
 	}
 }
@@ -283,102 +271,71 @@ void display_heartbeat(uint32_t heartbeat)
 }
 
 //==========================================
-//          XBEE FUNCTIONS
+//          RADIO FUNCTIONS
 //==========================================
 
-uint8_t getRssi() {
-	xbee.send(atRequest);
+// data[] is [id, len, data]
+void forwardToOcs(int len, uint8_t data[]) {
+	uint8_t temp[13] = { 0 };
 
-	// wait up to 5 seconds for the status response
-	if (xbee.readPacket(100)) {
-		// got a response!
-
-		// should be an AT command response
-		if (xbee.getResponse().getApiId() == AT_COMMAND_RESPONSE) {
-			xbee.getResponse().getAtCommandResponse(atResponse);
-
-			if (atResponse.isOk()) {
-				return atResponse.getValue()[0];
-			}
-		}
+	temp[0] = 0xFE;
+	temp[1] = 0xFE;
+	for (int i = 2, j = 0; j < len+2; i++, j++) {
+		temp[i] = data[j];
 	}
-}
-#define _XBEE_DEBUG_
-#ifndef _XBEE_DEBUG_
-void sendXbeeMsg()
-{
-	zbTx = ZBTxRequest(addr64, read_buffer, read_size + 4);
-	xbee.send(zbTx);
-	if (xbee.readPacket(100))
-	{
-		// got a response!
-		// should be a znet tx status      
 
-		if (xbee.getResponse().getApiId() == ZB_TX_STATUS_RESPONSE)
-		{
-			xbee.getResponse().getZBTxStatusResponse(txStatus);
-			// get the delivery status, the fifth byte
-			if (txStatus.getDeliveryStatus() == SUCCESS)
-			{
-				// success.  time to celebrate
-				Serial.println("Ack");
-			}
-			else
-			{
-
-				Serial.println("No Acknowledgement");
-			}
-		}
-		else
-		{
-			// local XBee did not provide a timely TX Status Response -- should not happen
-			Serial.println("Sender Error");
-		}
+	for (int i = 0; i<len + 4; i++) {
+		//Serial.write(temp[i]);
+		//Serial.print(temp[i],HEX);
+		//Serial.print(" ");
 	}
+	Serial.flush();
+	//Serial.println();
+	//Serial.print("SEND");
 }
-#else
 
-void sendXbeeMsg()
-{
-	sendXbeeMsgtoAddr(addr64);
-	//sendXbeeMsgtoAddr(addr64spare);
-}
-void sendXbeeMsgtoAddr(XBeeAddress64 addr)
-{
-	zbTx = ZBTxRequest(addr, read_buffer, read_size + 4);
-	xbee.send(zbTx);
-	//Serial.print(" XbeeSend ");
-	//display.print("SEND~ ");
-	if (xbee.readPacket(100))
-	{
-		// got a response!
-		// should be a znet tx status      
+// data[] is only data
+void forwardToRadio(int id, int len, uint8_t data[]) {
+	uint8_t temp[13] = { 0 };
 
-		if (xbee.getResponse().getApiId() == ZB_TX_STATUS_RESPONSE)
-		{
-			xbee.getResponse().getZBTxStatusResponse(txStatus);
-			// get the delivery status, the fifth byte
-			if (txStatus.getDeliveryStatus() == SUCCESS)
-			{
-				// success.  time to celebrate
-				//Serial.println("Ack");
-				//display.print(" O ");
-			}
-			els
-			{
-
-				//Serial.println("No Acknowledgement");
-				//display.print(" X ");
-			}
-		}
+	temp[0] = 0xFE;
+	temp[1] = 0xFE;
+	temp[2] = id;
+	temp[3] = len;
+	for (int i = 2, j = 0; j < len; i++, j++) {
+		temp[i] = data[j];
 	}
-	else
-	{
-		// local XBee did not provide a timely TX Status Response -- should not happen
-		//Serial.println("Sender Error");
-		//display.print(" - ");
-	}
-	//display.display();
+	// Take checksum of [id,len,data] in case [id] and [len] have errors too
+	uint8_t crc = checksum(temp + 2, len + 2);
+	temp[len + 4] = crc;
 
+	for (int i = 0; i<len + 5; i++) {
+		Serial1.write(temp[i]);
+		//Serial.print(temp[i],HEX);
+		//Serial.print(" ");
+	}
+	Serial1.flush();
+	//Serial.println();
+	//Serial.print("SEND");
 }
-#endif
+
+// Takes the crc of [len] bytes in [data] and compares to last byte
+// data[] is [id,len,data] without FE FE
+bool isValidCrc(uint8_t data[], int len) {
+	uint8_t crc = checksum(data, len);
+	if (crc == data[len]) {
+		return true;
+	}
+	return false;
+}
+
+uint8_t checksum(uint8_t data[], uint8_t len) {
+	uint8_t crc = 0;
+	uint8_t i = 0;
+	while (len != 0) {
+		crc = crc ^ data[i];
+		i++;
+		len--;
+	}
+	return crc;
+}
