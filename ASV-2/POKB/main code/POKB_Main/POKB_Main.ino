@@ -210,7 +210,7 @@ void receiveRemoteKill() {
 					if (readCounter == (2 + readSize)) {
 						if (isValidCrc(readBuffer, readCounter)) {
 							len = readSize;
-							if (readId == CAN_POKB_BUS_stats) {
+							if (readId == CAN_remote_kill_stats) {
 								remoteKill = (readBuffer[2] == 0x15) ? false : true;
 								noData = 0;
 							}
