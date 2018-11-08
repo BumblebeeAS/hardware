@@ -1,9 +1,11 @@
+//#include <XBee.h>
 #include <can.h>
 #include "can_asv_defines.h"
 
 #define CAN_CHIP_SELECT 8
 
 #define SERIAL_BAUD_RATE 115200
+//#define XBEE_BAUD_RATE 115200
 #define N2420_BAUD_RATE 9600
 #define START_BYTE 0xFE
 
@@ -23,6 +25,12 @@ uint8_t len = 0;
 uint8_t buf[8];
 
 MCP_CAN CAN(CAN_CHIP_SELECT);
+
+//// XBee Setup
+//XBee xbee = XBee();
+//ZBRxResponse zbRx = ZBRxResponse();
+//uint8_t inByte = 0;
+//int noData = 0;
 
 // Radio Setup
 int16_t incomingData = 0;
@@ -127,6 +135,44 @@ START_INIT:
 
 	Serial.println("Starting transmission...");
 }
+
+/*
+void receiveRemoteKill() {
+// Continuously read packets
+xbee.readPacket();
+
+if (xbee.getResponse().isAvailable()) {
+// Serial.println("Response available.");
+
+if (xbee.getResponse().getApiId() == ZB_RX_RESPONSE) {
+
+// Got zb rx response
+// Fill zb rx response object
+xbee.getResponse().getZBRxResponse(zbRx);
+
+// Get data
+inByte = zbRx.getData(0);
+Serial.print("inByte: ");
+Serial.println(inByte, HEX);
+
+remoteKill = (inByte == 0x15) ? false : true;
+noData = 0;
+}
+}
+
+else {
+noData++;
+Serial.print("noData: ");
+Serial.println(noData);
+
+if (noData >= 20) {
+remoteKill = true;
+noData = 0;
+Serial.println("Connection timeout kill.");
+}
+}
+}
+*/
 
 void receiveRemoteKill() {
 	if (Serial1.available()) {
