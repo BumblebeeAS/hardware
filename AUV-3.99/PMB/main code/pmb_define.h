@@ -1,4 +1,4 @@
-#define PMB_NO 2
+#define PMB_NO 4
 
 #define CAN_HEARTBEAT_INTERVAL 500
 #define CAN_STATUS_INTERVAL 1000
@@ -29,7 +29,7 @@
 #define PIN_OLED_RESET 38
 #define PIN_OFF 4
 #define PIN_RELAY 61
-#define MAX_CAPACITY 2755080000 //3600000000; // 10000 * 60 * 60 * 100 (scaling fact)
+#define MAX_CAPACITY 4290000000 //3600000000; // 10000 * 60 * 60 * 100 (scaling fact) (max of 2^32
 
 //PMB 2 - 2755080000
 //PMB 3 - 2718360000
