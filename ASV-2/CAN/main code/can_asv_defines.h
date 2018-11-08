@@ -28,7 +28,7 @@
 #define CAN_LARS	107
 #define CAN_POPB_control	108
 #define CAN_Shooter 109
-#define CAN_light_tower 110
+#define CAN_LARS_stats 110
 #define CAN_battery1_stats 111
 #define CAN_battery2_stats 112
 #define CAN_esc1_motor_stats 113
@@ -55,7 +55,6 @@
 #define HEARTBEAT_Cogswell 6
 #define HEARTBEAT_OCS 7
 #define HEARTBEAT_RC  8
-#define HEARTBEAT_MANI 9
 //Bit position
 #define HEARTBEAT_BATT1 0
 #define HEARTBEAT_BATT2 1
