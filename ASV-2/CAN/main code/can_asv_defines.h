@@ -27,7 +27,7 @@
 #define CAN_e_stop		106
 #define CAN_LARS	107
 #define CAN_POPB_control	108
-#define CAN_shooter 109
+#define CAN_Shooter 109
 #define CAN_LARS_stats 110
 #define CAN_battery1_stats 111
 #define CAN_battery2_stats 112
@@ -44,6 +44,7 @@
 #define CAN_POPB_BUS_stats 123
 #define CAN_Tele_BUS_stats 124
 #define CAN_LARS_BUS_stats 125
+#define CAN_MANI_stats 126
 
 //CAN Heartbeat
 #define HEARTBEAT_POSB 1
