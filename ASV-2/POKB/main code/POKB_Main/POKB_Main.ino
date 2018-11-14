@@ -2,6 +2,8 @@
 #include <can.h>
 #include "can_asv_defines.h"
 
+// COM Port: Third smallest/ second largest
+
 #define CAN_CHIP_SELECT 8
 
 #define SERIAL_BAUD_RATE 115200
@@ -9,6 +11,7 @@
 
 #define CONTACTOR_CONTROL 11  // NMOS, Active High 
 #define ONBOARD_SWITCH 21      
+#define KILL 31
 
 #define RECEIVE_REMOTE_KILL_TIMEOUT 500
 #define RECEIVE_POSB_HEARTBEAT_TIMEOUT 3000
@@ -195,11 +198,13 @@ void updateContactor() {
 
 		if (onboardKill || remoteKill || softwareKill) {
 			digitalWrite(CONTACTOR_CONTROL, LOW);
+			digitalWrite(KILL, HIGH);
 			// Serial.println("Contactor switched off.");
 		}
 
 		else {
 			digitalWrite(CONTACTOR_CONTROL, HIGH);
+			digitalWrite(KILL, LOW);
 			// Serial.println("Contactor switched on.");
 		}
 
