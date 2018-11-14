@@ -28,7 +28,7 @@
 #define CAN_LARS	107
 #define CAN_POPB_control	108
 #define CAN_Shooter 109
-#define CAN_light_tower 110
+#define CAN_LARS_stats 110
 #define CAN_battery1_stats 111
 #define CAN_battery2_stats 112
 #define CAN_esc1_motor_stats 113
