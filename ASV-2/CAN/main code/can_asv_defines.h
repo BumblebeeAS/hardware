@@ -55,6 +55,7 @@
 #define HEARTBEAT_Cogswell 6
 #define HEARTBEAT_OCS 7
 #define HEARTBEAT_RC  8
+#define HEARTBEAT_MANI 9
 //Bit position
 #define HEARTBEAT_BATT1 0
 #define HEARTBEAT_BATT2 1
