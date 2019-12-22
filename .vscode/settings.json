@@ -1,0 +1,8 @@
+{
+  "files.associations": {
+    "stm32f0xx_hal.h": "c",
+    "can_lib.h": "c",
+    "retarget.h": "c",
+    "stat.h": "c"
+  }
+}
