@@ -1,88 +1,47 @@
-# Project Title
+# AUV 4.0 Electrical Firmware
 
-One Paragraph of project description goes here
+This folder contains the firmware used in BBAS AUV 4.0 electrical system.
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+If you are new to this project then take a look at this folder for guide on how to run a copy of the project on your local machine.
 
-### Prerequisites
+## Directory
 
-What things you need to install the software and how to install them
+### Firmware Directory
+This project contains the following firmware:
+1. Actuator
+ - Firmware of the manipulator arm.
+2. CAN (Controlled Area Network)
+ - General overview of the CAN protocol
+3. PMB (Power Monitoring Board)
+ - Monitor battery status 
+4. SBC-CAN
+ - Serial communication with SBC
+ - Translate SBC message to CAN format
+5. STB (Sensor & Telemetry Board)
+ - Internal Sensors & Screen Display
+6. TAB (Thruster & Actuation Board)
+ - Thruster control
+ - High level actuation controls (TBA)
 
-```
-Give examples
-```
-
-### Installing
-
-A step by step series of examples that tell you how to get a development env running
-
-Say what the step will be
-
-```
-Give the example
-```
-
-And repeat
-
-```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo
-
-## Running the tests
-
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-## Deployment
-
-Add additional notes about how to deploy this on a live system
+### Other Directory
+1. Getting Started
+ - For plebs that is new to the project.
+2. Scripts
+ - For ~~lazy~~ people who wants the machine to do their work.
 
 ## Built With
 
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
+* [STM32CubeIDE](https://www.st.com/en/development-tools/stm32cubeide.html) - Main IDE  used for STM32 development
+* [STM32CubeMX](https://www.st.com/en/development-tools/stm32cubemx.html/) - Graphical tool for STM32 pinout configuration
 
-## Contributing
+## Acknowledgement
 
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
-
-## Authors
-
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
-
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
-## Acknowledgments
-
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
-
+* **Chua Chong Yu** - *Integration & Power Distribution*
+* **Ng Yong Jie** - *Acoustics & Navigation*
+* **Kang QingXuan** - *SBC-CAN & PMB*
+* **Yang YiHang** - *STB*
+* **Joshua Nathanael** - *PCB*
+* **Ben Chong** - *TAB*
+* **Nathania Santoso** - *PMB*
