@@ -11,25 +11,25 @@ If you are new to this project then take a look at this folder for guide on how 
 ### Firmware Directory
 This project contains the following firmware:
 1. Actuator
- - Firmware of the manipulator arm.
+   - Firmware of the manipulator arm.
 2. CAN (Controlled Area Network)
- - General overview of the CAN protocol
+   - General overview of the CAN protocol
 3. PMB (Power Monitoring Board)
- - Monitor battery status 
+   - Monitor battery status 
 4. SBC-CAN
- - Serial communication with SBC
- - Translate SBC message to CAN format
+   - Serial communication with SBC
+   - Translate SBC message to CAN format
 5. STB (Sensor & Telemetry Board)
- - Internal Sensors & Screen Display
+   - Internal Sensors & Screen Display
 6. TAB (Thruster & Actuation Board)
- - Thruster control
- - High level actuation controls (TBA)
+   - Thruster control
+   - High level actuation controls (TBA)
 
 ### Other Directory
 1. Getting Started
- - For plebs that is new to the project.
+   - For plebs that are new to the project.
 2. Scripts
- - For ~~lazy~~ people who wants the machine to do their work.
+   - For ~~lazy~~ people who wants the machine to do their work.
 
 ## Built With
 
