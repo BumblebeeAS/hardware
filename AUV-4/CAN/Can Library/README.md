@@ -27,7 +27,8 @@ void CAN_Init(void)
 	  Error_Status |= 1<< CAN_INIT_ERROR;
     Error_Handler();
   }
-}```
+}
+```
 
 # Issue Log
 
@@ -57,12 +58,14 @@ void HAL_CAN_MspInit(CAN_HandleTypeDef* hcan)
   }
 }
 ```
+
 Change GPIO PULL Mode to GPIO_PULLUP as shown by the line marked with arrow.
 
 	2. On STM32F4 series, short CAN_TX and CAN_RX pins with a jumper when using loopback mode. Even when the datasheet says that they are internally shorted in loopback mode, they clearly weren't when we tested it.
 	3. In normal CAN mode, it needs at least 1 more node on the bus to acknowledge it during initialisation. Connect the device under test to another reception node and test again.
 	4. 120 ohm resistors at both ends of the bus is not optional. They are like pullup resistor that pull the bus lines together to recessive state.
 	5. All error flags related to CAN controller are reported at 
+	
 ```bash
 hcan.Instance->ESR;
 ```
