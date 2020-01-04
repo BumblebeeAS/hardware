@@ -33,6 +33,7 @@ void CAN_Init(void)
 # Issue Log
 
 1. CAN fails initialisation due to a variety of reasons. Some common fixes are described here.
+
 1.1 CAN_TX and CAN_RX pins sometimes need to be configured to be PULLUP mode for it to work. Open stm32f0x_msp.c and find function called "void HAL_CAN_MspInit(CAN_HandleTypeDef* hcan)". This function initialises all the lower level peripherals that CAN controller requires. You should see this function looks some thing like the below one. Change GPIO PULL Mode to GPIO_PULLUP as shown by the line marked with arrow.
 ```bash
 void HAL_CAN_MspInit(CAN_HandleTypeDef* hcan)
