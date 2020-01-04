@@ -21,6 +21,6 @@ Disable syscalls.c in the Src folder. This is done by right click -> properties 
 ## Step 3
 
 Now just include retarget.h into main.c and add this line in your source code and you are ready to use printf functions and see the message through any serial monitor.
-'''bash
+```bash
 RetargetInit(&huart1);
-'''
+```
