@@ -13,7 +13,7 @@ Some macro need to be redefined if this were to be used on other stm32 family.
 4. Use Can_SendMsg(id, datalen, Msgbuf) to publish a can message
 5. Use CAN_CheckReceive() to get a RecvFIFO that contains CAN msg
 6. Use CAN_RecvMsg(CAN_RX_FIFO0, Msg) to receive a can message from a FIFO
-7. Use CAN_GetId() after receiving msg to check where it comes from
+7. Use CAN_GetId() after receiving msg to check which node it comes from
 
 
 # What you need to check before using this library
