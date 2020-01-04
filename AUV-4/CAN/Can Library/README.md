@@ -63,7 +63,7 @@ void HAL_CAN_MspInit(CAN_HandleTypeDef* hcan)
 
 1.3 In normal CAN mode, it needs at least 1 more node on the bus to acknowledge it during initialisation. Connect the device under test to another reception node and test again.
 
-1.4 120 ohm resistors at both ends of the bus is not optional. They are like pullup resistor that pull the bus lines together to recessive state.
+1.4 120 ohm resistors at both ends of the bus are NOT optional. They are like pullup resistor that pull the bus lines together to recessive state.
 
 1.5 All error flags related to CAN controller are reported at 
 	
