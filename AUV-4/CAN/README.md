@@ -21,7 +21,8 @@ Test Result:
 
 ## Issue log 2:
 In static void UART_RxISR_8BIT(UART_HandleTypeDef *huart), RXNE is cleared via
-	uhdata = (uint16_t) READ_REG(huart->Instance->RDR);
+uhdata = (uint16_t) READ_REG(huart->Instance->RDR);
+
 Small modifications  are made to static void UART_RxISR_8BIT(UART_HandleTypeDef *huart) in HAL_Uart.c
 the source code now detects Start and stop bytes on the run
 
