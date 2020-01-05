@@ -50,7 +50,7 @@ void Error_Handler(void);
 
 /**
   * @brief  Initialise CAN peripheral and supporting peripheral
-  * 		Initialise Acceptance Filter
+  * 		Initialise Acceptance Filter (Accept NONE during initalisation. Set acceptance filter via CAN_SetFilter())
   * 		notification(interrupt) disabled (uncomment notification and NVIC to enable)
   * @param1 Mode	Specify if normal or loopback mode is to be used
   * 				CAN_MODE_NORMAL / CAN_MODE_LOOPBACK
