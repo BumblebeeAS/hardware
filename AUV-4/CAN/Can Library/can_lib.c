@@ -223,10 +223,10 @@ void CAN_InitFilter(void)
    FilterConfig.FilterMaskIdHigh = 0;  // eg: 0x7FF << 5; All bits must match
    FilterConfig.FilterMaskIdLow = 0;  //eg: 0x7FF << 5;	All bits must match
    FilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
-   FilterConfig.FilterBank = 0;
+   FilterConfig.FilterBank = 12;
    FilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
    FilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
-   FilterConfig.FilterActivation = CAN_FILTER_ENABLE;
+   FilterConfig.FilterActivation = CAN_FILTER_DISABLE;
    if ( HAL_CAN_ConfigFilter(&hcan, &FilterConfig) != HAL_OK)
    {
 	   // error_status |= 1<< CAN_FILTER_INIT_ERROR;
@@ -237,7 +237,7 @@ void CAN_InitFilter(void)
    FilterConfig.FilterMaskIdHigh = 0;
    FilterConfig.FilterMaskIdLow = 0;
    FilterConfig.FilterFIFOAssignment = CAN_RX_FIFO1;
-   FilterConfig.FilterBank = 1;
+   FilterConfig.FilterBank = 13;
    FilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
    FilterConfig.FilterActivation = CAN_FILTER_DISABLE;
    if ( HAL_CAN_ConfigFilter(&hcan, &FilterConfig) != HAL_OK)
