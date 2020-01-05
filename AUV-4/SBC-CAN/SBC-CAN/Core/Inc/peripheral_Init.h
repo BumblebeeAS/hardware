@@ -4,7 +4,8 @@
 #include "stm32f0xx_hal.h"
 #include "main.h"
 
-/***************Variable Declaration**************/
+/***************Struct Declaration**************/
+
 uint32_t TIM_Tick;
 uint32_t counter;
 
@@ -12,6 +13,7 @@ SPI_HandleTypeDef hspi1;
 TIM_HandleTypeDef htim17;
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
+CAN_HandleTypeDef hcan; 			//hcan struct
 
 
 /***************Function Prototypes**************/

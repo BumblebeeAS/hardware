@@ -27,7 +27,6 @@
 #define	CAN_SOFTWARE_ERROR		17
 
 
-
 void PrintError (uint8_t err_code);
 
 

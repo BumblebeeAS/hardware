@@ -1,60 +1,14 @@
-// CAN library V1.2
-// Default Oscillator is HSE 32MHz. Change Bittime if other system clock are used
-
-
-
-// CAN library V1.1
-// add pull up to CAN_TX & CAN_RX to prevent pins floating and fail initialisation
-
-// CAN library V1
-// This library only works with stm32f042
-
-// To port over to other stm32 chips, reconfigure GPIOs is required
-// macro definition problems may also occur
-
-// Steps to run CAN
-// 1. Configure CAN and put CAN into initialisation mode
-// 2. Configure GPIO functions and NVIC
-// 3. If Interrupt mode is used, implement CEC_CAN_IRQHandler(void) to be redirect to  HAL_CAN_IRQHandler(&hcan)
-//    (In stm32f0xx_it.c)
-//	  (Remember to include can_lib.h in stm32f0xx_it.c for isProcessing condition)
-// 4. Configure CAN filter
-//	  At least one filter bank need to be configured for each Rxfifo to allow msg to be accepted
-//	  into that fifo
-// 5. Start CAN (HAL_CAN_Start(&hcan))
-// 6. Configure TxMailbox
-// 7. Turn on notification mode (interrupt mode)
-// 8. Implement various Callback functions
-
 // How to use this library
-// 1. Prerequisit (stm32f042)
-// 2. Run CAN_Begin() function.
-//	  It handles CAN peripheral initialisation, MSP initialisation(Clock, GPIO, NVIC),
-//	  acceptance filter(default, accept all), activate notification mode(interrupt mode)
-//    and activate node.
-// 3. Use setFilter to set acceptance filter
-// 4. Use CAN_SetMsgFrame() to set msg and use Can_sendMsg(id, datalen, Msgbuf) to publish a can message
-// 5. Use CAN_CheckReceive() to get RecvFIFO that contains CAN msg and use CAN_RecvMsg(CAN_RX_FIFO0, Msg) to receive a can message
+// 1. Run CAN_Begin(Mode) function. You can pass in CAN_MODE_NORMAL or CAN_MODE_LOOPBACK.
+//	  It handles CAN peripheral initialisation, MSP initialisation(Clock, GPIO),
+//	  acceptance filter(default, accept all), and activate node.
+// 3. Use can_SetFilter to set acceptance filter
+// 4. Use CAN_SetMsgFrame() to set a CAN msg
+// 5. Use Can_SendMsg(id, datalen, Msgbuf) to publish a can message
+// 6. Use CAN_CheckReceive() to get a RecvFIFO that contains CAN msg
+// 7. Use CAN_RecvMsg(CAN_RX_FIFO0, Msg) to receive a can message from a FIFO
+// 8. Use CAN_GetId() after receiving msg to check where it comes from
 
-
-// How to use retarget
-// 1. copy past retarget.c and .h into the respective folder
-// 2. exclude syscalls.c from build
-// 3. use printf as normal
-
-// CAN LOOPBACK MODE STOPS WORKING WHEN THE BOARD IS PLUGGED ONTO PROTOBORAD!!!!!!!
-// update: Set CAN_TX CAN_RX in pull up mode
-
-
-
-// How negative numbers are assembled in MSB & LSB form:
-// eg: -9999(10) -> 11011000 11110001 (2's)
-// 	   Hence MSB -> 11011000(2's, as MSB == 1)  -> -40(10)
-//		     LSB -> 11110001(2's, as MSB == 1)  -> -15(10)
-// To reassemble MSB & LSB data:
-//	   Change printed dec number back to binary (either binary or 2's,depending on the signedness)
-//	   Concatenate MSB(2/2's) & LSB (2/2's) and convert back to dec
-//
 
 
 #ifndef __CAN_LIB_H
@@ -66,27 +20,20 @@
 
 #include "main.h"
 #include "stm32f0xx_hal.h"			//systick, delay,...
-#include "stm32f0xx_hal_can.h"		//can library
 #include "stm32f0xx_hal_cortex.h"	//nvic
-#include "retarget.h"
-#include <stdio.h>				//printf
+#include "retarget.h"				//comment out this if you do not intend to use printf
+#include <stdio.h>					//printf
 
 
  /*#############Configuration############*/
 //#define _VERBOSE	1
 
-#define CAN_MODE	CAN_MODE_NORMAL	//CAN_MODE_NORMAL  // CAN_MODE_LOOPBACK
-
-
-
 
 /*#############Private############*/
 
-CAN_HandleTypeDef hcan; 			//hcan struct
 CAN_TxHeaderTypeDef TxHeader;		//Node-specific TxHeader
 CAN_RxHeaderTypeDef RxHeader; 		//place where the received header will be stored
-uint8_t recv_databuf[8];			//place where the received header will be stored
-volatile uint8_t isProcessing;	//for rejecting an interrupt, see the IRQ handler
+uint8_t recv_databuf[8];			//place where the received msg will be stored
 
 void CAN_Init(void); 				//initialise CAN
 void CAN_InitFilter(void);			//Initialise filter during initialising CAN. Accept all msg
@@ -95,34 +42,50 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan);
 void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan);
 void HAL_CAN_RxFifo0FullCallback(CAN_HandleTypeDef *hcan);
 void HAL_CAN_RxFifo1FullCallback(CAN_HandleTypeDef *hcan);
+void Error_Handler(void);
 
-void HAL_CAN_MspInit(CAN_HandleTypeDef* hcan);	//initialise CAN supporting peripherals & NVIC
-void HAL_CAN_MspDeInit(CAN_HandleTypeDef* hcan);
 
 /*#############Public############*/
 
-// initialise CAN peripheral and supporting peripheral
-// initialise Acceptance Filter
-// notification(interrupt) disabled (uncomment notification and NVIC to enable)
-// if CAN initilisation failed. This could be a reason that bit timing is set wrong.
-// Use CAN bit timing calculator to verify precaler, Seg1 and Seg2 Quanta
-void CAN_Begin(void);
 
-// send msg
-// Standard ID (0 -> 0x7FF ) and Length of msg (0 -> 8)is required
-// Extended ID is not used
-// IDE(type of specifier) is set to be in standard id mode internally
-// RTR(type of frame) is set to be in data type
-// Use CAN_requestMsg for remote request
-// TransmitGlobalTime Function is disabled
-// the lower level CAN_AddTxMsg accept uint8_t data array, possible problems(?)
+/**
+  * @brief  Initialise CAN peripheral and supporting peripheral
+  * 		Initialise Acceptance Filter
+  * 		notification(interrupt) disabled (uncomment notification and NVIC to enable)
+  * @param1 Mode	Specify if normal or loopback mode is to be used
+  * 				CAN_MODE_NORMAL / CAN_MODE_LOOPBACK
+  * @retval None
+  */
+
+void CAN_Begin(uint32_t Mode);
+
+
+
+/**
+  * @brief   send msg
+  *			 Standard ID (0 -> 0x7FF ) and Length of msg (0 -> 8)is required
+  * 		 Extended ID is not used
+  *			 IDE(type of specifier) is set to be in standard id mode internally
+  *			 RTR(type of frame) is set to be in data type
+  *			 TransmitGlobalTime Function is disabled
+  * @param1 id1		CAN_Id
+  * 				0 - >0x7FF (11bit stdid)
+  * @param2 *Msg 	The array that stores tx message
+  * @param3 len		Length of the tx message
+  * @retval None
+  */
 void CAN_SendMsg(uint32_t id, uint8_t* Msg,uint8_t len);
 
 
-// note that the Msg goes into a FiFo according to the filter bank configuration
-// hence heartbeat can be configured to go only into FIFO2 while rest of the data goes only into FIFO1
-// Return the number of pending messages left in the selected FIFO
-// Return value = 10 if no msg is found
+/**
+  * @brief   Receive msg from a FIFO
+  * 		 You can use CAN_CheckReceive() to get a FIFO that contains pending message
+  * @param1 RxFIFO	Specify the FIFO to get message from
+  * 				CAN_RX_FIFO0 / CAN_RX_FIFO1
+  * @param2 *Msg 	Specify the array which the function will write the received message to
+  * @retval Return the number of pending messages left in the selected FIFO
+  *  		Return value = 10 if no msg is found
+  */
 uint32_t CAN_RecvMsg(uint32_t RxFIFO, uint8_t* recvMsg);
 
 
@@ -196,11 +159,12 @@ void CAN_SetMsgFrame(int8_t TxMsg[], uint8_t start_pos, uint8_t len, int32_t val
   */
 int32_t CAN_ParseMsgFrame(int8_t RxMsg[], uint8_t start_pos, uint8_t stop_pos , uint8_t len);
 
-
+// Initially Used for debugging
 void CAN_PrintMsgFrame(int8_t Msg[],uint8_t len);
 
 
 //Check error register and output to global Error_Status variable
+// used for SBC-CAN only due to large incompatibility issue
 void CAN_UpdateError();
 
 

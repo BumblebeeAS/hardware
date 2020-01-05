@@ -13,8 +13,21 @@ extern "C" {
 #include "Error_Define.h"
 
 
+
+#define START_BYTE 254		// (uint8_t) 254 ==> (int8_t) -2
+#define END_BYTE 255
+
+#define CAN_PCB_STAT 3
+
+
+typedef struct SBC_recvMsgBuf_Type {	//ping-pong msg buffer
+	uint8_t SBC_recvMsgBuf1[32];
+	uint8_t SBC_recvMsgBuf2[32];
+} SBC_recvMsgBuf_Type;
+
 uint32_t Error_Status;	//all error reports are described here
-						//Initialised in system_Begin();
+							//Initialised in system_Begin();
+
 
 
 void Enable_Uart_Int();
@@ -27,10 +40,17 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 
 void Error_Handler();
 
-void reset_Uart_Msg();
+void SBC_ReceptionHandler(uint8_t *recvMsgBuf);
+void SBC_ResetBuf(uint8_t *buf);
+void Enable_Uart_Int();
+
 
 void SBC_Routine();
 void CAN_Routine();
+
+void CAN_SetAllFilters();
+void CAN_ReceptionHandler(uint8_t* recvMsgBuf);
+void CAN_PowerCtrl(uint8_t* recvMsgBuf);
 
 
 

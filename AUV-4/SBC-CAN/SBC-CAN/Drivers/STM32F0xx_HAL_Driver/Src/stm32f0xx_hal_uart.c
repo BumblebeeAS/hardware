@@ -156,6 +156,10 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f0xx_hal.h"
 
+#include "main.h"
+extern	uint8_t SBC_msgPending;
+extern 	uint8_t SBC_msgEnd;
+
 /** @addtogroup STM32F0xx_HAL_Driver
   * @{
   */
@@ -3634,10 +3638,18 @@ static void UART_RxISR_8BIT(UART_HandleTypeDef *huart)
   /* Check that a Rx process is ongoing */
   if (huart->RxState == HAL_UART_STATE_BUSY_RX)
   {
-    uhdata = (uint16_t) READ_REG(huart->Instance->RDR);
+    uhdata = (uint16_t) READ_REG(huart->Instance->RDR);	//cleared interrupt!!
     *huart->pRxBuffPtr = (uint8_t)(uhdata & (uint8_t)uhMask);
     huart->pRxBuffPtr++;
     huart->RxXferCount--;
+
+    //detected start byte
+    if (uhdata == START_BYTE)
+    	SBC_msgPending = 1;
+    if (SBC_msgPending != 0)
+    	SBC_msgPending ++;
+
+
 
     if (huart->RxXferCount == 0U)
     {
