@@ -7,7 +7,7 @@ Some macro need to be redefined if this were to be used on other stm32 family.
 # How to use this library
 1. Run CAN_Begin(Mode) function. You can pass in CAN_MODE_NORMAL or CAN_MODE_LOOPBACK.
 	  It handles CAN peripheral initialisation, MSP initialisation(Clock, GPIO),
-	  acceptance filter(default, accept all), and activate node.
+	  acceptance filter(default, accept NONE), and activate node.
 2. Use can_SetFilter to set acceptance filter
 3. Use CAN_SetMsgFrame() to set a CAN msg
 4. Use Can_SendMsg(id, datalen, Msgbuf) to publish a can message
