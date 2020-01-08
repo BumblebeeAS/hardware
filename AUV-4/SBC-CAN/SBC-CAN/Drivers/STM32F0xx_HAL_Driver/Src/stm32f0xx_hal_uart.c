@@ -156,14 +156,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f0xx_hal.h"
 
-#include "main.h"
-extern	uint8_t SBC_msgPending;
-extern 	uint8_t SBC_msgEnd;
-extern 	uint16_t SBC_recvMsg_RP;
-extern 	uint16_t SBC_recvMsg_WP;
-extern uint8_t SBC_msgSize;
-extern uint8_t SBC_msgRdy;
-
 
 /** @addtogroup STM32F0xx_HAL_Driver
   * @{
@@ -3650,10 +3642,10 @@ static void UART_RxISR_8BIT(UART_HandleTypeDef *huart)
 
 
     //detected start byte
-    if (uhdata == START_BYTE ){
-    	SBC_recvMsg_RP =  SBC_recvMsg_WP + 1; //update first msg position (ID)
-    	SBC_msgPending ++;
-    }
+//    if (uhdata == START_BYTE ){
+//    	SBC_recvMsg_RP =  SBC_recvMsg_WP + 1; //update first msg position (ID)
+//    	SBC_msgPending ++;
+//    }
 //    }
 //    if (SBC_msgPending >= 2){
 //    	SBC_msgPending ++;
@@ -3670,7 +3662,7 @@ static void UART_RxISR_8BIT(UART_HandleTypeDef *huart)
 //    }
 
     //update ringbuffer pointer
-    SBC_recvMsg_WP ++;
+    //SBC_recvMsg_WP ++;
 
 
 

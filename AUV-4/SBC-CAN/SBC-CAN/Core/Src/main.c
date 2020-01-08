@@ -1,15 +1,14 @@
 #include "main.h"
 
-//SBC Ring buffer
-uint8_t SBC_recvMsgBuf[2500] = {0};
 
-uint16_t SBC_recvMsg_WP = 0;	//Pointer to buffer
-uint16_t SBC_recvMsg_RP = 0;	//Pointer to buffer
-uint8_t SBC_msgSize = 255;	//-1 , no msg received
+
+//SBC receive buffer
+uint8_t SBC_recvMsgBuf[32] = {0};
+uint8_t SBC_recvByte = 0;
+uint8_t SBC_recvId = 0;
+uint8_t SBC_recvSize = 0;
+//sbc control variables
 uint8_t SBC_msgRdy = 0;
-
-
-
 uint8_t SBC_msgPending = 0;		//start byte
 
 uint32_t RxFifo = 10;
@@ -23,6 +22,7 @@ uint32_t tick_20hz = 0;
 uint32_t tick_70hz = 0;
 
 uint32_t cnt = 0;
+uint32_t bandwidth_tick = 0;
 
 int main(void)
 {
@@ -43,25 +43,25 @@ int main(void)
   while (1)
   {
 
-	  if (SBC_msgPending >= 2){//Msg received, new msg size is updated. If size>8 -> invalid
+//	  if (cnt == 1){
+//		  bandwidth_tick = HAL_GetTick();
+//	  }
+//	  if (cnt == 4999){
+//		  bandwidth_tick = HAL_GetTick() - bandwidth_tick;
+//		  HAL_Delay(1000);
+//	  }
+	  if (SBC_msgRdy){//Msg received, new msg size is updated. If size>8 -> invalid
 
 		  SBC_Routine();
 		  cnt ++;
+		  SBC_msgRdy = 0;
+
 		 // SBC_msgRdy = 0;
 	  }
 
 	  RxFifo = CAN_CheckReceive();
 	  if (RxFifo != 10 ){ //if there is msg in RxFifos
 		  CAN_Routine();
-	  }
-
-
-	  if (SBC_recvMsg_WP > 2483 && !SBC_msgPending)	//Reaching the end of buffer and no message is incoming
-	  {
-		  while( HAL_UART_AbortReceive_IT(&huart2)!= HAL_OK); //Kill reception
-		  HAL_UART_Receive_IT(&huart2, (uint8_t*)SBC_recvMsgBuf , 2500);	//start receiving again
-		  SBC_recvMsg_WP = 0;
-
 	  }
 
 
@@ -104,53 +104,54 @@ int main(void)
 // SBC msg -> CAN msg routine
 void SBC_Routine()
 {
-	SBC_msgPending = 0;			//clear control status
-	SBC_msgSize = 255;
-	HAL_Delay(3);
-	SBC_ReceptionHandler(SBC_recvMsgBuf + SBC_recvMsg_RP);
+	CAN_SendMsg(SBC_recvId,SBC_recvMsgBuf,SBC_recvSize);
+//	if (CAN_id == power control){
+//		toggle
+//	}
+
 }
 
-
-// Convert SBC msg to CAN msg and send
-void SBC_ReceptionHandler(uint8_t *recvMsgBuf){
-
-	uint8_t id = recvMsgBuf[0], size = recvMsgBuf[1], i = 0;
-
-
-	uint8_t CAN_sendMsgBuf[8] = {0};
-
-	// For debugging
-//	printf("\r\n===========SBC_ReceptionHandler===========\r\n");
-//	printf("id:\t%d\r\nsize:\t%d\r\n",id,size);
-//	printf("data: ");
-	//transfer SBC msg buf into CAN msg buf
-	for ( i = 0 ; i < size ; i++){
-		//printf("%d\t",recvMsgBuf[i+2]);
-		CAN_sendMsgBuf[i] = recvMsgBuf[i+2];
-	}
-
-	if (id != 5){
-		printf("hello?!");
-	}
-	//send msg
-	CAN_SendMsg(id,CAN_sendMsgBuf,size);
-}
 
 void Enable_Uart_Int()
 {
 	HAL_NVIC_SetPriority(USART2_IRQn,3,0);
 	HAL_NVIC_EnableIRQ(USART2_IRQn); //enable timer
-
-	SBC_recvMsg_WP = 0;
-	HAL_UART_Receive_IT(&huart2, (uint8_t*)(SBC_recvMsgBuf) , 2500);	//start receiving in interrupt mode, 32 byte buffer
+	SBC_msgPending = 0;
+	SBC_msgRdy = 0;
+	HAL_UART_Receive_IT(&huart2, &SBC_recvByte , 1);	//start receiving in interrupt mode, 32 byte buffer
 
 }
 
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	SBC_recvMsg_WP = 0;
-	HAL_UART_Receive_IT(&huart2, SBC_recvMsgBuf , 2500);	//start receiving in same buffer
+	if (SBC_recvByte == START_BYTE){
+		HAL_UART_Receive_IT(&huart2, &SBC_recvByte , 1);	//start receiving in interrupt mode, 32 byte buffer
+		SBC_msgPending ++ ;
+	}
+
+	else if (SBC_msgPending == 1 && SBC_recvByte == START_BYTE){//2 bytes are received ,read id next
+		HAL_UART_Receive_IT(&huart2, &SBC_recvId , 1);	//start receiving in same buffer
+		SBC_msgPending ++;
+	}
+
+	else if (SBC_msgPending == 2){ //read size next
+		HAL_UART_Receive_IT(&huart2, &SBC_recvSize , 1);	//start receiving in same buffer
+		SBC_msgPending ++;
+	}
+	else if (SBC_msgPending == 3){
+		HAL_UART_Receive_IT(&huart2, &SBC_recvMsgBuf , SBC_recvSize);	//start receiving in same buffer
+		SBC_msgPending ++;
+	}
+	else if (SBC_msgPending == 4){ //msg received
+		SBC_msgRdy = 1;
+		SBC_msgPending = 0;
+		HAL_UART_Receive_IT(&huart2, &SBC_recvByte , 1);	//continue listen
+	}
+	else{
+		HAL_UART_Receive_IT(&huart2, &SBC_recvByte , 1);	//continue listen
+		SBC_msgPending = 0;
+	}
 }
 
 

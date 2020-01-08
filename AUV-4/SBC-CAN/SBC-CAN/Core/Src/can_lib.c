@@ -16,6 +16,14 @@ void CAN_Begin(uint32_t Mode){
 		Error_Handler();
 	}
 	*/
+
+	if (HAL_CAN_ActivateNotification(&hcan,
+			 CAN_IT_RX_FIFO0_OVERRUN
+			| CAN_IT_RX_FIFO1_OVERRUN) != HAL_OK)
+	{
+		Error_Handler();
+	}
+
 	// set default filter
 	CAN_InitFilter();
 	if( HAL_CAN_GetState(&hcan) != HAL_CAN_STATE_READY)
