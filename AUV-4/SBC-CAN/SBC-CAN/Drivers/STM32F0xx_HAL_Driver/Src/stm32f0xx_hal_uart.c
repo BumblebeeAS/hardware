@@ -159,6 +159,11 @@
 #include "main.h"
 extern	uint8_t SBC_msgPending;
 extern 	uint8_t SBC_msgEnd;
+extern 	uint16_t SBC_recvMsg_RP;
+extern 	uint16_t SBC_recvMsg_WP;
+extern uint8_t SBC_msgSize;
+extern uint8_t SBC_msgRdy;
+
 
 /** @addtogroup STM32F0xx_HAL_Driver
   * @{
@@ -3643,11 +3648,30 @@ static void UART_RxISR_8BIT(UART_HandleTypeDef *huart)
     huart->pRxBuffPtr++;
     huart->RxXferCount--;
 
+
     //detected start byte
-    if (uhdata == START_BYTE)
-    	SBC_msgPending = 1;
-    if (SBC_msgPending != 0)
+    if (uhdata == START_BYTE ){
+    	SBC_recvMsg_RP =  SBC_recvMsg_WP + 1; //update first msg position (ID)
     	SBC_msgPending ++;
+    }
+//    }
+//    if (SBC_msgPending >= 2){
+//    	SBC_msgPending ++;
+//    }
+//    if (SBC_msgPending == 5){		//this is 5 as SBC_msgPending is incremented twice when = 2
+//    	SBC_msgSize = uhdata + 1;	//hack job, to offset double subtracting
+//    	//SBC_msgPending ++ ; //to avoid going into this branch again
+//    }
+//    if (SBC_msgPending && SBC_msgSize < 10 ){ 	//if there is msg, countdown
+//    	SBC_msgSize --;
+//    }
+//    if (SBC_msgSize == 0){//count down finish
+//    	SBC_msgRdy = 1;
+//    }
+
+    //update ringbuffer pointer
+    SBC_recvMsg_WP ++;
+
 
 
 

@@ -20,11 +20,6 @@ extern "C" {
 #define CAN_PCB_STAT 3
 
 
-typedef struct SBC_recvMsgBuf_Type {	//ping-pong msg buffer
-	uint8_t SBC_recvMsgBuf1[32];
-	uint8_t SBC_recvMsgBuf2[32];
-} SBC_recvMsgBuf_Type;
-
 uint32_t Error_Status;	//all error reports are described here
 							//Initialised in system_Begin();
 

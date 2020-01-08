@@ -31,6 +31,7 @@
 
 /*#############Private############*/
 
+ //extern uint32_t Error_status;
 CAN_TxHeaderTypeDef TxHeader;		//Node-specific TxHeader
 CAN_RxHeaderTypeDef RxHeader; 		//place where the received header will be stored
 uint8_t recv_databuf[8];			//place where the received msg will be stored
