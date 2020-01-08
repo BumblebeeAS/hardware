@@ -3,10 +3,12 @@
 
 
 //SBC receive buffer
-uint8_t SBC_recvMsgBuf[32] = {0};
-uint8_t SBC_recvByte = 0;
-uint8_t SBC_recvId = 0;
-uint8_t SBC_recvSize = 0;
+uint8_t SBC_recvMsgBuf[256] = {0};
+uint8_t SBC_WP = 0;
+uint8_t SBC_RP = 0;
+uint8_t SBC_Last_RP = 0;	//use to see if new msg is coming in
+
+
 //sbc control variables
 uint8_t SBC_msgRdy = 0;
 uint8_t SBC_msgPending = 0;		//start byte
@@ -16,13 +18,10 @@ uint32_t RxFifo = 10;
 //Timer tick
 uint32_t TIM_Tick = 0;
 
-uint32_t tick_50hz = 0;
-uint32_t tick_10hz = 0;
-uint32_t tick_20hz = 0;
-uint32_t tick_70hz = 0;
 
 uint32_t cnt = 0;
-uint32_t bandwidth_tick = 0;
+uint32_t tick = 0;
+uint8_t pwr = 0;
 
 int main(void)
 {
@@ -43,20 +42,8 @@ int main(void)
   while (1)
   {
 
-//	  if (cnt == 1){
-//		  bandwidth_tick = HAL_GetTick();
-//	  }
-//	  if (cnt == 4999){
-//		  bandwidth_tick = HAL_GetTick() - bandwidth_tick;
-//		  HAL_Delay(1000);
-//	  }
-	  if (SBC_msgRdy){//Msg received, new msg size is updated. If size>8 -> invalid
-
+	  if (SBC_Last_RP != SBC_RP){	//New msg detected
 		  SBC_Routine();
-		  cnt ++;
-		  SBC_msgRdy = 0;
-
-		 // SBC_msgRdy = 0;
 	  }
 
 	  RxFifo = CAN_CheckReceive();
@@ -64,29 +51,6 @@ int main(void)
 		  CAN_Routine();
 	  }
 
-
-	  //test can inspector
-//	  while (1)
-//	  {
-//		  uint8_t msg[8] = {5};
-//		  if ((HAL_GetTick()-tick_50hz) > 20){
-//			  CAN_SendMsg(0,msg,8);
-//			  tick_50hz = HAL_GetTick();
-//		  }
-//		  if ((HAL_GetTick()-tick_10hz) > 100){
-//			  CAN_SendMsg(1,msg,8);
-//			  tick_10hz = HAL_GetTick();
-//		  }
-//		  if ((HAL_GetTick()-tick_20hz) > 50){
-//			  CAN_SendMsg(2,msg,8);
-//			  tick_20hz = HAL_GetTick();
-//		  }
-//		  if ((HAL_GetTick()-tick_70hz) > 14){
-//			  CAN_SendMsg(3,msg,8);
-//			  tick_70hz = HAL_GetTick();
-//		  }
-//
-//	  }
 
 	  // error message
 
@@ -104,11 +68,24 @@ int main(void)
 // SBC msg -> CAN msg routine
 void SBC_Routine()
 {
-	CAN_SendMsg(SBC_recvId,SBC_recvMsgBuf,SBC_recvSize);
-//	if (CAN_id == power control){
-//		toggle
-//	}
-
+	uint8_t Id = SBC_recvMsgBuf[SBC_RP];
+	uint8_t Size = SBC_recvMsgBuf[SBC_RP+1];
+	if (SBC_RP > 243 && SBC_WP < 12 && ((255-SBC_RP)+SBC_WP) < (Size) ){	//boundary condition
+		return;
+	}
+	else if ( ((SBC_WP - SBC_RP) < Size+1 ) && !(SBC_RP > 243 && SBC_WP < 12)) {	//Msg having complete yet
+		return;
+	}
+	else{//msg complete
+		if (Id == 3){ //power control
+			CAN_PowerCtrl(SBC_recvMsgBuf+SBC_RP+2);
+		}
+		else {	//publish SBC msg
+			CAN_SendMsg(Id,SBC_recvMsgBuf+SBC_RP+2,Size);
+			SBC_Last_RP = SBC_RP;
+			  cnt ++;
+		}
+	}
 }
 
 
@@ -118,40 +95,26 @@ void Enable_Uart_Int()
 	HAL_NVIC_EnableIRQ(USART2_IRQn); //enable timer
 	SBC_msgPending = 0;
 	SBC_msgRdy = 0;
-	HAL_UART_Receive_IT(&huart2, &SBC_recvByte , 1);	//start receiving in interrupt mode, 32 byte buffer
+	HAL_UART_Receive_IT(&huart2, SBC_recvMsgBuf , 1);	//start receiving in interrupt mode, 32 byte buffer
 
 }
 
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	if (SBC_recvByte == START_BYTE){
-		HAL_UART_Receive_IT(&huart2, &SBC_recvByte , 1);	//start receiving in interrupt mode, 32 byte buffer
-		SBC_msgPending ++ ;
-	}
-
-	else if (SBC_msgPending == 1 && SBC_recvByte == START_BYTE){//2 bytes are received ,read id next
-		HAL_UART_Receive_IT(&huart2, &SBC_recvId , 1);	//start receiving in same buffer
-		SBC_msgPending ++;
-	}
-
-	else if (SBC_msgPending == 2){ //read size next
-		HAL_UART_Receive_IT(&huart2, &SBC_recvSize , 1);	//start receiving in same buffer
-		SBC_msgPending ++;
-	}
-	else if (SBC_msgPending == 3){
-		HAL_UART_Receive_IT(&huart2, &SBC_recvMsgBuf , SBC_recvSize);	//start receiving in same buffer
-		SBC_msgPending ++;
-	}
-	else if (SBC_msgPending == 4){ //msg received
-		SBC_msgRdy = 1;
-		SBC_msgPending = 0;
-		HAL_UART_Receive_IT(&huart2, &SBC_recvByte , 1);	//continue listen
-	}
-	else{
-		HAL_UART_Receive_IT(&huart2, &SBC_recvByte , 1);	//continue listen
+	if (SBC_msgPending == 4){
+		SBC_RP = SBC_WP - 2;	//move RP to ID
 		SBC_msgPending = 0;
 	}
+	else if (SBC_msgPending >= 2){	//wait 2 more bytes for size data
+		SBC_msgPending ++;
+	}
+	else if ( *(SBC_recvMsgBuf + SBC_WP) == START_BYTE){
+		SBC_msgPending ++;	//count no of start bytes
+	}
+
+	SBC_WP++;	//Update write pointer
+	HAL_UART_Receive_IT(&huart2, SBC_recvMsgBuf + SBC_WP , 1);	//start receiving in interrupt mode, 32 byte buffer
 }
 
 
@@ -207,8 +170,7 @@ void CAN_PowerCtrl(uint8_t* recvMsgBuf)
 	uint8_t i = 0;
 	uint8_t PwrCtrl = recvMsgBuf[0];
 	for ( i = 0 ; i < 8 ; i ++){
-		PwrCtrl = PwrCtrl >> i; //Check each bit in the msg;
-		if ((PwrCtrl & 0x01)){	//If control bit is set
+		if ((PwrCtrl >> i) & 0x01){	//If control bit is set
 			switch (i) {
 				case 0 :
 					HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0,GPIO_PIN_SET);
@@ -216,28 +178,59 @@ void CAN_PowerCtrl(uint8_t* recvMsgBuf)
 				case 1 :
 					HAL_GPIO_WritePin(GPIOB,GPIO_PIN_1,GPIO_PIN_SET);
 					break;
-				case 2 :
+				case 2 ://prob
 					HAL_GPIO_WritePin(GPIOB,GPIO_PIN_3,GPIO_PIN_SET);
 					break;
-				case 3 :
+				case 3 : //prob
 					HAL_GPIO_WritePin(GPIOB,GPIO_PIN_4,GPIO_PIN_SET);
 					break;
-				case 4 :
+				case 4 : //prb
 					HAL_GPIO_WritePin(GPIOB,GPIO_PIN_5,GPIO_PIN_SET);
 					break;
-				case 5 :
+				case 5 ://prob
 					HAL_GPIO_WritePin(GPIOB,GPIO_PIN_6,GPIO_PIN_SET);
 					break;
-				case 6 :
+				case 6 ://prob
 					HAL_GPIO_WritePin(GPIOB,GPIO_PIN_7,GPIO_PIN_SET);
 					break;
-				case 7 :
+				case 7 ://prob
 					HAL_GPIO_WritePin(GPIOA,GPIO_PIN_15,GPIO_PIN_SET);
 					break;
 				default:
 					break;
 			}
 		}
+		else {	//If control bit is not set
+			switch (i) {
+				case 0 :
+					HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0,GPIO_PIN_RESET);
+					break;
+				case 1 :
+					HAL_GPIO_WritePin(GPIOB,GPIO_PIN_1,GPIO_PIN_RESET);
+					break;
+				case 2 :
+					HAL_GPIO_WritePin(GPIOB,GPIO_PIN_3,GPIO_PIN_RESET);
+					break;
+				case 3 :
+					HAL_GPIO_WritePin(GPIOB,GPIO_PIN_4,GPIO_PIN_RESET);
+					break;
+				case 4 :
+					HAL_GPIO_WritePin(GPIOB,GPIO_PIN_5,GPIO_PIN_RESET);
+					break;
+				case 5 :
+					HAL_GPIO_WritePin(GPIOB,GPIO_PIN_6,GPIO_PIN_RESET);
+					break;
+				case 6 :
+					HAL_GPIO_WritePin(GPIOB,GPIO_PIN_7,GPIO_PIN_RESET);
+					break;
+				case 7 :
+					HAL_GPIO_WritePin(GPIOA,GPIO_PIN_15,GPIO_PIN_RESET);
+					break;
+				default:
+					break;
+				}
+		}
+		HAL_Delay(10);
 	}
 
 }
