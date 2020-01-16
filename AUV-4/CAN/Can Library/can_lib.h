@@ -130,8 +130,9 @@ uint32_t CAN_GetId();
 /**
   * @brief  Setup a Tx Can Frame.
   * 		Can Frame accepts up to 8 bytes of data
-  * 		If the data is outside of range -127 < data < 127, len > 1 and data is sent
+  * 		If the data is more than 8 bits, it will automatically disassemble
   * 		in MSB ( in the upper array pos) and LSB ( in the lower array pos)
+  * 		the end+1 position will be returned.
   * @param1 TxMsg[]	Msg buffer to be sent
   * 				array size must be no more than 8
   * @param2 start_pos 	start position of where data is to be written
@@ -139,10 +140,11 @@ uint32_t CAN_GetId();
   * @param3 len		Full Length of the Msg
   * 				1 - 8
   * @param4 val 	value to be saved to the Msg buffer
-  * @retval None
+  * @retval 		return the end+1 position. (the position where new data is ready to fill in.)
+  * 				return 10 if buffer is out of bound.
   */
 
-void CAN_SetMsgFrame(int8_t TxMsg[], uint8_t start_pos, uint8_t len, int32_t val);
+uint8_t CAN_SetMsgFrame(uint8_t TxMsg[], uint8_t start_pos, uint8_t len, uint32_t val)
 
 
 /**
@@ -157,7 +159,7 @@ void CAN_SetMsgFrame(int8_t TxMsg[], uint8_t start_pos, uint8_t len, int32_t val
   * 					1 - 8
   * @retval Parsed Msg
   */
-int32_t CAN_ParseMsgFrame(int8_t RxMsg[], uint8_t start_pos, uint8_t stop_pos , uint8_t len);
+uint32_t CAN_ParseMsgFrame(uint8_t RxMsg[], uint8_t start_pos, uint8_t stop_pos , uint8_t len);
 
 // Initially Used for debugging
 void CAN_PrintMsgFrame(int8_t Msg[],uint8_t len);
