@@ -111,29 +111,35 @@ uint32_t CAN_CheckReceive()
 uint32_t CAN_GetId(){
 	return RxHeader.StdId;
 }
-
-void CAN_SetMsgFrame(int8_t TxMsg[], uint8_t start_pos, uint8_t len, int32_t val)
+uint8_t CAN_SetMsgFrame(uint8_t TxMsg[], uint8_t start_pos, uint8_t len, uint32_t val)
 {
-	uint8_t i;
-	uint8_t required_bytes;  	// required bytes = abs(data) // 128 + 1
-	if (val < 0){
-		required_bytes = (val ^ -1) + 1;	// flip sign. 2's complement
-	}
-	required_bytes = required_bytes / 128 + 2;	// number of bytes + 1 (upper bound of for-loop)
+	uint8_t offset = 0;
+	uint8_t error = 0;
 
-	for (i = 0; i < required_bytes ; i++){
-		// LSB in the lower pos, MSB in the upper pos
-		TxMsg[i+start_pos] = val >> (8 * i);
+	while ( (val>>(8*offset)) != 0){
+		// for example, if val = 0b01111000001001011, shift val 8 bits to the right each time.
+		// check if val == 0 after shifting it. If val = 0, the process is over.
+		TxMsg[offset+start_pos] = (val >> (8*offset));
+		offset ++;
+		if ((offset + start_pos) >= len){
+			error = 1;	//exceed the maximum buffer
+			break;
+		}
 	}
+
+	if (error)
+		return 10;	//10 means error
+	else
+		return (offset + start_pos);	//return end position + 1.
 
 }
 
-int32_t CAN_ParseMsgFrame(int8_t RxMsg[], uint8_t start_pos, uint8_t stop_pos, uint8_t len)
+uint32_t CAN_ParseMsgFrame(uint8_t RxMsg[], uint8_t start_pos, uint8_t stop_pos, uint8_t len)
 {
-	int32_t val = 0;
-	uint8_t i;
+	uint32_t val = 0;
+	uint8_t i = 0;
 	for ( i = 0 ; i < stop_pos-start_pos ; i ++){
-		val += RxMsg[i+start_pos] << 8 * i;
+		val |= (RxMsg[i+start_pos] << (8 * i));
 	}
 	return val;
 }
@@ -148,7 +154,7 @@ void CAN_PrintMsgFrame(int8_t Msg[],uint8_t len)
 	printf("\r\n");
 }
 
-
+/*
 void CAN_UpdateError()
 {
 	  uint32_t error;
@@ -181,6 +187,7 @@ void CAN_UpdateError()
 		  break;
 	  }
 }
+*/
 
 
 
