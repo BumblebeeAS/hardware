@@ -4,17 +4,16 @@
 
 //SBC receive buffer
 uint8_t SBC_recvMsgBuf[256] = {0};
-uint8_t SBC_WP = 0;
-uint8_t SBC_RP = 0;
-uint8_t SBC_Last_RP = 0;	//use to see if new msg is coming in
+uint8_t SBC_WP = 0;			// this is updated whenever a byte comes in, could be rubbish data
+uint8_t SBC_RP = 0;			// this is updated when a valid message is detected and point to the first msg byte (Id)
+uint8_t SBC_Last_RP = 0;	// this is updated when a message is executed. Compare this pointer to SBC_RP to check if new message has come in
 //sbc control variables
 uint8_t SBC_msgPending = 0;		//start byte
 
 //CAN receive buffer
 uint8_t CAN_recvMsgBuf[256] = {0};
-uint8_t CAN_WP = 0;
-uint8_t CAN_RP = 0;
-uint8_t CAN_Last_RP = 0;	//use to see if new msg is coming in
+uint8_t CAN_WP = 0;	//This always points to to the end of the last message. So simply need to compare RP with WP/
+uint8_t CAN_RP = 0;	//LAST_RP is not needed in this case as a CAN message will always be valid. (Filtered by CAN controller)
 //CAN control variables
 uint32_t RxFifo = 10;
 
@@ -37,6 +36,9 @@ int main(void)
 
   CAN_Begin(CAN_MODE_NORMAL);		//CAN begin
   CAN_SetAllFilters();
+	CAN_RecvMsg(CAN_RX_FIFO1,CAN_recvMsgBuf+CAN_WP+2);	//save 1 space for ID and 1 for len
+	CAN_RecvMsg(CAN_RX_FIFO0,CAN_recvMsgBuf+CAN_WP+2);	//save 1 space for ID and 1 for len
+
 
 
   Enable_Uart_Int();		//start listening to SBC
@@ -46,12 +48,18 @@ int main(void)
   while (1)
   {
 
-	  if (SBC_Last_RP != SBC_RP){	//New msg detected
+	  if (SBC_Last_RP != SBC_RP){
 		  SBC_Routine();
 	  }
 
-	  if (CAN_Last_RP != CAN_RP ){ //if there is msg in RxFifos
+	  if (CAN_RP != CAN_WP ){ //if there is msg in RxFifos
 		  CAN_Routine();
+	  }
+
+	  if ((HAL_GetTick() - tick) > 100){
+		  uint8_t heartbeatId[1] = {2}; //sbc_can id
+		  tick = HAL_GetTick();
+		  CAN_SendMsg(6,heartbeatId,1); //id,msg,len
 	  }
 
 	  // error message
@@ -124,7 +132,9 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 	CAN_recvMsgBuf[CAN_WP] = (uint8_t) (RxHeader.StdId);	//upper
 	CAN_recvMsgBuf[CAN_WP+1] = (uint8_t) (RxHeader.DLC);	//len
 	CAN_WP += RxHeader.DLC + 2;	//incrememnt WP
+
 }
+
 
 void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
@@ -154,8 +164,8 @@ void CAN_Routine()
 			SBC_sendMsgBuf[i+4] = CAN_recvMsgBuf[CAN_RP+2+i];
 		}
 		HAL_UART_Transmit(&huart2, SBC_sendMsgBuf, (4 + Size), 1);
-		CAN_Last_RP = CAN_RP;
 	}
+	CAN_RP += (2 + Size);
 }
 
 
