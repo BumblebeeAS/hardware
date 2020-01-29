@@ -24,9 +24,6 @@ extern "C" {
 uint32_t Error_Status;	//all error reports are described here
 							//Initialised in system_Begin();
 
-
-
-void Enable_Uart_Int();
 void Enable_TIM17(void);
 void SystemClock_Config(void);
 void System_Begin();
@@ -36,17 +33,18 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 
 void Error_Handler();
 
-void SBC_ReceptionHandler(uint8_t *recvMsgBuf);
-void SBC_ResetBuf(uint8_t *buf);
-void Enable_Uart_Int();
+void UART_RecvStart();
+uint8_t UART_OverRun();
+void UART_ClearOverRun();
+void CAN_RecvStart();
 
 
 void SBC_Routine();
 void CAN_Routine();
 
 void CAN_SetAllFilters();
-void CAN_ReceptionHandler(uint8_t* recvMsgBuf);
 void CAN_PowerCtrl(uint8_t* recvMsgBuf);
+void CAN_SendHeartBeat();
 
 
 

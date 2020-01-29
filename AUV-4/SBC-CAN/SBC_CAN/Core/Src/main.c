@@ -5,7 +5,6 @@ uint8_t* SBC_recvMsgBuf;
 uint8_t SBC_WP = 0;
 uint8_t SBC_RP = 0;
 uint8_t SBC_full = 0;
-uint8_t SBC_Ctrl = 0;
 uint8_t SBC_sendMsgBuf[16] = {0};
 
 //CAN receive buffer
@@ -17,43 +16,26 @@ uint8_t CAN_full = 0;
 //Timer tick
 uint32_t TIM_Tick = 0;
 uint32_t tick = 0;
-
 int main(void)
 {
-  System_Begin();			//system and peripheral begin
+  System_Begin();			//system and peripheral begin, create SBC & CAN buffer
   RetargetInit(&huart1);	//Printf through FTDI
   //Enable_TIM17();			//timer17 interrupt
 
-  //allocate memory for SBC buffer and CAN buffer
-  SBC_recvMsgBuf = (uint8_t*) malloc(256*sizeof(uint8_t));
-  CAN_recvMsgBuf = (uint8_t*) malloc(256*sizeof(uint8_t));
-
-  if (SBC_recvMsgBuf == NULL || CAN_recvMsgBuf == NULL){
-	  printf("\r\n====Memory not allocated====\r\n");
-  } else {	//initialise memory
-	  uint32_t i = 0;
-	  for (i = 0 ; i < 256 ; i++){
-		  SBC_recvMsgBuf[i] = 0;
-		  CAN_recvMsgBuf[i] = 0;
-	  }
-  }
-
-
   CAN_Begin(CAN_MODE_NORMAL);		//CAN begin
   CAN_SetAllFilters();
-  CAN_RecvMsg(CAN_RX_FIFO1,CAN_recvMsgBuf+CAN_WP+2);	//save 1 space for ID and 1 for len
-  CAN_RecvMsg(CAN_RX_FIFO0,CAN_recvMsgBuf+CAN_WP+2);	//save 1 space for ID and 1 for len
-  Enable_Uart_Int();		//start listening to SBC
 
   printf("\r\n====Hi! I am SBC-CAN AUV4.0!====\r\n");
+
+  UART_RecvStart();		//start listening to SBC
+  CAN_RecvStart();
+
   while (1)
   {
-	  //Catch for overrun
-		if ((huart2.Instance->ISR >> 3)&0x01){
-			huart2.Instance->ICR |= (1 << 3);
-			SBC_WP ++;
-			HAL_UART_Receive_IT(&huart2, SBC_recvMsgBuf + SBC_WP , 1);
-		}
+	  //Ignore Overrun and reset
+	  if (UART_OverRun()){
+		  UART_ClearOverRun();
+	  }
 
 	  if (SBC_WP != SBC_RP){
 		  SBC_Routine();
@@ -64,12 +46,8 @@ int main(void)
 	  }
 
 	  if ((HAL_GetTick() - tick) > 500){
-		  uint8_t heartbeatId[1] = {2}; //sbc_can id
-		  tick = HAL_GetTick();
-		  CAN_SendMsg(6,heartbeatId,1); //id,msg,len
+		  CAN_SendHeartBeat();
 	  }
-
-
   }
 
 }
@@ -117,7 +95,7 @@ void SBC_Routine()
 }
 
 
-void Enable_Uart_Int()
+void UART_RecvStart()
 {
 	HAL_NVIC_SetPriority(USART2_IRQn,3,0);
 	HAL_NVIC_EnableIRQ(USART2_IRQn); //enable timer
@@ -125,16 +103,37 @@ void Enable_Uart_Int()
 }
 
 
+uint8_t UART_OverRun()
+{
+	return ((huart2.Instance->ISR >> 3)&0x01);
+}
+
+
+void UART_ClearOverRun(){
+	huart2.Instance->ICR |= (1 << 3);
+	SBC_WP ++;
+	HAL_UART_Receive_IT(&huart2, SBC_recvMsgBuf + SBC_WP , 1);
+}
+
+
+void CAN_RecvStart()
+{
+	CAN_RecvMsg(CAN_RX_FIFO1,CAN_recvMsgBuf+CAN_WP+2);	//save 1 space for ID and 1 for len
+	CAN_RecvMsg(CAN_RX_FIFO0,CAN_recvMsgBuf+CAN_WP+2);	//save 1 space for ID and 1 for len
+}
+
+
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 
 	SBC_WP++;	//Update write pointer
-	if ((((SBC_RP-SBC_WP)&0x00FF < 12) || SBC_full)&&(SBC_RP!=SBC_WP)){//no space to store another message
+	if (((((SBC_RP-SBC_WP)&0x00FF) < 12) || SBC_full)&&(SBC_RP!=SBC_WP)){//no space to store another message
 		SBC_full = 1;
 		return;
 	}
 	HAL_UART_Receive_IT(&huart2, SBC_recvMsgBuf + SBC_WP , 1);
 }
+
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
 	uint8_t i = 0;
@@ -151,7 +150,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 	CAN_WP += RxHeader.DLC + 2;	//increment WP
 
 	//if no space to receive another full length message
-	if ((((CAN_RP-CAN_WP)&0x00FF < 10)&&(CAN_RP!=CAN_WP)) || CAN_full){
+	if (((((CAN_RP-CAN_WP)&0x00FF) < 10)&&(CAN_RP!=CAN_WP)) || CAN_full){
 		CAN_full = 1;
 		return;
 	}
@@ -167,7 +166,7 @@ void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
 	CAN_WP += RxHeader.DLC + 2;	//increment WP
 
 	//if no space to receive another full length message
-	if ((((CAN_RP-CAN_WP)&0x00FF < 10)&&(CAN_RP!=CAN_WP)) || CAN_full){
+	if (((((CAN_RP-CAN_WP)&0x00FF) < 10)&&(CAN_RP!=CAN_WP)) || CAN_full){
 		CAN_full = 1;
 		return;
 	}
@@ -280,7 +279,11 @@ void CAN_PowerCtrl(uint8_t* recvMsgBuf)
 
 }
 
-
+void CAN_SendHeartBeat(){
+	uint8_t heartbeatId[1] = {2}; //sbc_can id
+	tick = HAL_GetTick();
+	CAN_SendMsg(4,heartbeatId,1); //id,msg,len
+}
 
 
 
@@ -301,10 +304,6 @@ void CAN_SetAllFilters()
 	CAN_SetFilter(0x00, 0x00, 0x00, 0x00, 2, CAN_RX_FIFO1);
 
 }
-
-
-
-
 
 
 //enable NVIC, reset TIM_Tick and starts TIM17 (base mode)
@@ -335,8 +334,19 @@ void System_Begin()
 	OB_TypeDef Res;
 	Res.USER |= ((1 << 1) | (1 << 2));	//disable stop mode and sleep mode
 	//RCC_TypeDef RCC_S;
-	//RCC_S.CSR;	//disable reset upon stop /sleep mode
-	  	  	  	  	 //This registerreport why chip reseted
+	//RCC_S.CSR;	//This registerreport why chip reseted
+
+	//allocate memory for SBC buffer and CAN buffer
+	do{
+		SBC_recvMsgBuf = (uint8_t*) malloc(256*sizeof(uint8_t));
+		CAN_recvMsgBuf = (uint8_t*) malloc(256*sizeof(uint8_t));
+	} while (SBC_recvMsgBuf == NULL || CAN_recvMsgBuf == NULL);
+
+	uint32_t i = 0;
+	for (i = 0 ; i < 256 ; i++){
+		SBC_recvMsgBuf[i] = 0;
+		CAN_recvMsgBuf[i] = 0;
+	}
 }
 
 
@@ -360,7 +370,6 @@ void SystemClock_Config(void)
 //  {
 //    Error_Handler();
 //  }
-
 
   // Start HSE
   // Remember to change HSE_VALUE definition to 32000000
@@ -420,10 +429,7 @@ void Error_Handler()
 			PrintError(i);
 		}
 	}
-
-
 	while(1);
-
 }
 
 
