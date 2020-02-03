@@ -46,12 +46,14 @@ void CAN_SendMsg(uint32_t id,  uint8_t* Msg, uint8_t len)
 	CAN_Config_TxHeader(id, len);
 	// send msg
 
-	if (HAL_CAN_AddTxMessage(&hcan,&TxHeader, Msg, &TxMailbox )!= HAL_OK){	//valid error condition
-		Error_Status |= 1 << CAN_SENDMSG_ERROR;
-		Error_Handler();
+	uint32_t CAN_tick = HAL_GetTick();
+	while ((HAL_GetTick() - CAN_tick)<3){	//3ms
+		if (HAL_CAN_AddTxMessage(&hcan,&TxHeader, Msg, &TxMailbox )== HAL_OK){	//valid error condition
+//			Error_Status |= 1 << CAN_SENDMSG_ERROR;
+//			Error_Handler();
+			break;
+		}
 	}
-
-
 }
 
 uint32_t CAN_RecvMsg(uint32_t RxFifo, uint8_t* recvMsg)

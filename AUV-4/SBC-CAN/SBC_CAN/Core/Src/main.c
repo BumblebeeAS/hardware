@@ -6,6 +6,7 @@ uint8_t SBC_WP = 0;
 uint8_t SBC_RP = 0;
 uint8_t SBC_full = 0;
 uint8_t SBC_sendMsgBuf[16] = {0};
+uint8_t SBC_sendCplt = 1;
 
 //CAN receive buffer
 uint8_t* CAN_recvMsgBuf;
@@ -16,8 +17,13 @@ uint8_t CAN_full = 0;
 //Timer tick
 uint32_t TIM_Tick = 0;
 uint32_t tick = 0;
+
+//Test
+uint32_t cnt = 0;
+
 int main(void)
 {
+
   System_Begin();			//system and peripheral begin, create SBC & CAN buffer
   RetargetInit(&huart1);	//Printf through FTDI
   //Enable_TIM17();			//timer17 interrupt
@@ -82,6 +88,7 @@ void SBC_Routine()
 		}
 		else {	//publish SBC msg
 			CAN_SendMsg(Id,SBC_recvMsgBuf+SBC_RP+2,Size);
+			cnt ++;
 		}
 		SBC_RP += (2 + Size);	//update RP
 
@@ -136,10 +143,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
-	uint8_t i = 0;
-	for (i = 0 ; i < 16 ; i++){
-		SBC_sendMsgBuf[i] = 0;
-	}
+	SBC_sendCplt = 1;
+//	uint8_t i = 0;
+//	for (i = 0 ; i < 16 ; i++){
+//		SBC_sendMsgBuf[i] = 0;
+//	}
 }
 
 
@@ -186,7 +194,8 @@ void CAN_Routine()
 		CAN_PowerCtrl(CAN_recvMsgBuf+CAN_RP+2);
 	}
 
-	else{	//send SBC Msg
+	else if (SBC_sendCplt){	//send SBC Msg
+		SBC_sendCplt = 0;
 		SBC_sendMsgBuf[0] = START_BYTE;
 		SBC_sendMsgBuf[1] = START_BYTE;
 		SBC_sendMsgBuf[2] = Id;
@@ -195,10 +204,23 @@ void CAN_Routine()
 		for ( i = 0 ; i < Size ; i++){	//fill msg
 			SBC_sendMsgBuf[4+i] = CAN_recvMsgBuf[CAN_RP+2+i];
 		}
-		HAL_UART_Transmit_IT(&huart2, SBC_sendMsgBuf, (4 + Size));
+
+		uint32_t Timeout = HAL_GetTick();
+		uint8_t status = 0;
+		//make sure last UART interrupt is complete
+		while ( (HAL_GetTick() - Timeout) < 2 ){
+			status = HAL_UART_Transmit_IT(&huart2, SBC_sendMsgBuf, (4 + Size));
+			if (status == HAL_OK){
+				CAN_RP += (2 + Size);
+				break;
+			}
+		}
+		if (status != HAL_OK){
+			SBC_sendCplt = 1;
+			HAL_UART_AbortTransmit_IT(&huart2);
+		}
 	}
 
-	CAN_RP += (2 + Size);
 
 	if (CAN_full && (((CAN_RP-CAN_WP)&0x00FF) >= 20)){	//if there are at least 24 free space, continue buffer. Otherwise drop.
 		CAN_full = 0;
