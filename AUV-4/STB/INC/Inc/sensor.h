@@ -28,16 +28,10 @@
 #define MS5387_CONVERT_D2_8192    0x5A
 
 
-#define LED_RED 0x0000
-#define LED_YELLOW 0x0010
-#define LED_BLUE 0x0100
-#define LED_PURPLE 0x1000
-#define LED_GREEN 0x000A
-
 I2C_HandleTypeDef hi2c1;
 
 
-void init_IMU(void);
+void init_LSM6(void);
 
 void init_LIS3(void);
 
@@ -45,6 +39,8 @@ void LSM6_read(void);
 
 
 void LIS3_read(void);
+
+void HIH_init(void);
 
 void HIH_read(void);
 
