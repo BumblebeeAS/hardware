@@ -315,8 +315,8 @@ void screen_default(void){
 	  write_string("ST temp:");
 	  write_string("DNA press: ");
 	  write_string("XAVIER OK:");
+	  write_string("PCB OK");
 	  write_string("SBC-CAN OK:");
-	  write_string("PCB OK:");
 
 	  set_cursor(400,0);
 	  write_string("Batt1 Capacity:");
@@ -365,13 +365,13 @@ void write_state(uint32_t var){
 	}
 	else if(var==0x1111){
 		textColor(YELLOW,GREEN);
-		write_string("ON");
+		write_string("O N");
 	}
 }
 
 void write_value_int(uint32_t var){
 	drawRect(_x, _y, 130, 30, BLACK);
-	textTransparent(RED);
+	textTransparent(YELLOW);
 	if(var == 0xFFFF){
 		write_string("N/A");
 	}
@@ -466,3 +466,15 @@ void check_hb(void){
 	}
 }
 
+void update_screen_can_test(uint8_t i){
+	if(i%2==0){
+		for(uint8_t i=0;i<7;i++){
+			boardHB[i]=0xFFFF;
+		}
+	}
+	else if(i%2==1){
+		for(uint8_t i=0;i<7;i++){
+			boardHB[i]=0x1111;
+		}
+	}
+}
