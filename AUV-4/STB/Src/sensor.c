@@ -11,6 +11,8 @@
  uint8_t InitialP = 0;
  uint16_t rawExtPressure[8];
 
+ uint32_t HIH_read_loop=0;
+
  //raw ExtPressure data
  uint32_t D1;
  uint32_t D2;
@@ -27,7 +29,7 @@
   * @retval int
   */
 
-void init_IMU(void){
+void init_LSM6(void){
 	 //lsm6
  	  i2ctraBuf[0]=0x10;//CTRL1_XL
  	  i2ctraBuf[1]=0x80;
@@ -145,11 +147,14 @@ void LIS3_read(void){
 
 }
 
+void HIH_init(void){
+	HAL_I2C_Master_Transmit(&hi2c1,hih_addrt,0,0,10);
+}
+
 void HIH_read(void){
+	if(HIH_read_loop-HAL_GetTick()>=50){
     uint8_t read_byte,status_data;
 	uint16_t temperature_data,humidity_data;
-	HAL_I2C_Master_Transmit(&hi2c1,hih_addrt,0,0,10);
-	HAL_Delay(50);
 	HAL_I2C_Master_Receive(&hi2c1,hih_addrr,&i2crecBuf[0],4,10);
 	read_byte=i2crecBuf[0];
 	status_data=read_byte>>6;
@@ -166,6 +171,9 @@ void HIH_read(void){
 	temperature=temperature/(16384.0-1)*165-40;
 	internalStats[HUMIDITY]=humidity;
 	internalStats[ST_TEMP]=temperature;
+	HAL_I2C_Master_Transmit(&hi2c1,hih_addrt,0,0,10);
+	HIH_read_loop=HAL_GetTick();
+	}
 
 
 }
@@ -178,7 +186,7 @@ void IntPressure_read(void){
 	uint8_t prel=i2crecBuf[1];
 	uint16_t prec=(preh<<8)|prel;
 	uint16_t pressure=(prec-1638)*60/13107;
-	internalStats[INT_PRESS]=pressure+14.5;
+	internalStats[INT_PRESS]=prec;
 
 }
 
@@ -203,7 +211,7 @@ void ExtPress_read(void){
 	i2ctraBuf[0]=MS5387_ADC_READ;
 	HAL_I2C_Master_Transmit(&hi2c1,MS5387_addrt,i2ctraBuf,1,10);
 	HAL_I2C_Master_Receive(&hi2c1,MS5387_addrr,&i2crecBuf[0],3,10);
-	D1=i2crecBuf[0]<<16|i2crecBuf[1]<<8|i2crecBuf[2];
+	D1=(((i2crecBuf[0]<<16)|(i2crecBuf[1]<<8))|(i2crecBuf[2]));
 
 	i2ctraBuf[1]=MS5387_CONVERT_D2_8192;
 	HAL_I2C_Master_Transmit(&hi2c1,MS5387_addrt,i2ctraBuf,1,10);
@@ -211,7 +219,8 @@ void ExtPress_read(void){
 	i2ctraBuf[0]=MS5387_ADC_READ;
 	HAL_I2C_Master_Transmit(&hi2c1,MS5387_addrt,i2ctraBuf,1,10);
 	HAL_I2C_Master_Receive(&hi2c1,MS5387_addrr,&i2crecBuf[0],3,10);
-	D2=i2crecBuf[0]<<16|i2crecBuf[1]<<8|i2crecBuf[2];
+	D2=(((i2crecBuf[0]<<16)|(i2crecBuf[1]<<8))|(i2crecBuf[2]));
+	internalStats[EXT_PRESS]=D2;
 	Ext_Pressure_Cal();
 }
 
@@ -227,34 +236,34 @@ void Ext_Pressure_Cal(void){
 	int64_t SENS2 = 0;
 
 	// Terms called
-	uint32_t dt= (rawExtPressure[5])*256l;
+	uint32_t dt= (rawExtPressure[5])*(0x256l);
 	dT = D2-dt;
 
-	int32_t sen=(rawExtPressure[1])*32768l;
-	int32_t sens=(rawExtPressure[3])*dT/256l;
+	int32_t sen=(rawExtPressure[1])*(0x32768l);
+	int32_t sens=(rawExtPressure[3])*dT/(0x256l);
 	SENS = sen+sens;
 
-	int32_t of=(rawExtPressure[2])*65536l;
-	int32_t off=(rawExtPressure[4])*dT/128l;
+	int32_t of=(rawExtPressure[2])*(0x65536l);
+	int32_t off=(rawExtPressure[4])*dT/(0x128l);
 	OFF = of+off;
 
-	P = (D1*SENS/(2097152l)-OFF)/(8192l);
+	P = (D1*SENS/(0x2097152l)-OFF)/(0x8192l);
 
 	// Temp conversion
-	TEMP = 2000l+(dT)*rawExtPressure[6]/8388608LL;
+	TEMP = (0x2000l)+(dT)*rawExtPressure[6]/(0x8388608LL);
 
 	//Second order compensation
 		if((TEMP/100)<20){         //Low temp
-			Ti = (3*(dT)*(dT))/(8589934592LL);
+			Ti = (3*(dT)*(dT))/(0x8589934592LL);
 			OFFi = (3*(TEMP-2000)*(TEMP-2000))/2;
 			SENSi = (5*(TEMP-2000)*(TEMP-2000))/8;
 			if((TEMP/100)<-15){    //Very low temp
-				OFFi = OFFi+7*(TEMP+1500l)*(TEMP+1500l);
-				SENSi = SENSi+4*(TEMP+1500l)*(TEMP+1500l);
+				OFFi = OFFi+7*(TEMP+(0x1500l))*(TEMP+(0x1500l));
+				SENSi = SENSi+4*(TEMP+(0x1500l))*(TEMP+(0x1500l));
 			}
 		}
 		else if((TEMP/100)>=20){    //High temp
-			Ti = 2*(dT*dT)/(137438953472LL);
+			Ti = 2*(dT*dT)/(0x137438953472LL);
 			OFFi = (1*(TEMP-2000)*(TEMP-2000))/16;
 			SENSi = 0;
 		}
@@ -265,29 +274,33 @@ void Ext_Pressure_Cal(void){
 
 	TEMP = (TEMP-Ti);
 
-		P = (((D1*SENS2)/2097152l-OFF2)/8192l);
+		P = (((D1*SENS2)/(0x2097152l)-OFF2)/(0x8192l));
 		P = P*0.001f/10.0f;
 		internalStats[EXT_PRESS]=P;
 }
 
 
 void set_led(uint16_t color){
-	switch(color){
-	case(LED_GREEN):
-			HAL_GPIO_WritePin(GPIOA,GPIO_PIN_4,GPIO_PIN_SET);
-	case(LED_BLUE):
-			HAL_GPIO_WritePin(GPIOA,GPIO_PIN_5,GPIO_PIN_SET);
-	case(LED_RED):
-			HAL_GPIO_WritePin(GPIOA,GPIO_PIN_6,GPIO_PIN_SET);
-	case(LED_YELLOW):
-			HAL_GPIO_WritePin(GPIOA,GPIO_PIN_4,GPIO_PIN_SET);
-	        HAL_GPIO_WritePin(GPIOA,GPIO_PIN_6,GPIO_PIN_SET);
-	case(LED_PURPLE):
-		    HAL_GPIO_WritePin(GPIOA,GPIO_PIN_5,GPIO_PIN_SET);
-	        HAL_GPIO_WritePin(GPIOA,GPIO_PIN_6,GPIO_PIN_SET);
+	if((color&0b00000001)==1){
+		HAL_GPIO_WritePin(GPIOA,GPIO_PIN_4,GPIO_PIN_SET);
+	}
+	if((color&0b00000010)==1){
+		HAL_GPIO_WritePin(GPIOA,GPIO_PIN_4,GPIO_PIN_RESET);
 	}
 
+	if((color&0b00000100)==1){
+		HAL_GPIO_WritePin(GPIOA,GPIO_PIN_5,GPIO_PIN_SET);
+	}
+	if((color&0b00001000)==1){
+		HAL_GPIO_WritePin(GPIOA,GPIO_PIN_5,GPIO_PIN_RESET);
+	}
 
+	if((color&0b00010000)==1){
+		HAL_GPIO_WritePin(GPIOA,GPIO_PIN_6,GPIO_PIN_SET);
+	}
+	if((color&0b00100000)==1){
+		HAL_GPIO_WritePin(GPIOA,GPIO_PIN_6,GPIO_PIN_RESET);
+	}
 }
 
 void reset_led(void){
@@ -302,10 +315,12 @@ void sensor_update(void){
 	HIH_read();
 	IntPressure_read();
 	ExtPress_read();
+	Ext_Pressure_Cal();
 }
 
 void sensor_initialize(void){
 	ExtPress_init();
 	init_IMU();
 	init_LIS3();
+	HIH_init();
 }
