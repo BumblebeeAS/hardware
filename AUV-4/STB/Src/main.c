@@ -19,14 +19,38 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "main.h"
 #include "screen.h"
 #include "sensor.h"
 #include "st_can.h"
 #include "can_lib.h"
+#include "stdlib.h"
+
+uint8_t* CAN_recvMsgBuf;
+uint8_t CAN_WP = 0;
+uint8_t CAN_RP = 0;
+uint8_t CAN_full = 0;
+uint8_t CAN_Last_RP = 0;	//use to see if new msg is coming in
+
+
+uint32_t can_publish_loop_gyro=10;
+uint32_t can_publish_loop_mag=10;
+uint32_t can_publish_loop_acc=10;
+uint32_t can_publish_loop_sens=10;
+uint32_t can_publish_loop_uptime=0;
+uint32_t check_hb_loop=0;
+
+uint32_t can_heartbeat_loop=0;
+uint8_t CAN_SEND=0;
+uint16_t uptime=0;
+uint8_t signature=0;
+
+uint8_t CAN_msg[16];
+
+uint8_t CAN_overflow=0;
 
 //CAN receive buffer
 
@@ -69,21 +93,7 @@ static void MX_SPI1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint8_t i=0;
 
-//SBC receive buffer
-uint8_t* SBC_recvMsgBuf;
-uint8_t SBC_WP = 0;
-uint8_t SBC_RP = 0;
-uint8_t SBC_full = 0;
-uint8_t SBC_sendMsgBuf[16] = {0};
-uint8_t SBC_sendCplt = 1;
-
-//CAN receive buffer
-uint8_t* CAN_recvMsgBuf;
-uint8_t CAN_WP = 0;
-uint8_t CAN_RP = 0;
-uint8_t CAN_full = 0;
 
 void CAN_SetAllFilters()
 {
@@ -130,7 +140,7 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-//  HAL_Delay(1000);
+  HAL_Delay(1);
 
   /* USER CODE END SysInit */
 
@@ -138,6 +148,28 @@ int main(void)
   MX_GPIO_Init();
   MX_I2C1_Init();
   MX_SPI1_Init();
+
+  //initialize CAN recvBuf
+	do{
+		CAN_recvMsgBuf = (uint8_t*) malloc(256*sizeof(uint8_t));
+	} while (CAN_recvMsgBuf == NULL);
+
+	uint32_t i = 0;
+	for (i = 0 ; i < 256 ; i++){
+		CAN_recvMsgBuf[i] = 0;
+	}
+
+	for (i = 0; i<=8; i++){
+		boardHB_timeout[i]=0;
+	}
+
+	for (i = 0; i <8; i++){
+		stbUP[i] = 1;
+	}
+
+	for (i=0;i<=15;i++){
+		CAN_msg[i]=0;
+	}
   /* USER CODE BEGIN 2 */
   begin();
   displayOn();
@@ -154,12 +186,14 @@ int main(void)
   default_values();
   update_screen();
   check_hb();
+  HAL_Delay(300);
   CAN_Begin(CAN_MODE_NORMAL);
   CAN_SetAllFilters();
+  CAN_RecvStart();
 
-  init_LSM6();
-  init_LIS3();
-  ExtPress_init();
+//  init_LSM6();
+//  init_LIS3();
+//  ExtPress_init();
 
   /* USER CODE END 2 */
  
@@ -169,19 +203,19 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  publishCAN_message();
-	  publishCAN_heartbeat();
-	  publishCAN_uptime();
-	  update_can();
-	  //sensor_update();
-	  IntPressure_read();
-	  LIS3_read();
-	  LSM6_read();
-	  ExtPress_read();
+	    /* USER CODE END WHILE */
 
-	  update_screen();
-	  check_hb();
-	  HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_5);
+	    /* USER CODE BEGIN 3 */
+		  publishCAN_message();
+		  publishCAN_heartbeat();
+		  publishCAN_uptime();
+		  CAN_routine();
+		  //sensor_update();
+	//	  IntPressure_read();
+	//	  LIS3_read();
+	//	  LSM6_read();
+	//	  ExtPress_read();
+		  update_screen();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -236,9 +270,10 @@ void SystemClock_Config(void)
   /* USER CODE BEGIN CAN_Init 2 */
   void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
   {
+	//CAN_RecvMsg(CAN_RX_FIFO0,CAN_recvMsgBuf+CAN_WP+2);	//save 1 space for ID and 1 for len
   	CAN_recvMsgBuf[CAN_WP] = (uint8_t) (RxHeader.StdId);	//id
   	CAN_recvMsgBuf[CAN_WP+1] = (uint8_t) (RxHeader.DLC);	//len
-  	CAN_WP += RxHeader.DLC + 2;	//increment WP
+  	CAN_WP += RxHeader.DLC + 2;	//increment WP RxHeader.DLC +
 
   	//if no space to receive another full length message
   	if (((((CAN_RP-CAN_WP)&0x00FF) < 10)&&(CAN_RP!=CAN_WP)) || CAN_full){
@@ -246,11 +281,12 @@ void SystemClock_Config(void)
   		return;
   	}
   	CAN_RecvMsg(CAN_RX_FIFO0,CAN_recvMsgBuf+CAN_WP+2);	//save 1 space for ID and 1 for len
-
   }
+
 
   void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
   {
+	//CAN_RecvMsg(CAN_RX_FIFO1,CAN_recvMsgBuf+CAN_WP+2);	//save 1 space for ID and 1 for len
   	CAN_recvMsgBuf[CAN_WP] = (uint8_t) (RxHeader.StdId);	//id
   	CAN_recvMsgBuf[CAN_WP+1] = (uint8_t) (RxHeader.DLC);	//len
   	CAN_WP += RxHeader.DLC + 2;	//increment WP
@@ -261,7 +297,139 @@ void SystemClock_Config(void)
   		return;
   	}
   	CAN_RecvMsg(CAN_RX_FIFO1,CAN_recvMsgBuf+CAN_WP+2);	//save 1 space for ID and 1 for len
+  }
 
+  void CAN_RecvStart()
+  {
+  	CAN_RecvMsg(CAN_RX_FIFO1,CAN_recvMsgBuf+CAN_WP+2);	//save 1 space for ID and 1 for len
+  	CAN_RecvMsg(CAN_RX_FIFO0,CAN_recvMsgBuf+CAN_WP+2);	//save 1 space for ID and 1 for len
+  }
+
+
+  void CAN_routine(void){
+  		while ( ((CAN_WP-CAN_RP)&0x00FF) > 20 ){
+  			uint8_t Id = CAN_recvMsgBuf[CAN_RP];
+  			uint8_t Size = CAN_recvMsgBuf[CAN_RP + 1];
+  			uint8_t i = 0;
+  			for ( i = 0 ; i < Size ; i++){
+  						CAN_msg[i] = CAN_recvMsgBuf[CAN_RP + 2 + i];
+  					}
+
+
+  						switch(Id){
+  						case CAN_HEARTBEAT:{
+  							uint8_t device= CAN_msg[0];
+  							boardHB_timeout[device]=HAL_GetTick();
+  							break;
+  						}
+  						case CAN_BATT1_STAT:{
+  							powerStats[BATT1_CURRENT]=(CAN_msg[1]<<8|CAN_msg[0]);
+  							powerStats[BATT1_VOLTAGE]=(CAN_msg[3]<<8|CAN_msg[2]);
+  							break;
+  						}
+  						case CAN_PMB1_STAT:{
+  							internalStats[PMB1_PRESS]=CAN_msg[4];
+  							internalStats[PMB1_TEMP]=CAN_msg[3];
+  							powerStats[BATT1_CAPACITY]=CAN_msg[2];
+  							break;
+  						}
+  						case CAN_BATT2_STAT:{
+  							powerStats[BATT2_CURRENT]=(CAN_msg[1]<<8|CAN_msg[0]);
+  							powerStats[BATT2_VOLTAGE]=(CAN_msg[3]<<8|CAN_msg[2]);
+  							break;
+  						}
+  						case CAN_PMB2_STAT:{
+  							internalStats[PMB2_PRESS]=CAN_msg[4];
+  							internalStats[PMB2_TEMP]=CAN_msg[3];
+  							powerStats[BATT2_CAPACITY]=CAN_msg[2];
+  							break;
+  						}
+  						case CAN_STB_CONFIG:{
+  							for (uint8_t i=0;i<STB_UP_COUNT;i++){
+  								stbUP[i]=CAN_msg[i];
+  							}
+  							set_led(stbUP[LED]);
+  							uint8_t MSG[8]={stbUP[7],stbUP[6],stbUP[5],stbUP[4],stbUP[3],stbUP[2],stbUP[1],stbUP[0]};
+  							CAN_SendMsg(CAN_STB_UP,MSG,8);
+  							break;
+  						}
+  						default:
+  							break;
+  						}
+  						CAN_RP = CAN_RP+2+Size;
+
+  					}
+
+  				//reset CAN_full flag is more than 20 bytes free space
+  				if (CAN_full && (((CAN_RP-CAN_WP)&0x00FF) >= 20)){	//if there are at least 24 free space, continue buffer. Otherwise drop.
+  					CAN_full = 0;
+  					CAN_RecvMsg(CAN_RX_FIFO1,CAN_recvMsgBuf+CAN_WP+2);	//save 1 space for ID and 1 for len
+  				}
+
+  					//update screen
+  					if(HAL_GetTick()-check_hb_loop>1000){
+  					for (uint8_t i=1;i<=6;i++){
+  						if((HAL_GetTick()-boardHB_timeout[i])>3000){
+  						boardHB[i-1]=0xFFFF;
+  						}
+  					else{
+  						boardHB[i-1]=0x1111;
+  						}
+  					}
+//  					for (uint8_t i=6;i<9;i++){
+//  						if((HAL_GetTick()-boardHB_timeout[i])>HB_TIMEOUT){
+//  						boardHB[i-1]=0xFFFF;
+//  						}
+//  					else{
+//  						boardHB[i-1]=0x1111;
+//  						}
+//  					}
+  					check_hb_loop=HAL_GetTick();
+  					}
+  }
+
+
+  void publishCAN_message(void){
+  	if(HAL_GetTick()-can_publish_loop_gyro>(1000/stbUP[GYRO])){
+  	uint8_t Msg[6]={(uint8_t)internalStats[IMU_G_X]>>8,(uint8_t)internalStats[IMU_G_X],(uint8_t)internalStats[IMU_G_Y]>>8,(uint8_t)internalStats[IMU_G_Y],(uint8_t)internalStats[IMU_G_Z]>>8,(uint8_t)internalStats[IMU_G_Z]};
+  	CAN_SendMsg(CAN_STB_GYRO,Msg,6);
+  	can_publish_loop_gyro=HAL_GetTick();
+  	}
+
+  	if(HAL_GetTick()-can_publish_loop_gyro>(1000/stbUP[ACC])){
+  		uint8_t Msg[6]={(uint8_t)internalStats[IMU_A_X]>>8,(uint8_t)internalStats[IMU_A_X],(uint8_t)internalStats[IMU_A_Y]>>8,(uint8_t)internalStats[IMU_A_Y],(uint8_t)internalStats[IMU_A_Z]>>8,(uint8_t)internalStats[IMU_A_Z]};
+  		CAN_SendMsg(CAN_STB_ACC,Msg,6);
+  		can_publish_loop_acc=HAL_GetTick();
+  	}
+
+  		if(HAL_GetTick()-can_publish_loop_mag>(1000/stbUP[MAG])){
+  		uint8_t Msg[6]={internalStats[IMU_M_X]>>8,internalStats[IMU_M_X],internalStats[IMU_M_Y]>>8,internalStats[IMU_M_Y],internalStats[IMU_M_Z]>>8,internalStats[IMU_M_Z]};
+  		CAN_SendMsg(CAN_STB_MAG,Msg,6);
+  		can_publish_loop_mag=HAL_GetTick();
+  		}
+
+  	if(HAL_GetTick()-can_publish_loop_sens>(1000/stbUP[SENSOR])){
+  	uint8_t Msg2[8]={internalStats[INT_PRESS]>>8,internalStats[INT_PRESS],internalStats[HUMIDITY]>>8,internalStats[HUMIDITY],internalStats[ST_TEMP]>>8,internalStats[ST_TEMP],internalStats[EXT_PRESS]>>8,internalStats[EXT_PRESS]};
+  	CAN_SendMsg(CAN_STB_SENS,Msg2,8);
+  	can_publish_loop_sens=HAL_GetTick();
+  	}
+  	}
+
+  void publishCAN_heartbeat(void){
+  	if( (HAL_GetTick()-can_heartbeat_loop)>500){
+  		uint8_t Msg[1]={HEARTBEAT_STB};
+  		CAN_SendMsg(CAN_HEARTBEAT,Msg,1);
+  		can_heartbeat_loop=HAL_GetTick();
+  	}
+  }
+
+  void publishCAN_uptime(void){
+  	if((HAL_GetTick()-can_publish_loop_uptime)>1000){
+  		uptime=uptime+1;
+  		uint8_t MSG[3]={uptime>>8,uptime,signature};
+  		CAN_SendMsg(CAN_STB_STAT,MSG,3);
+  		can_publish_loop_uptime=HAL_GetTick();
+  	}
   }
 
   /* USER CODE END CAN_Init 2 */
@@ -283,7 +451,7 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x20303E5D;
+  hi2c1.Init.Timing =0x2000090E; //0x20303E5D;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -336,7 +504,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
