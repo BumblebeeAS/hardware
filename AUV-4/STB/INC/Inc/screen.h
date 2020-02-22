@@ -23,7 +23,7 @@
 #define YELLOW           0xFFE0
 #define WHITE            0xFFFF
 
-#define INT_STAT_COUNT 19
+#define INT_STAT_COUNT 20
 #define EXT_PRESS 0
 #define INT_PRESS 1
 #define PMB1_PRESS 2
@@ -43,6 +43,7 @@
 #define IMU_M_X 16
 #define IMU_M_Y 17
 #define IMU_M_Z 18
+#define Debug 19
 
 #define POWER_STAT_COUNT 6
 #define BATT1_CAPACITY 0
@@ -62,9 +63,7 @@
 #define PMB2 6
 
 #define STB_UP_COUNT 8
-#define Red 0
-#define Green 1
-#define Blue 2
+#define LED 2
 #define SCREEN 3
 #define SENSOR 4
 #define MAG 5
@@ -85,7 +84,7 @@
 
  volatile uint16_t powerStats[POWER_STAT_COUNT];
  volatile  uint32_t boardHB[HB_COUNT];
- volatile uint32_t boardHB_timeout[HB_COUNT];
+ uint32_t boardHB_timeout[HB_COUNT+2];//plus 2 as id starts from 1 instead of 0 and STB heartbeat
  volatile uint16_t internalStats[INT_STAT_COUNT];
  volatile uint16_t stbUP[STB_UP_COUNT];
 
@@ -167,5 +166,7 @@
  void drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
 
  void check_hb(void);
+
+ void update_screen_can_test(uint8_t i);
 
 #endif
