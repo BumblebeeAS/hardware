@@ -276,7 +276,7 @@ void Ext_Pressure_Cal(void){
 
 		P = (((D1*SENS2)/(0x2097152l)-OFF2)/(0x8192l));
 		P = P*0.001f/10.0f;
-		internalStats[EXT_PRESS]=P;
+//		internalStats[EXT_PRESS]=P;
 }
 
 
