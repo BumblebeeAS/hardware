@@ -1,4 +1,5 @@
 #include "screen.h"
+uint32_t Screen_update_loop = 0;
 
 
 void writeCommand(uint8_t d){
@@ -315,8 +316,8 @@ void screen_default(void){
 	  write_string("ST temp:");
 	  write_string("DNA press: ");
 	  write_string("XAVIER OK:");
-	  write_string("PCB OK");
-	  write_string("SBC-CAN OK:");
+	  write_string("SBC-CAN OK");
+	  write_string("PCB OK:");
 
 	  set_cursor(400,0);
 	  write_string("Batt1 Capacity:");
@@ -329,13 +330,14 @@ void screen_default(void){
 	  write_string("Manipulator OK:");
 	  write_string("PMB1 OK:");
 	  write_string("PMB2 OK:");
+	  write_string("Reg Debug:");
 }
 
 void write_value_dp(uint32_t var,uint32_t dp){
 	drawRect(_x, _y, 130, 30, BLACK);
 	if(var==0xFFFF){
 		textColor(WHITE,RED);
-		write_string("N/A");
+		write_string("   ");
 	}
 	else{
 		textTransparent(YELLOW);
@@ -361,11 +363,11 @@ void write_value_dp(uint32_t var,uint32_t dp){
 void write_state(uint32_t var){
 	if(var==0xFFFF){
 		textColor(WHITE,RED);
-		write_string("N/A");
+		write_string("   ");
 	}
 	else if(var==0x1111){
 		textColor(YELLOW,GREEN);
-		write_string("O N");
+		write_string("   ");
 	}
 }
 
@@ -373,7 +375,7 @@ void write_value_int(uint32_t var){
 	drawRect(_x, _y, 130, 30, BLACK);
 	textTransparent(YELLOW);
 	if(var == 0xFFFF){
-		write_string("N/A");
+		write_string("   ");
 	}
 	else{
 		char buf[20]={};
@@ -384,7 +386,12 @@ void write_value_int(uint32_t var){
 }
 
 void update_screen(void){
+	if (HAL_GetTick()-Screen_update_loop >500){
 	set_cursor(200,0);
+	internalStats[Debug] = readReg(0x22);
+	if (internalStats[Debug] != 69){
+		writeReg(0x22,69);
+	}
 	//INT_STAT_COUNT-9 because the last 9 data bytes are IMU readings and not displayed
 	for (uint8_t i=0;i<(INT_STAT_COUNT-9);i++){
 		write_value_dp(internalStats[i],0);
@@ -392,6 +399,10 @@ void update_screen(void){
 	set_cursor(645,0);
 	for (uint8_t i=0;i<POWER_STAT_COUNT;i++){
 		write_value_dp(powerStats[i],1);
+	}
+	Screen_update_loop = HAL_GetTick();
+	check_hb();
+	HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_5);
 	}
 }
 
@@ -406,6 +417,7 @@ void default_values(void){
     internalStats[HUMIDITY]=0xFFFF;
     internalStats[ST_TEMP]=0xFFFF;
     internalStats[DNA_PRESS]=0xFFFF;
+    internalStats[Debug] = 0xFFFF;
 
     powerStats[BATT1_CAPACITY]=0xFFFF;
     powerStats[BATT2_CAPACITY]=0xFFFF;
@@ -464,6 +476,7 @@ void check_hb(void){
 	for (uint8_t i=3;i<7;i++){
 		write_state(boardHB[i]);
 	}
+	write_value_dp(internalStats[Debug],0);
 }
 
 void update_screen_can_test(uint8_t i){
