@@ -29,9 +29,17 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f0xx_hal.h"
+#include "stdlib.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+
+
+//CAN receive buffer
+uint8_t* CAN_recvMsgBuf;
+ uint8_t CAN_WP;
+ uint8_t CAN_RP;
+uint8_t CAN_full;
 
 /* USER CODE END Includes */
 
@@ -54,6 +62,12 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
+void CAN_RecvStart(void);
+void CAN_routine(void);
+void publishCAN_message(void);
+void publishCAN_heartbeat(void);
+void publishCAN_uptime(void);
+void update_can(void);
 
 /* USER CODE END EFP */
 
