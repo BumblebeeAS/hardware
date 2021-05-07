@@ -10,6 +10,7 @@ private:
 	uint16_t _windSpeed;
     boolean _startReading;
     char _stringValues[20];
+    uint8_t _stringIndex;
 
     void writeValues();
 
