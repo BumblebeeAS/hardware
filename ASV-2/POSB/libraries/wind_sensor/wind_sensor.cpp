@@ -5,7 +5,6 @@ WindSensor::WindSensor() {
     _windDirection = 0;
     _windSpeed = 0;
     _startReading = false;
-    _stringValues = "";
 }
 
 void WindSensor::init() {
@@ -27,18 +26,20 @@ void WindSensor::readValues() {
     switch(input) {
       case PACKET_START:
         _startReading = true;
+	_stringIndex = 0;
         break;
         
       case PACKET_END:
         _startReading = false;
         writeValues();
-        _stringValues = ""; // restart the string for next iteration
+        _stringIndex = 0; // restart the string for next iteration
         break;
 
       default:
         if(!_startReading) break;
         else {
-          _stringValues += (char)input;
+          _stringValues[_stringIndex] = (char)input;
+	  _stringIndex ++;
         }
         break;
     }
@@ -46,8 +47,7 @@ void WindSensor::readValues() {
 }
 
 void WindSensor::writeValues() {
-  char * cstr = new char[_stringValues.length() + 1];
-  strcpy(cstr, _stringValues.c_str());
+  _stringValues[_stringIndex] = 0x00;
   
   char * token = strtok(cstr, ",");
   for(int i = 0; i < 3; i++) {
