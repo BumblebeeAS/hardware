@@ -9,7 +9,7 @@ private:
     uint16_t _windDirection;
 	uint16_t _windSpeed;
     boolean _startReading;
-    String _stringValues;
+    char* _stringValues;
 
     void writeValues();
 
