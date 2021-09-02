@@ -97,6 +97,15 @@ uint16_t pwmInterval = 1000;
 uint16_t statusInterval = 1000;
 uint16_t actInterval = 1000;
 
+//thruster latch
+uint32_t prevframe1tick = 0;
+uint32_t prevframe2tick = 0;
+uint32_t frame1flag = 0;
+uint32_t frame2flag = 0;
+uint32_t frame1interval = 500;
+uint32_t frame2interval = 500;
+
+
 
 // CAN
 uint8_t* CAN_recvMsgBuf;
@@ -179,7 +188,34 @@ int main(void)
 
 
     /* USER CODE BEGIN 3 */
-//	  __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 3399);
+//	  __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, 2499);
+
+	  if(frame1flag == 1)
+	  {
+		  prevframe1tick = HAL_GetTick();
+		  frame1flag = 0;
+	  }
+	  if((HAL_GetTick() - prevframe1tick) >= frame1interval)
+	  {
+			__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 2999);
+			__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, 2999);
+			__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, 2999);
+			__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, 2999);
+	  }
+
+
+	  if(frame2flag == 1)
+	  {
+		  prevframe2tick = HAL_GetTick();
+		  frame2flag = 0;
+	  }
+	  if((HAL_GetTick() - prevframe2tick) >= frame2interval)
+	  {
+			__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 2999);
+			__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, 2999);
+			__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 2999);
+			__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 2999);
+	  }
 
 	  // CAN Heartbeat
 	  if((HAL_GetTick() - prevHBTick) >= 500)
