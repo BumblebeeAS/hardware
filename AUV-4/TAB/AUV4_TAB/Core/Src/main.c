@@ -20,6 +20,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include <stdlib.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -33,6 +34,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define SIGNATURE 0x3F
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -63,14 +65,47 @@ static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
 void Set_PWM(TIM_HandleTypeDef *htim, uint32_t Channel, uint16_t val);
 void checkCANmsg(void);
+
+void CAN_RecvStart();
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+// CAN Buffer
 uint8_t bufFifo0[8] = {0};
 uint8_t bufFifo1[8] = {0};
+
+// CAN Tick
 uint32_t prevHBTick = 0;
 uint32_t prevPWMTick = 0;
+uint32_t prevConfigTick = 0;
+
+// Thruster RPM
+uint16_t thruster1RPM = 0;
+uint16_t thruster2RPM = 0;
+uint16_t thruster3RPM = 0;
+uint16_t thruster4RPM = 0;
+uint16_t thruster5RPM = 0;
+uint16_t thruster6RPM = 0;
+uint16_t thruster7RPM = 0;
+uint16_t thruster8RPM = 0;
+
+// CAN Update Interval
+uint16_t rpmInterval = 1000;
+uint16_t pwmInterval = 1000;
+uint16_t statusInterval = 1000;
+uint16_t actInterval = 1000;
+
+
+// CAN
+uint8_t* CAN_recvMsgBuf;
+uint8_t CAN_WP = 0;
+uint8_t CAN_RP = 0;
+uint8_t CAN_full = 0;
+
+
+
 /* USER CODE END 0 */
 
 /**
@@ -102,7 +137,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-//  MX_CAN_Init();
+  MX_CAN_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
   MX_USART1_UART_Init();
@@ -113,6 +148,8 @@ int main(void)
   CAN_Begin(CAN_MODE_NORMAL);
   CAN_SetFilter(0x0F, 0xF0, 0x0F, 0xF0, 1, CAN_RX_FIFO0);
   CAN_SetFilter(0x00, 0x00, 0x00, 0x00, 2, CAN_RX_FIFO1);
+  CAN_RecvStart();
+
 
   HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_2);
@@ -124,18 +161,27 @@ int main(void)
   HAL_TIM_PWM_Start_IT(&htim3, TIM_CHANNEL_3);
   HAL_TIM_PWM_Start_IT(&htim3, TIM_CHANNEL_4);
   /* USER CODE END 2 */
- 
- 
+
+  do{
+  		CAN_recvMsgBuf = (uint8_t*) malloc(256*sizeof(uint8_t));
+  	} while (CAN_recvMsgBuf == NULL);
+  CAN_RecvStart();
+
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
+	  if (CAN_WP != CAN_RP ){
+		  UpdatePWM();
+	  }
+
 
     /* USER CODE BEGIN 3 */
 //	  __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 3399);
 
+	  // CAN Heartbeat
 	  if((HAL_GetTick() - prevHBTick) >= 500)
 	  {
 		  uint8_t buf[1] = {0x04};
@@ -144,31 +190,75 @@ int main(void)
 		  prevHBTick = HAL_GetTick();
 	  }
 
+	  // CAN PWM
 	  if((HAL_GetTick() - prevPWMTick) >= 1000)
 	  {
 		  uint8_t buf[8] = {0};
-
-		  buf[0] = __HAL_TIM_GET_COMPARE(&htim2, TIM_CHANNEL_1) & 0x0FF;
-		  buf[1] = (__HAL_TIM_GET_COMPARE(&htim2, TIM_CHANNEL_1) >> 8) & 0x0FF;
-		  buf[2] = __HAL_TIM_GET_COMPARE(&htim2, TIM_CHANNEL_2) & 0x0FF;
-		  buf[3] = (__HAL_TIM_GET_COMPARE(&htim2, TIM_CHANNEL_2) >> 8) & 0x0FF;
-		  buf[4] = __HAL_TIM_GET_COMPARE(&htim2, TIM_CHANNEL_3)  & 0x0FF;
-		  buf[5] = (__HAL_TIM_GET_COMPARE(&htim2, TIM_CHANNEL_3) >> 8) & 0x0FF;
-		  buf[6] = __HAL_TIM_GET_COMPARE(&htim2, TIM_CHANNEL_4) & 0x0FF;
-		  buf[7] = (__HAL_TIM_GET_COMPARE(&htim2, TIM_CHANNEL_4) >> 8) & 0x0FF;
-		  CAN_SendMsg(19, buf, 8);
 
 		  buf[0] = __HAL_TIM_GET_COMPARE(&htim3, TIM_CHANNEL_1) & 0x0FF;
 		  buf[1] = (__HAL_TIM_GET_COMPARE(&htim3, TIM_CHANNEL_1) >> 8) & 0x0FF;
 		  buf[2] = __HAL_TIM_GET_COMPARE(&htim3, TIM_CHANNEL_2) & 0x0FF;
 		  buf[3] = (__HAL_TIM_GET_COMPARE(&htim3, TIM_CHANNEL_2) >> 8) & 0x0FF;
 		  buf[4] = __HAL_TIM_GET_COMPARE(&htim3, TIM_CHANNEL_3)  & 0x0FF;
-	  	  buf[5] = (__HAL_TIM_GET_COMPARE(&htim3, TIM_CHANNEL_3) >> 8) & 0x0FF;
+		  buf[5] = (__HAL_TIM_GET_COMPARE(&htim3, TIM_CHANNEL_3) >> 8) & 0x0FF;
 		  buf[6] = __HAL_TIM_GET_COMPARE(&htim3, TIM_CHANNEL_4) & 0x0FF;
 		  buf[7] = (__HAL_TIM_GET_COMPARE(&htim3, TIM_CHANNEL_4) >> 8) & 0x0FF;
+		  CAN_SendMsg(19, buf, 8);
+
+		  buf[0] = __HAL_TIM_GET_COMPARE(&htim2, TIM_CHANNEL_1) & 0x0FF;
+		  buf[1] = (__HAL_TIM_GET_COMPARE(&htim2, TIM_CHANNEL_1) >> 8) & 0x0FF;
+		  buf[2] = __HAL_TIM_GET_COMPARE(&htim2, TIM_CHANNEL_2) & 0x0FF;
+		  buf[3] = (__HAL_TIM_GET_COMPARE(&htim2, TIM_CHANNEL_2) >> 8) & 0x0FF;
+		  buf[4] = __HAL_TIM_GET_COMPARE(&htim2, TIM_CHANNEL_3)  & 0x0FF;
+	  	  buf[5] = (__HAL_TIM_GET_COMPARE(&htim2, TIM_CHANNEL_3) >> 8) & 0x0FF;
+		  buf[6] = __HAL_TIM_GET_COMPARE(&htim2, TIM_CHANNEL_4) & 0x0FF;
+		  buf[7] = (__HAL_TIM_GET_COMPARE(&htim2, TIM_CHANNEL_4) >> 8) & 0x0FF;
 		  CAN_SendMsg(20, buf, 8);
 
 		  prevPWMTick = HAL_GetTick();
+	  }
+
+	  // CAN RPM
+	  if((HAL_GetTick() - prevConfigTick) >= 1000)
+	  {
+		  uint8_t buf[8] = {0};
+
+		  buf[0] = thruster1RPM & 0x0FF;
+		  buf[1] = (thruster1RPM >> 8) & 0x0FF;
+		  buf[2] = thruster2RPM & 0x0FF;
+		  buf[3] = (thruster2RPM >> 8) & 0x0FF;
+		  buf[4] = thruster3RPM & 0x0FF;
+		  buf[5] = (thruster3RPM >> 8) & 0x0FF;
+		  buf[6] = thruster4RPM & 0x0FF;
+		  buf[7] = (thruster4RPM >> 8) & 0x0FF;
+		  CAN_SendMsg(17, buf, 8);
+
+		  buf[0] = thruster5RPM & 0x0FF;
+		  buf[1] = (thruster5RPM >> 8) & 0x0FF;
+		  buf[2] = thruster6RPM & 0x0FF;
+		  buf[3] = (thruster6RPM >> 8) & 0x0FF;
+		  buf[4] = thruster7RPM & 0x0FF;
+		  buf[5] = (thruster7RPM >> 8) & 0x0FF;
+		  buf[6] = thruster8RPM & 0x0FF;
+		  buf[7] = (thruster8RPM >> 8) & 0x0FF;
+		  CAN_SendMsg(18, buf, 8);
+
+		  prevConfigTick = HAL_GetTick();
+	  }
+
+	  // CAN Status
+	  if((HAL_GetTick() - prevConfigTick) >= 1000)
+	  {
+		  uint8_t buf[8] = {0};
+
+		  uint16_t uptime = (HAL_GetTick() >> 9) & 0x00FF;
+
+		  buf[7] = (uptime >> 8) & 0x00FF;
+		  buf[6] = uptime & 0x00FF;
+		  buf[5] = SIGNATURE;
+
+		  CAN_SendMsg(22, buf, 8);
+		  prevConfigTick = HAL_GetTick();
 	  }
   }
   /* USER CODE END 3 */
@@ -186,9 +276,8 @@ void SystemClock_Config(void)
 
   /** Initializes the CPU, AHB and APB busses clocks 
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI48;
+  RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
@@ -198,11 +287,11 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI48;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
   {
     Error_Handler();
   }
@@ -244,11 +333,11 @@ static void MX_CAN_Init(void)
 
   /* USER CODE END CAN_Init 1 */
   hcan.Instance = CAN;
-  hcan.Init.Prescaler = 16;
+  hcan.Init.Prescaler = 3;
   hcan.Init.Mode = CAN_MODE_NORMAL;
   hcan.Init.SyncJumpWidth = CAN_SJW_1TQ;
-  hcan.Init.TimeSeg1 = CAN_BS1_1TQ;
-  hcan.Init.TimeSeg2 = CAN_BS2_1TQ;
+  hcan.Init.TimeSeg1 = CAN_BS1_13TQ;
+  hcan.Init.TimeSeg2 = CAN_BS2_2TQ;
   hcan.Init.TimeTriggeredMode = DISABLE;
   hcan.Init.AutoBusOff = DISABLE;
   hcan.Init.AutoWakeUp = DISABLE;
@@ -285,7 +374,7 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 15;
+  htim2.Init.Prescaler = 23;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim2.Init.Period = 39999;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -356,7 +445,7 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 1 */
   htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 15;
+  htim3.Init.Prescaler = 23;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim3.Init.Period = 39999;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -468,19 +557,19 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA0 PA8 PA9 PA10 
-                           PA15 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10 
-                          |GPIO_PIN_15;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
   /*Configure GPIO pin : PA4 */
   GPIO_InitStruct.Pin = GPIO_PIN_4;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PA5 PA8 PA9 PA10
+                           PA15 */
+  GPIO_InitStruct.Pin = GPIO_PIN_5|GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10
+                          |GPIO_PIN_15;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PB3 */
@@ -490,41 +579,260 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB4 PB5 PB8 */
-  GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_8;
+  /*Configure GPIO pins : PB4 PB5 */
+  GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_5;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PB8 */
+  GPIO_InitStruct.Pin = GPIO_PIN_8;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 }
 
 /* USER CODE BEGIN 4 */
-void Set_PWM(TIM_HandleTypeDef *htim, uint32_t Channel, uint16_t val)
-{
-	TIM_OC_InitTypeDef sConfigOC = {0};
 
-	sConfigOC.OCMode = TIM_OCMODE_PWM1;
-	sConfigOC.Pulse = val;
-	sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-	if (HAL_TIM_PWM_ConfigChannel(htim, &sConfigOC, Channel) != HAL_OK)
-	{
-	  Error_Handler();
+void UpdatePWM()
+{
+	uint8_t Id = CAN_recvMsgBuf[CAN_RP];
+	uint8_t Size = CAN_recvMsgBuf[CAN_RP + 1];
+	uint8_t i = 0;
+	uint16_t val = 0;
+	for ( i = 0 ; i < Size ; i++){	//fill msg
+				bufFifo0[i] = CAN_recvMsgBuf[CAN_RP+2+i];
 	}
+	if ( (Id == 1 || Id == 0) && Size != 8) {
+		CAN_RP += (2 + Size);
+		return;
+	}
+	if (Id == 0){
+		for ( i = 0 ; i < Size ; i++){	//fill msg
+			bufFifo0[i] = CAN_recvMsgBuf[CAN_RP+2+i];
+		}
+		val = (bufFifo0[1] << 8 | bufFifo0[0]) + 2499;
+			// safety check
+			if(val > 3499) val = 3499;
+			if(val < 2499) val = 2499;
+			__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, val);
+
+			val = (bufFifo0[3] << 8 | bufFifo0[2]) + 2499;
+			// safety check
+			if(val > 3499) val = 3499;
+			if(val < 2499)
+			{
+				val = 2499;
+			}
+			__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, val);
+
+			val = (bufFifo0[5] << 8 | bufFifo0[4]) + 2499;
+			// safety check
+			if(val > 3499) val = 3499;
+			if(val < 2499) val = 2499;
+			__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, val);
+
+			val = (bufFifo0[7] << 8 | bufFifo0[6]) + 2499;
+			// safety check
+			if(val > 3499) val = 3499;
+			if(val < 2499) val = 2499;
+			__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, val);
+			frame1flag = 1;
+
+	}
+	else if (Id == 1)
+	{
+		val = (bufFifo0[1] << 8 | bufFifo0[0]) + 2499;
+		// safety check
+		if(val > 3499) val = 3499;
+		if(val < 2499)
+		{
+			val = 2499;
+		}
+		__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, val);
+
+		val = (bufFifo0[3] << 8 | bufFifo0[2]) + 2499;
+		// safety check
+		if(val > 3499) val = 3499;
+		if(val < 2499)
+			{
+			val = 2499;
+			}
+		__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, val);
+
+		val = (bufFifo0[5] << 8 | bufFifo0[4]) + 2499;
+		// safety check
+		if(val > 3499) val = 3499;
+		if(val < 2499)
+			{
+				val = 2499;
+			}
+		__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, val);
+
+		val = (bufFifo0[7] << 8 | bufFifo0[6]) + 2499;
+		// safety check
+		if(val > 3499) val = 3499;
+		if(val < 2499)
+			{
+				val = 2499;
+			}
+		__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, val);
+
+		frame2flag = 1;
+	}
+
+	CAN_RP += (2 + Size);
+
+	if (CAN_full && (((CAN_RP-CAN_WP)&0x00FF) >= 20)){	//if there are at least 24 free space, continue buffer. Otherwise drop.
+		CAN_full = 0;
+		CAN_RecvMsg(CAN_RX_FIFO1,CAN_recvMsgBuf+CAN_WP+2);	//save 1 space for ID and 1 for len
+	}
+
+
+}
+//
+//void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
+//{
+//	uint16_t val = 0;
+//	// recv_databuf is library-wide data buffer
+//	if (CAN_RecvMsg(CAN_RX_FIFO0, bufFifo0) == 10)
+//		{
+//			return;
+//		};
+//
+//	switch(CAN_GetId()) {
+//	// 1 ~ 4 Thruster Controls
+//	case 0x00:
+//		val = (bufFifo0[1] << 8 | bufFifo0[0]) + 2499;
+//		// safety check
+//		if(val > 3499) val = 3499;
+//		if(val < 2499) val = 2499;
+//		__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, val);
+//
+//		val = (bufFifo0[3] << 8 | bufFifo0[2]) + 2499;
+//		// safety check
+//		if(val > 3499) val = 3499;
+//		if(val < 2499) val = 2499;
+//		__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, val);
+//
+//		val = (bufFifo0[5] << 8 | bufFifo0[4]) + 2499;
+//		// safety check
+//		if(val > 3499) val = 3499;
+//		if(val < 2499) val = 2499;
+//		__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, val);
+//
+//		val = (bufFifo0[7] << 8 | bufFifo0[6]) + 2499;
+//		// safety check
+//		if(val > 3499) val = 3499;
+//		if(val < 2499) val = 2499;
+//		__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, val);
+//
+//		frame1flag = 1;
+//		break;
+//
+//	// 5 ~ 8 Thruster Controls
+//	case 0x01:
+//		val = (bufFifo0[1] << 8 | bufFifo0[0]) + 2499;
+//		// safety check
+//		if(val > 3499) val = 3499;
+//		if(val < 2499)
+//			{
+//				val = 2499;
+//			}
+//		__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, val);
+//
+//		val = (bufFifo0[3] << 8 | bufFifo0[2]) + 2499;
+//		// safety check
+//		if(val > 3499) val = 3499;
+//		if(val < 2499)
+//			{
+//			val = 2499;
+//			}
+//		__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, val);
+//
+//		val = (bufFifo0[5] << 8 | bufFifo0[4]) + 2499;
+//		// safety check
+//		if(val > 3499) val = 3499;
+//		if(val < 2499)
+//			{
+//				val = 2499;
+//			}
+//		__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, val);
+//
+//		val = (bufFifo0[7] << 8 | bufFifo0[6]) + 2499;
+//		// safety check
+//		if(val > 3499) val = 3499;
+//		if(val < 2499)
+//			{
+//				val = 2499;
+//			}
+//		__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, val);
+//
+//		frame2flag = 1;
+//		break;
+//
+//	// Actuation Controls
+//	case 0x02:
+//		break;
+//
+//	// TAB Config
+//	case 0x06:
+//		break;
+//
+//	// General Config
+//	case 0x0A:
+//		break;
+//
+//	}
+//}
+
+//void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
+//{
+//	// recv_databuf is library-wide data buffer
+//	CAN_RecvMsg(CAN_RX_FIFO1, bufFifo1);
+//}
+
+
+void CAN_RecvStart()
+{
+	CAN_RecvMsg(CAN_RX_FIFO1,CAN_recvMsgBuf+CAN_WP+2);	//save 1 space for ID and 1 for len
+	CAN_RecvMsg(CAN_RX_FIFO0,CAN_recvMsgBuf+CAN_WP+2);	//save 1 space for ID and 1 for len
 }
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
-	// recv_databuf is library-wide data buffer
-	CAN_RecvMsg(CAN_RX_FIFO0, bufFifo0);
+	CAN_recvMsgBuf[CAN_WP] = (uint8_t) (RxHeader.StdId);	//id
+	CAN_recvMsgBuf[CAN_WP+1] = (uint8_t) (RxHeader.DLC);	//len
+	CAN_WP += RxHeader.DLC + 2;	//increment WP
+
+	//if no space to receive another full length message
+	if (((((CAN_RP-CAN_WP)&0x00FF) < 10)&&(CAN_RP!=CAN_WP)) || CAN_full){
+		CAN_full = 1;
+		return;
+	}
+	CAN_RecvMsg(CAN_RX_FIFO0,CAN_recvMsgBuf+CAN_WP+2);	//save 1 space for ID and 1 for len
 }
+
 
 void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
-	// recv_databuf is library-wide data buffer
-	CAN_RecvMsg(CAN_RX_FIFO1, bufFifo1);
+	CAN_recvMsgBuf[CAN_WP] = (uint8_t) (RxHeader.StdId);	//id
+	CAN_recvMsgBuf[CAN_WP+1] = (uint8_t) (RxHeader.DLC);	//len
+	CAN_WP += RxHeader.DLC + 2;	//increment WP
+
+	//if no space to receive another full length message
+	if (((((CAN_RP-CAN_WP)&0x00FF) < 10)&&(CAN_RP!=CAN_WP)) || CAN_full){
+		CAN_full = 1;
+		return;
+	}
+	CAN_RecvMsg(CAN_RX_FIFO1,CAN_recvMsgBuf+CAN_WP+2);	//save 1 space for ID and 1 for len
+
 }
+
 /* USER CODE END 4 */
+
+
 
 /**
   * @brief  This function is executed in case of error occurrence.
@@ -534,6 +842,7 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
+
 
   /* USER CODE END Error_Handler_Debug */
 }
