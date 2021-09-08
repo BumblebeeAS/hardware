@@ -1,0 +1,9 @@
+# Class
+HIH613x                	KEYWORD1
+
+# Functions
+update                 	KEYWORD2
+getTemperature         	KEYWORD2
+getHumidity            	KEYWORD2
+measurementRequest     	KEYWORD2
+dataFetch              	KEYWORD2
