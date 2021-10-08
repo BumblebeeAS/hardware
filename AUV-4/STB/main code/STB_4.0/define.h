@@ -1,47 +1,36 @@
 #ifndef _DEFINES_H
 #define _DEFINES_H
 
+//CAN
 #define CAN_Chip_Select 54
+#define CAN_Chip_Select 8
+#define CAN_INT 2
 
-//CONTROL MODE
-#define AUTONOMOUS 1
-#define MANUAL_RC 2
-#define MANUAL_OCS 3
-#define STATION_KEEP 4
+
+//I2C
+#define ADS_ADDR 0X48
+#define HUMIDITY_ADDR 0X27
 
 //SCREEN
-#define SCREEN_INT 25
-#define SCREEN_CS 22
-#define SCREEN_RESET 24
-#define OFFSET 40
+#define SCREEN_INT 3
+#define SCREEN_CS 57
+#define SCREEN_RESET 66
+#define OFFSET 0 // 40 for ASV2.0 screen
 
 #define SCREEN_LOOP 1000
 
-//FRISKY
-#define RC_INT 19
-#define RSSI_THRESHOLD 38
-
-#define FRISKY_FORWARD 2
-#define FRISKY_SIDE 1
-#define FRISKY_YAW 3
-#define FRISKY_ARM 4
-#define FRISKY_RSSI 5
-
-#define I2C_ADDR_DAC 0x4C
-
-//OCS
-#define XBEE_BAUDRATE 115200
-#define START_BYTE 0xFE
-
 //Internal stats
-#define INT_STAT_COUNT 6
+#define INT_STAT_COUNT 9
 
-#define INT_PRESS 0
-#define HUMIDITY 1
-#define CPU_TEMP 2
-#define POSB_TEMP 3
-#define RSSI_OCS 4
-#define RSSI_RC 5
+#define EXT_PRESS 0
+#define INT_PRESS 1
+#define PMB1_PRESS 2
+#define PMB2_PRESS 3 
+#define PMB1_TEMP 4
+#define PMB2_TEMP 5
+#define CPU_TEMP 6
+#define HUMIDITY 7
+#define ST_TEMP 8
 
 //Power stats
 #define POWER_STAT_COUNT 6
@@ -53,27 +42,24 @@
 #define BATT1_VOLTAGE 4
 #define BATT2_VOLTAGE 5
 
+//Sensors
+#define Vref 5    //MPXH Vdd is the Vref
+#define LPF_CONSTANT 0.7
+#define ADS_DELAY 5
+#define LPF_LOOP 25
+
 //Heartbeat
-#define HB_COUNT 14
+#define HB_COUNT 9
 #define BATT1 10
 #define BATT2 11
 #define ESC1 12
 #define ESC2 13
 
 //TIMEOUTS
+#define SCREEN_LOOP 1000
 #define HB_TIMEOUT 3000
 #define HEARTBEAT_LOOP 500
-#define THRUSTER_TIMEOUT 100
-#define COMMLINK_TIMEOUT 4000
-#define FAILSAFE_TIMEOUT 3000
-#define STAT_TIMEOUT 2000
+#define STAT_TIMEOUT 2000 
 
-//XBEE
-#define MAXSIZE 30
-#define KILL_SEND 0x416B976D
-#define KILL_RCV 0x416B9775
-#define OCS_EXT 0x416B969E
-#define ASV_EXT 0x416B9783
-#define SPARE1 0x416B96A3
 
 #endif // _DEFINES_H
