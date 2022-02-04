@@ -324,7 +324,7 @@ void screen_update() {
   screen.set_cursor(200 + OFFSET, 0);
   for (int i = 0; i < INT_STAT_COUNT; i++)
   {
-    // Display internal pressure as kpa with 1 dp
+    // Display external pressure as kpa with 1 dp
     if (i == 0) {
       screen.write_value_with_dp(internalStats[i], 1);
     } else if (i == 1) {
