@@ -1,4 +1,4 @@
-  //###################################################
+    //###################################################
 //###################################################
 //
 //####     ####
@@ -12,14 +12,20 @@
 //
 //
 // Sensor and Telemetry for BBAUV 4.0
-// Firmware Version :             v1.1
+// Firmware Version :             v1.2
 //
-// Written by Yihang edited by Titus 
-// Change log v1.1:
-// Add dp for pressure + fix dp artifact
+// Written by Titus
+// Change log v1.2:
+// Add i2c timeout for 500ms
 //
 //###################################################
 //###################################################
+
+// FOR DEBUG
+// #define DEBUG
+#ifdef DEBUG
+int timeout_count = 0;
+#endif
 
 #include <Wire.h>
 #include <Adafruit_RA8875.h>
@@ -99,6 +105,7 @@ void setup()
 
   //Sensor init
   Wire.begin();
+  Wire.setWireTimeout(500, true);          // Set i2c timeout for 500ms 
   InitialP = readInternalPressure();
   Serial.println("int Sensors OK");
   if(!sensor.init()){
@@ -129,6 +136,15 @@ void loop()
   checkCANmsg();
 
   publishCAN();
+
+  // check i2c timeout 
+  #ifdef DEBUG
+//  if (Wire.getWireTimeoutFlag()) {
+//    timeout_count++;
+//    Serial.println(timeout_count);
+//    Wire.clearWireTimeoutFlag();
+//  }
+  #endif
 }
 
 //===========================================
@@ -193,6 +209,9 @@ void CANSetMask() {
 void checkCANmsg() {
   if (CAN_MSGAVAIL == CAN.checkReceive()) {
     CAN.readMsgBufID(&id, &len, buf);    // read data,  len: data length, buf: data buf
+    #ifdef DEBUG 
+      Serial.println(CAN.getCanId());
+    #endif 
     switch (CAN.getCanId()) {
     case CAN_HEARTBEAT:
     {
@@ -324,7 +343,7 @@ void screen_update() {
   screen.set_cursor(200 + OFFSET, 0);
   for (int i = 0; i < INT_STAT_COUNT; i++)
   {
-    // Display external pressure as kpa with 1 dp
+    // Display internal pressure as kpa with 1 dp
     if (i == 0) {
       screen.write_value_with_dp(internalStats[i], 1);
     } else if (i == 1) {
