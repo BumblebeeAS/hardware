@@ -121,11 +121,11 @@ void LCD::write_value_with_dp(uint32_t var, uint32_t dp) {
 }
 
 void LCD::write_value_string(const char* var){
-	if(var == "YES"){
+	if(var == "YES" || var == "NO LEAK"){
 		screen->fillRect(_x, _y, 50, 30, RA8875_GREEN);
 		screen->textTransparent(RA8875_BLACK);
 	}
-	else if(var == "NO"){
+	else if(var == "NO" || var == "LEAK"){
 		screen->fillRect(_x, _y, 50, 30, RA8875_RED);
 		screen->textTransparent(RA8875_WHITE);
 	}
