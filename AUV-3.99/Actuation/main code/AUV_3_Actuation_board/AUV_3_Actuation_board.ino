@@ -11,12 +11,16 @@
 // # ####   # ####   #######  #######   ####    
 //
 //
-//BBAUV 3.99 actuation board
-//Firmware Version :  v1.0
+// BBAUV 3.99 actuation board
+// Firmware Version :  v1.1
 //
 // Written by Titus for AUV 3.99 torpedo & dropper & grabber
 // Adapted from BBAUV 4.0 actuation 
 //
+// Change log v1.1: 
+// Update code to work with 1/4 step microstepping 
+// PCB has been hacked for DRV8825 to be in 1/4 microstepping mode
+// 
 //###################################################
 //###################################################
 

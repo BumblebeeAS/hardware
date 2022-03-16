@@ -7,12 +7,12 @@
 #define SERIAL_STATUS_INTERVAL 1000
 
 ///Manipulator definitions
-#define DROP A2 
-#define TORP A3 
+#define DROP A2 // A2
+#define TORP A3 // A3
 #define DIR A1
 #define STEP A0 
-#define STEPSPERREVOLUTION 200
-#define STEPPER_DELAY 3500
+#define STEPSPERREVOLUTION 700
+#define STEPPER_DELAY 800
 
 
 //CAN Definitions
