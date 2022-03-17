@@ -12,22 +12,23 @@
 //
 //
 // BBAUV 4.0 Actuation
-// Firmware Version : v1.9
-//
+// Firmware Version : v2.1
+// 
 // Written by Linxin
-// Change log v1.9:
-// Initial commit. 
-// Code for grabber not included. 
+// Edited by Titus   
+// Change log v2.1:
+// Add CAN filter 
 //
 //###################################################
 //###################################################
 
-
+//#define DEBUG
 #include "can_defines.h"
 #include "auv_4.0_can_def.h" //update to current version
 #include "define.h"
-#include "can.h"
-//#include "can_bus/can.h"
+#include <can.h>
+#include <SPI.h>
+#include <can_defines.h>
 #include <Arduino.h>
 #include <Servo.h>
 
@@ -71,6 +72,8 @@ int fired_bot = 0;
 int incomingByte = 0;   // for incoming serial data of test code
 
 void setup() {
+  pinMode(CAN_Chip_Select, OUTPUT);     //CS CAN
+  digitalWrite(CAN_Chip_Select, HIGH);
   Serial.begin(115200);
   Serial.println("Hi, I'm 4.0 Manipulator!");
   CAN_init(); //initialise CAN
@@ -93,25 +96,26 @@ void loop()
   }
   reset_manipulate();
 
-  if ((millis() - serialStatusTimer) > SERIAL_STATUS_INTERVAL) {
-    Serial.print("Manipulator Status: ");
-    for (int i = 7; i >= 0; i--)
-    {
-      bool b = bitRead(maniControl, i);
-      Serial.print(b);
+  #ifdef DEBUG
+    if ((millis() - serialStatusTimer) > SERIAL_STATUS_INTERVAL) {
+      Serial.print("Manipulator Status: ");
+      for (int i = 7; i >= 0; i--)
+      {
+        bool b = bitRead(maniControl, i);
+        Serial.print(b);
+      }
+      Serial.println();
+      serialStatusTimer = millis();
     }
-    Serial.println();
-    serialStatusTimer = millis();
-  }
 
   //Test code using Serial 
   if (Serial.available() > 0) {
     // read the incoming byte:
     incomingByte = Serial.read();
 
-    // say what you got:
-    Serial.print("I received: ");
-    Serial.println(incomingByte, DEC);
+//    // say what you got:
+//    Serial.print("I received: ");
+//    Serial.println(incomingByte, DEC);
 
     if (incomingByte == 49) //if 1 is typed in terminal, do top torpedo
     {
@@ -137,6 +141,8 @@ void loop()
     manipulate();
     reset_manipulate(); 
   }
+  #endif
+
 }
 
 void manipulators_init()
@@ -150,21 +156,21 @@ void manipulators_init()
 
 void dropper()
 {
-  servo_dropper.write(120);
+  servo_dropper.write(65);
   fired_dropper = 1;
   dropperTimer = millis();
 }
 
 void top_torpedo()
 {
-  servo_torpedo.write(110);
+  servo_torpedo.write(130);
   fired_top = 1;
   torpedoTopTimer = millis();
 }
 
 void bot_torpedo()
 {
-  servo_torpedo.write(70);
+  servo_torpedo.write(65);
   fired_bot = 1;
   torpedoBotTimer = millis();
 }
@@ -231,7 +237,7 @@ void reset_manipulate()
 {
   if (fired_dropper && (millis() - dropperTimer) > DROPPER_INTERVAL)
   {
-    servo_dropper.write(90);
+    servo_dropper.write(125);
     fired_dropper = 0;
     Serial.println("Closed dropper");
   }
@@ -274,19 +280,22 @@ void publishCanHB() {
 }
 
 boolean receiveCanMessage() {
-  if (CAN.checkReceive() == CAN_MSGAVAIL) {
+  if (CAN_MSGAVAIL == CAN.checkReceive()) {
     CAN.readMsgBufID(&id, &len, buf);
     boolean messageForMani = false;
     switch (id) {
     case CAN_ACT_CONTROL:  //CAN_ACT_CONTROL
       maniControl = CAN.parseCANFrame(buf, 0, 1);
       messageForMani = true;
-      if (DEBUG_MODE) {
+      #ifdef DEBUG
         Serial.print("Mani Control Received: ");
         Serial.println(maniControl, HEX);
-      }
+      #endif
       break;
     default:
+      #ifdef DEBUG
+        Serial.println(id);
+      #endif
       break;
     }
     CAN.clearMsg();
@@ -299,6 +308,9 @@ boolean receiveCanMessage() {
 }
 
 void CAN_set_mask(){
-  CAN.init_Mask(0, 0, 0xF); //  accept everything
-  CAN.init_Filt(0, 0, 0x2); // 
+  // Need to initialize both masks for filtering to work. Mask 1 cannot be 00 if not nothing will be checked.
+  CAN.init_Mask(0, 0, 0xFF); //  check all bit 
+  CAN.init_Filt(0, 0, 0x02); // let 2 pass (actuation) 
+  CAN.init_Mask(1, 0, 0xFF);
+
 }

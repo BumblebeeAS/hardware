@@ -7,8 +7,8 @@
 #define SERIAL_STATUS_INTERVAL 1000
 
 //Manipulator definitions
-#define DROP 16 // Map to 16 GPIO
-#define TORP 17 // Map to 17 GPIO
+#define DROP A2 // Map to 16 GPIO
+#define TORP A3 // Map to 17 GPIO
 #define stepPin 14 // Map to 14 GPIO
 #define dirPin 15 // Map to 15 GPIO
 
