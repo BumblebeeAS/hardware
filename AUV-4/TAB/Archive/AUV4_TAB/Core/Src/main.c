@@ -227,7 +227,7 @@ int main(void)
 	  }
 
 	  // CAN PWM
-	  if((HAL_GetTick() - prevPWMTick) >= 1000)
+	  if((HAL_GetTick() - prevPWMTick) >= 1000) //change back to 1000
 	  {
 		  uint8_t buf[8] = {0};
 
