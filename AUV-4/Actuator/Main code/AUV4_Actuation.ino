@@ -12,12 +12,12 @@
 //
 //
 // BBAUV 4.0 Actuation
-// Firmware Version : v2.1
+// Firmware Version : v2.2
 // 
 // Written by Linxin
 // Edited by Titus   
-// Change log v2.1:
-// Add CAN filter 
+// Change log v2.2:
+// Swap top and bot torpedos to the correct command
 //
 //###################################################
 //###################################################
@@ -163,14 +163,14 @@ void dropper()
 
 void top_torpedo()
 {
-  servo_torpedo.write(130);
+  servo_torpedo.write(65);
   fired_top = 1;
   torpedoTopTimer = millis();
 }
 
 void bot_torpedo()
 {
-  servo_torpedo.write(65);
+  servo_torpedo.write(130);
   fired_bot = 1;
   torpedoBotTimer = millis();
 }
@@ -244,14 +244,14 @@ void reset_manipulate()
 
   if (fired_top && (millis() - torpedoTopTimer) > TORPEDO_INTERVAL)
   {
-    servo_torpedo.write(90);
+    servo_torpedo.write(95);
     fired_top = 0;
     Serial.println("Closed top torpedo");
   }
 
   if (fired_bot && (millis() - torpedoBotTimer) > TORPEDO_INTERVAL)
   {
-    servo_torpedo.write(90);
+    servo_torpedo.write(95);
     fired_bot = 0;
     Serial.println("Closed bot torpedo");
   }
