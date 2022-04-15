@@ -11,12 +11,15 @@
 // # ####   # ####   #######  #######   ####
 //
 //
-//Sensor and Telemetry for BBAUV 3.99
-//Firmware Version :             v1.0
-////
-// Written by Chia Che
-// Change log v0.0:
+// Sensor and Telemetry for BBAUV 3.99
+// Firmware Version :             v1.2
 //
+// Written by Chia Che edited by titus
+// Change log v1.2:
+// Changed SoftPMW library to PalatisSoftPWM by per1234 due to compatibility issues
+// Update depth calculation for US381-000005-050PG 50psi gauge depth sensor 
+// Correct SBC temperature code
+// 
 //###################################################
 //###################################################
 
@@ -32,15 +35,7 @@
 #include <SPI.h> //for CAN controller
 #include <can.h>
 #include "can_auv_define.h"
-
-#define SOFTPWM
-
-#ifdef SOFTPWM
-#include "SoftPWM.h"
-#else
-#include "LEDS.h"
-#endif // SOFTPWM
-
+#include <PalatisSoftPWM.h>
 
 
 // CAN variable
@@ -71,21 +66,15 @@ static uint32_t pressure_loop = 0;
 static uint32_t filter_loop = 0;
 
 //LED
-#ifndef SOFTPWM
-LEDS led(RED, GREEN, BLUE);
-#else
-//LED Hackjob Software PWM
+//==========    Read this before use    ==========
+//        https://github.com/per1234/PalatisSoftPWM
 
-//==========!!!!!!!!!!    Read this before use    !!!!!!!!!!==========
-//        https://github.com/Palatis/arduino-softpwm
-
-SOFTPWM_DEFINE_CHANNEL(22, DDRA, PORTA, PORTA0);  //Arduino pin 22
-SOFTPWM_DEFINE_CHANNEL(23, DDRA, PORTA, PORTA1);  //Arduino pin 23
-SOFTPWM_DEFINE_CHANNEL(24, DDRA, PORTA, PORTA2);  //Arduino pin 24
-SOFTPWM_DEFINE_OBJECT(255);
+SOFTPWM_DEFINE_PIN22_CHANNEL(0);  //Arduino pin 22 as channel 0 
+SOFTPWM_DEFINE_PIN23_CHANNEL(1);  //Arduino pin 23 as channel 1
+SOFTPWM_DEFINE_PIN24_CHANNEL(2);  //Arduino pin 24 as channel 2
+SOFTPWM_DEFINE_OBJECT(3);         // Initialize 3 channels
 bool blink_on = false;
 uint32_t time = 0;
-#endif
 uint8_t lightColour = 0;  // 0 is off
 uint8_t selfSetColour[3] = { 0 };
 
@@ -279,12 +268,12 @@ void checkCANmsg() {
       break;
     case CAN_CPU:
     {
-      uint8_t temp[5] = { 0 };
-      for (int i = 0; i < 5; i++) {
+      uint8_t temp[3] = { 0 };
+      for (int i = 0; i < 3; i++) { 
         temp[i] = CAN.parseCANFrame(buf, i, 1);
       }
       uint8_t max = temp[0];
-      for (int i = 1; i < 5; i++) {
+      for (int i = 1; i < 3; i++) {
         if (temp[i] >= max) {
           max = temp[i];
         }
@@ -500,27 +489,22 @@ byte readInternalPressure() {
 
 //Updates ExtPressure and return raw 16bit External Pressure reading
 uint16_t readExternalPressure() {
-  //output 4-20mA  range upto 50psi
-  //NEW P/N: US381-000005-100PA; output 4-20mA range up to 100psi
+  // output 4-20mA  range upto 50psi  gauge pressure sensor -> 0psi @ sea level 
+  // US381-000005-050PG
   // ==> 1-5V as shunt resistor is 250.0ohm
   ads.set_continuous_conv(0);
   delay(ADS_DELAY);
-  uint16_t adc0 = ads.readADC_Continuous(); // 101kPa = 5480
-  //4928    0.924V
-  //ADC Range: +/- 6.144V
-
-  //psi to pascal
-  //1psi = 6895 pascal
-  //Sealevel 14.6 psi
-  double temp_ext = 0.0;
-  temp_ext = 6895 * ((25.0 * 6.144 * (adc0 / 32768.0) - 0.25)); //Convert to Pascal
-  ExtPressure = (uint16_t)(temp_ext / 1000);
-
+  uint16_t adc0 = ads.readADC_Continuous(); 
+  // ADC Range: +/- 6.144V
+  // 1 psi = 6895 pascal
+  double voltage = ((double)adc0/32767) * 6.144;        // 0 = 0V, 2^15 = 6.144V 
+  double gauge_psi = ((voltage - 1) / 4) * 50;        // 1-5V, 50psi range 
+  double absolute_psi = gauge_psi + 14.6;             // psi at sea level = 14.6psi 
+  ExtPressure = (uint16_t)(absolute_psi * 6.895);              // pressure in kpa 
   if (ExtPressure < 80 || ExtPressure > 350) {
     ExtPressure = 0xFFFF;
   }
-
-  return adc0;
+  return adc0;                                        // for legacy reasons, return raw adc value 
 }
 
 //Filter External Pressure with LPF
@@ -552,23 +536,6 @@ void readTempHumididty() {
   }
 }
 
-//Blinks through all colour
-void led_init() {
-#ifdef SOFTPWM
-  SoftPWM.begin(200); //200Hz
-  for (int i = 0; i < 10; i++) {
-    colour(i);
-    delay(200);
-  }
-  colour(lightColour);
-#else
-  for (int i = 0; i < 10; i++) {
-    led.colour(i);
-    delay(200);
-  }
-  led.colour(lightColour);
-#endif
-}
 
 //Return bool to indicate whether is it leaking
 //Blinks led if it is leaking
@@ -578,13 +545,8 @@ bool leak() {
     leaking = true;
   }
   if (leaking) {
-#ifdef SOFTPWM
     //colour(8);    //  8 for white
     blink(1, 8, 300);
-#else
-    //led.colour(8);  //  8 for white
-    led.blink(1, 8, 300);   // red white 500ms
-#endif
   }
   return leaking;
 }
@@ -603,23 +565,26 @@ void sonar_update() {
   sonar ? digitalWrite(SONAR_IN, HIGH) : digitalWrite(SONAR_IN, LOW);
 }
 
+//==========================================
+//
+//        LED Functions
+//
+//==========================================
 
-
-
-
-
-//=========================================================================================
-
-
-
-
-
-
+//Blinks through all colour
+void led_init() {
+  PalatisSoftPWM.begin(200); //200Hz
+  for (int i = 0; i < 10; i++) {
+    colour(i);
+    delay(200);
+  }
+  colour(lightColour);
+}
 
 void setcolour(int red, int green, int blue) {
-  SoftPWM.set(RED, red);
-  SoftPWM.set(GREEN, green);
-  SoftPWM.set(BLUE, blue);
+  PalatisSoftPWM.set(RED, red);
+  PalatisSoftPWM.set(GREEN, green);
+  PalatisSoftPWM.set(BLUE, blue);
 }
 
 // 9 for off
