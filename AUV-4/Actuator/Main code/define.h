@@ -19,7 +19,7 @@
 #define HEARTBEAT_TIMEOUT 500
 
 //CAN Heartbeat
-#define CAN_ACT_HEARTBEAT 0x06
+#define CAN_ACT_HEARTBEAT 0x0A
 
 //CAN commands mapping for manipulation
 #define FIRE_TOP_TORPEDO 0x04

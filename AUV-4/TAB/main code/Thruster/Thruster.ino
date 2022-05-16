@@ -1,3 +1,29 @@
+//###################################################
+//###################################################
+//
+//####     ####
+//#  #     #  #      ######  ######## ########
+//#  ####  #  ####   #    ## #  ##  # #  ##  #
+//#     ## #     ##  ####  # #  ##  # #  ##  #
+//#  ##  # #  ##  # ##     # #  ##  # #  ##  #
+//#  ##  # #  ##  # #  ##  # #  ##  # ##    ##
+//#     ## #     ## ##     # ##     #  ##  ##
+// # ####   # ####   #######  #######   ####    
+//
+//
+// BBAUV 4.0 Thruster Board
+// Firmware Version : v1.0
+// 
+// Written by Yong Jie
+// Edited by Titus   
+// Change log v1.0: 
+// Added actuation board to the thruster can lines
+// 1. Forward actuation control message from SBC to thruster CAN line
+// 2. Forward heartbeat from actuation board to main CAN line
+//
+//###################################################
+//###################################################
+
 #include <Arduino.h>
 #include "VESC_Define.h"
 #include "Define.h"
@@ -49,28 +75,6 @@ void loop()
         publishCAN_heartbeat(4);
         heartbeat_loop = millis();
     }
-//    if(millis() - report_loop > REPORT_TIMEOUT){
-//        publishCAN_RPM();
-//        publishCAN_DUTY();
-//        Serial.println("=====================================================");
-//        for (int vesc_idx = 0; vesc_idx < 7; vesc_idx++)
-//          {
-//              Serial.print("ESC No : ");
-//              Serial.print(vesc_idx + 1);
-//              Serial.print("   Duty_cycle : ");
-//              Serial.print(vesc_duty_fb[vesc_idx]);  //duty cycle * 1000
-//              Serial.print("   RPM : ");
-//              Serial.print(vesc_rpm_fb[vesc_idx]);          
-//              Serial.print("   Voltage : ");
-//              Serial.print(vesc_voltage[vesc_idx]);  //voltage * 10
-//              Serial.print("   Current : ");
-//              Serial.print(vesc_curr_fb[vesc_idx]);  //voltage * 10       
-//              Serial.print("   Time Since reported : ");
-//              Serial.print(vesc_timeout[vesc_idx]);  
-//              Serial.println();
-//        }
-//        report_loop = millis();
-//    }
     checkCANmsg();
 }
 
@@ -84,7 +88,7 @@ void CAN_init() {
 START_INIT:
   if (CAN_OK == CAN.begin(CAN_1000KBPS)) {                   // init can bus : baudrate = 1000k
 #if DEBUG_MODE == NORMAL
-    Serial.println("CAN init ok!");
+    Serial.println("CAN init ok!"); 
 #endif
   }
   else {
@@ -145,34 +149,41 @@ void checkCANmsg() {
                     //Send to vesc_id, extended frame, 4 bytes of data
                     CAN_THRUSTER.sendMsgBuf((CAN_PACKET_SET_DUTY << 8 | vesc_id[vesc_idx]), 1, 4, buf_thurster);
                 }
-                break;            
+                break;  
+            case CAN_ACT_CONTROL: // receive manipulator control, fwd to actuation board
+                uint8_t maniControl[8] = {CAN.parseCANFrame(buf, 0, 1)};
+                CAN_THRUSTER.sendMsgBuf(CAN_ACT_CONTROL, 0, 1, maniControl);
             default:
-//                Serial.println(CAN.getCanId());
                 break;
         }
         CAN.clearMsg();
     }    
 
     if (CAN_MSGAVAIL == CAN_THRUSTER.checkReceive()) {
-        CAN_THRUSTER.readMsgBufID(&id_thurster, &len_thurster, buf_thurster);    // read data,  len: data length, buf: data buf
-        int esc_id = CAN_THRUSTER.getCanId() & 0xFF;      
-        esc_id = esc_id - 1;      
-        int command = CAN_THRUSTER.getCanId()>>8 & 0xFF;
-        switch (command) {
-            case CAN_PACKET_STATUS:
-                vesc_rpm_fb[esc_id] = CAN_THRUSTER.parseCANFrame(buf_thurster, 0, 4); 
-                vesc_curr_fb[esc_id] = CAN_THRUSTER.parseCANFrame(buf_thurster, 4, 2);  
-                vesc_duty_fb[esc_id] = CAN_THRUSTER.parseCANFrame(buf_thurster, 6, 2);   
-//                vesc_timeout[esc_id] = millis();
+          CAN_THRUSTER.readMsgBufID(&id_thurster, &len_thurster, buf_thurster);    // read data,  len: data length, buf: data buf
+          int esc_id = CAN_THRUSTER.getCanId() & 0xFF;      
+          esc_id = esc_id - 1;
+//          Serial.println(esc_id);
+          int command = CAN_THRUSTER.getCanId()>>8 & 0xFF;
+          switch (command) {
+              case CAN_PACKET_STATUS:
+                  vesc_rpm_fb[esc_id] = CAN_THRUSTER.parseCANFrame(buf_thurster, 0, 4); 
+                  vesc_curr_fb[esc_id] = CAN_THRUSTER.parseCANFrame(buf_thurster, 4, 2);  
+                  vesc_duty_fb[esc_id] = CAN_THRUSTER.parseCANFrame(buf_thurster, 6, 2);   
+  //                vesc_timeout[esc_id] = millis();
+                  break;
+              case CAN_PACKET_STATUS_5:
+                  vesc_voltage[esc_id] = CAN_THRUSTER.parseCANFrame(buf_thurster, 4, 2);  
+  //                vesc_timeout[esc_id] = millis();
+                  break;            
+              default:
+                if (CAN_THRUSTER.getCanId() == CAN_ACT_HEARTBEAT_THRUSTER) {
+//                  Serial.println("Recevied actuation hb");
+                  uint8_t HB[1] = { CAN_ACT_HEARTBEAT };  //CAN_ACT_HEARTBEAT
+                  CAN.sendMsgBuf(CAN_HEARTBEAT, 0, 1, HB); //CAN_HEARTBEAT
+                }
                 break;
-            case CAN_PACKET_STATUS_5:
-                vesc_voltage[esc_id] = CAN_THRUSTER.parseCANFrame(buf_thurster, 4, 2);  
-//                vesc_timeout[esc_id] = millis();
-                break;            
-            default:
-//                Serial.println(CAN_THRUSTER.getCanId());
-                break;
-        }
+          }
         CAN_THRUSTER.clearMsg();
     }
 }
