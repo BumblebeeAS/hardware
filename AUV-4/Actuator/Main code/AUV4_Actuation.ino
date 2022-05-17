@@ -12,20 +12,18 @@
 //
 //
 // BBAUV 4.0 Actuation
-// Firmware Version : v2.3
+// Firmware Version : v2.4
 // 
 // Written by Linxin
 // Edited by Titus   
-// Change log v2.3
-// Added actutation board to thruster can lines
-// Only works with thruster firmware v1.0 
-// Changed heartbeat value along thruster can line to 0x0A to prevent conflict with ESC ids
-// Main CAN line heartbeat value remains the same at 0x06 
-//
+// Change log v2.4
+// Added edits for grabber (pinouts, microstepping) 
+// Note: board has been hacked to use tmc2209
+// 
 //###################################################
 //###################################################
 
-//#define DEBUG
+#define DEBUG
 #include "can_defines.h"
 #include "auv_4.0_can_def.h" //update to current version
 #include "define.h"
@@ -173,12 +171,12 @@ void activate_grabber() {
   digitalWrite(dirPin, HIGH);
 
   // Spin the stepper motor 1 revolution slowly:
-  for (int i = 0; i < stepsPerRevolution; i++) {
+  for (int i = 0; i < stepsPerRevolution * microstep; i++) {
     // These four lines result in 1 step:
     digitalWrite(stepPin, HIGH);
-    delayMicroseconds(4000);
+    delayMicroseconds(stepperdelay);
     digitalWrite(stepPin, LOW);
-    delayMicroseconds(4000);
+    delayMicroseconds(stepperdelay);
   }
 }
 
@@ -187,12 +185,12 @@ void release_grabber(){
   digitalWrite(dirPin, LOW);
 
   // Spin the stepper motor 1 revolution quickly:
-  for (int i = 0; i < stepsPerRevolution; i++) {
+  for (int i = 0; i < stepsPerRevolution * microstep; i++) {
     // These four lines result in 1 step:
     digitalWrite(stepPin, HIGH);
-    delayMicroseconds(4000);
+    delayMicroseconds(stepperdelay);
     digitalWrite(stepPin, LOW);
-    delayMicroseconds(4000);
+    delayMicroseconds(stepperdelay);
   }
 }
 
