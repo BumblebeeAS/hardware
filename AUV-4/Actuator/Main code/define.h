@@ -12,7 +12,7 @@
 #define stepPin A0 // Map to A0 GPIO
 #define dirPin A1 // Map to A1 GPIO
 #define microstep 8
-#define stepperdelay 400
+#define stepperdelay 300
 
 #define stepsPerRevolution 200
 

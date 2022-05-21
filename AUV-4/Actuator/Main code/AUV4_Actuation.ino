@@ -12,13 +12,13 @@
 //
 //
 // BBAUV 4.0 Actuation
-// Firmware Version : v2.4
+// Firmware Version : v2.5
 // 
 // Written by Linxin
 // Edited by Titus   
-// Change log v2.4
-// Added edits for grabber (pinouts, microstepping) 
-// Note: board has been hacked to use tmc2209
+// Change log v2.5
+// Fix direction of rotation for grabber + optimize stepper delay for max speed 
+// grabber works with auv4 software controls
 // 
 //###################################################
 //###################################################
@@ -168,10 +168,10 @@ void bot_torpedo()
 
 void activate_grabber() {
   // Set the spinning direction clockwise:
-  digitalWrite(dirPin, HIGH);
+  digitalWrite(dirPin, LOW);
 
   // Spin the stepper motor 1 revolution slowly:
-  for (int i = 0; i < stepsPerRevolution * microstep; i++) {
+  for (int i = 0; i < stepsPerRevolution * microstep * 0.85; i++) {
     // These four lines result in 1 step:
     digitalWrite(stepPin, HIGH);
     delayMicroseconds(stepperdelay);
@@ -182,10 +182,10 @@ void activate_grabber() {
 
 void release_grabber(){  
   // Set the spinning direction counterclockwise:
-  digitalWrite(dirPin, LOW);
+  digitalWrite(dirPin, HIGH);
 
   // Spin the stepper motor 1 revolution quickly:
-  for (int i = 0; i < stepsPerRevolution * microstep; i++) {
+  for (int i = 0; i < stepsPerRevolution * microstep * 0.85; i++) {
     // These four lines result in 1 step:
     digitalWrite(stepPin, HIGH);
     delayMicroseconds(stepperdelay);
