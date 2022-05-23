@@ -12,13 +12,12 @@
 //
 //
 // BBAUV 4.0 Actuation
-// Firmware Version : v2.5
+// Firmware Version : v2.6
 // 
 // Written by Linxin
 // Edited by Titus   
-// Change log v2.5
-// Fix direction of rotation for grabber + optimize stepper delay for max speed 
-// grabber works with auv4 software controls
+// Change log v2.6
+// Increase stepper delay as grabber unable to close in water 
 // 
 //###################################################
 //###################################################
