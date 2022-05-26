@@ -19,21 +19,21 @@ void LCD::screen_init(){
 	screen->GPIOX(true);      // Enable screen - display enable tied to GPIOX
 	screen->PWM1config(true, RA8875_PWM_CLK_DIV1024); // PWM output for backlight
 	screen->PWM1out(255);
-	screen->fillScreen(RA8875_GREEN);  //Fill screen with cyan color
-	delay(100);
-	screen->fillScreen(RA8875_CYAN);
-	delay(100);
-	screen->fillScreen(RA8875_BLUE);
-	delay(100);
-	screen->fillScreen(RA8875_RED);
-	delay(100);
-	screen->fillScreen(RA8875_RED);
-	delay(100);
-	screen->fillScreen(RA8875_MAGENTA);
-	delay(100);
-	screen->fillScreen(RA8875_YELLOW);
-	delay(100);
-	screen->fillScreen(RA8875_BLACK);
+	// screen->fillScreen(RA8875_GREEN);  //Fill screen with cyan color
+	// delay(100);
+	// screen->fillScreen(RA8875_CYAN);
+	// delay(100);
+	// screen->fillScreen(RA8875_BLUE);
+	// delay(100);
+	// screen->fillScreen(RA8875_RED);
+	// delay(100);
+	// screen->fillScreen(RA8875_RED);
+	// delay(100);
+	// screen->fillScreen(RA8875_MAGENTA);
+	// delay(100);
+	// screen->fillScreen(RA8875_YELLOW);
+	// delay(100);
+	// screen->fillScreen(RA8875_BLACK);
 
 	/* Switch to graphic mode */  
 	screen->graphicsMode();                 // go back to graphics mode
@@ -69,6 +69,23 @@ void LCD::increment_row()
 
 static char dummyChar[9];
 static String dummyStr;
+
+void LCD::screen_fill_color(uint8_t color) {
+	switch (color) {
+	case 0:
+		screen->fillScreen(RA8875_RED);
+		break;
+	case 1:
+		screen->fillScreen(RA8875_GREEN);
+		break;
+	case 2: 
+		screen->fillScreen(RA8875_BLUE);
+		break;
+	default: 
+		break;
+	}
+	return;
+}
 
 void LCD::write_string(const char* var){
 	screen->textTransparent(RA8875_WHITE);
