@@ -12,12 +12,12 @@
 //
 //
 // BBAUV 4.0 Actuation
-// Firmware Version : v2.6
+// Firmware Version : v2.7
 // 
 // Written by Linxin
 // Edited by Titus   
-// Change log v2.6
-// Increase stepper delay as grabber unable to close in water 
+// Change log v2.7
+// Increase stepper delay to 800
 // 
 //###################################################
 //###################################################
@@ -153,7 +153,7 @@ void dropper()
 
 void top_torpedo()
 {
-  servo_torpedo.write(65);
+  servo_torpedo.write(60);
   fired_top = 1;
   torpedoTopTimer = millis();
 }
@@ -170,7 +170,7 @@ void activate_grabber() {
   digitalWrite(dirPin, LOW);
 
   // Spin the stepper motor 1 revolution slowly:
-  for (int i = 0; i < stepsPerRevolution * microstep * 0.85; i++) {
+  for (int i = 0; i < stepsPerRevolution * microstep * 0.9; i++) {
     // These four lines result in 1 step:
     digitalWrite(stepPin, HIGH);
     delayMicroseconds(stepperdelay);
@@ -184,7 +184,7 @@ void release_grabber(){
   digitalWrite(dirPin, HIGH);
 
   // Spin the stepper motor 1 revolution quickly:
-  for (int i = 0; i < stepsPerRevolution * microstep * 0.85; i++) {
+  for (int i = 0; i < stepsPerRevolution * microstep * 0.9; i++) {
     // These four lines result in 1 step:
     digitalWrite(stepPin, HIGH);
     delayMicroseconds(stepperdelay);
