@@ -7,10 +7,12 @@
 #define SERIAL_STATUS_INTERVAL 1000
 
 //Manipulator definitions
-#define DROP A2 // Map to 16 GPIO
-#define TORP A3 // Map to 17 GPIO
-#define stepPin 14 // Map to 14 GPIO
-#define dirPin 15 // Map to 15 GPIO
+#define DROP A2 // Map to A2GPIO
+#define TORP A3 // Map to A3 GPIO
+#define stepPin A0 // Map to A0 GPIO
+#define dirPin A1 // Map to A1 GPIO
+#define microstep 8
+#define stepperdelay 800
 
 #define stepsPerRevolution 200
 
@@ -19,7 +21,7 @@
 #define HEARTBEAT_TIMEOUT 500
 
 //CAN Heartbeat
-#define CAN_ACT_HEARTBEAT 0x06
+#define CAN_ACT_HEARTBEAT 0x0A
 
 //CAN commands mapping for manipulation
 #define FIRE_TOP_TORPEDO 0x04
