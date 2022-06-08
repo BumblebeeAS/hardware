@@ -12,12 +12,11 @@
 //
 //
 // Sensor and Telemetry for BBAUV 4.0
-// Firmware Version :             v1.5
 //
 // Written by Titus
-// Change log v1.5:
-// Add LED functionality for screen
-// todo: add can mask
+// Change log v1.4:
+// Change STATS_LOOP to be 0ms - Publish stats ASAP
+// Approx 20Hz
 //
 //###################################################
 //###################################################
@@ -81,8 +80,8 @@ static uint32_t sbc_timeout = 0;
 static uint32_t dna_timeout = 0;
 static uint32_t heartbeat_loop = 0;
 static uint32_t stats_loop = 0;
+
 static uint32_t testing_time = 0;
-uint8_t screen_state = NORMAL;
 
 void setup()
 {
@@ -102,7 +101,7 @@ void setup()
   //CAN init
   CAN_init();
   Serial.println("CAN OK");
-  //CANSetMask();
+  CANSetMask();
 
   //Sensor init
   Wire.begin();
@@ -191,7 +190,6 @@ void CANSetMask() {
 /* Receive these CAN ID
  *  4: Heartbeat
  *  5: CPU_TEMP
- *  23: LED
  *  23: BATT 1 STAT
  *  24: PMB1 STAT
  *  25: BATT 2 STAT
@@ -201,12 +199,10 @@ void CANSetMask() {
 void checkCANmsg() {
   if (CAN_MSGAVAIL == CAN.checkReceive()) {
     CAN.readMsgBufID(&id, &len, buf);    // read data,  len: data length, buf: data buf
-    #ifdef DEBUG 
-      //Serial.println(CAN.getCanId());`
-
-    #endif 
+//    #ifdef DEBUG 
+//      Serial.println(CAN.getCanId());
+//    #endif 
     switch (CAN.getCanId()) {
-
     case CAN_HEARTBEAT:
     {
       uint32_t device = CAN.parseCANFrame(buf, 0, 1);
@@ -224,7 +220,6 @@ void checkCANmsg() {
       internalStats[PMB1_TEMP] = CAN.parseCANFrame(buf, 0, 2);
       pmb1_timeout = millis();
       break;
-
     case CAN_BATT2_STAT:
       powerStats[BATT2_CURRENT] = CAN.parseCANFrame(buf, 0, 2);
       powerStats[BATT2_VOLTAGE] = CAN.parseCANFrame(buf, 2, 2);
@@ -236,9 +231,7 @@ void checkCANmsg() {
       internalStats[PMB2_TEMP] = CAN.parseCANFrame(buf, 0, 2);
       pmb2_timeout = millis();
       break;
-
     case CAN_CPU_TEMP:
-    {
       uint8_t temp[5] = { 0 };
       for (int i = 0; i < 5; i++) {
         temp[i] = CAN.parseCANFrame(buf, i, 1);
@@ -253,19 +246,10 @@ void checkCANmsg() {
       internalStats[CPU_TEMP] = CPU_CoreTemp;
       sbc_timeout = millis();
       break;
-    }
-    case CAN_STB_UP: {
-      screen_state = CAN.parseCANFrame(buf, 0, 1);   // 0 = R, 1 = B, 2 = B, 3 = normal
-      if (screen_state == NORMAL) {
-        screen.screen_init();
-        screen_prepare();
-      }
-      break;
-    }
     default:
-      #ifdef DEBUG
-        Serial.println(id);
-      #endif
+//      #ifdef DEBUG
+//      Serial.println(CAN.getCanId());
+//      #endif
       break;
     }
     CAN.clearMsg();
@@ -308,6 +292,9 @@ void publishST_stats() {
   buf[1] = IntPressure>>8;
 
   CAN.sendMsgBuf(CAN_STB_SENS ,0, 8, buf);
+  #ifdef DEBUG
+    Serial.println(rawExtPressure);
+  #endif
 }
 
 
@@ -345,66 +332,59 @@ void screen_prepare() {
 }
 
 void screen_update() {
-  if (screen_state == NORMAL) {
-    // row height 35,     increment_row()
-    // display from Ext press to ST temp
-    screen.set_cursor(200 + OFFSET, 0);
-    for (int i = 0; i < INT_STAT_COUNT; i++)
-    {
-      // Display internal pressure as kpa with 1 dp
-      if (i == 0) {
-        screen.write_value_with_dp(internalStats[i], 1);
-      } else if (i == 1) {
-        // Display internal pressure in kpa with 2 dp
-        float intP = readInternalPressure() * 100;
-        screen.write_value_with_dp(intP, 2);
-      } else {
-        screen.write_value_int(internalStats[i]);
-      }
+  // row height 35,     increment_row()
+  // display from Ext press to ST temp
+  screen.set_cursor(200 + OFFSET, 0);
+  for (int i = 0; i < INT_STAT_COUNT; i++)
+  {
+    // Display internal pressure as kpa with 1 dp
+    if (i == 0) {
+      screen.write_value_with_dp(internalStats[i], 1);
+    } else if (i == 1) {
+      // Display internal pressure in kpa with 2 dp
+      float intP = readInternalPressure() * 100;
+      screen.write_value_with_dp(intP, 2);
+    } else {
+      screen.write_value_int(internalStats[i]);
     }
-  
-    // display from Batt 1 capacity to Batt 2 voltage
-    screen.set_cursor(645 + OFFSET, 0);
-    for (int i = 0; i < POWER_STAT_COUNT; i++)
-    {
-      if (i > BATT2_CAPACITY) {
-        screen.write_value_with_dp(powerStats[i], 3);
-      }
-      else {
-        screen.write_value_int(powerStats[i]);
-      }
+  }
+
+  // display from Batt 1 capacity to Batt 2 voltage
+  screen.set_cursor(645 + OFFSET, 0);
+  for (int i = 0; i < POWER_STAT_COUNT; i++)
+  {
+    if (i > BATT2_CAPACITY) {
+      screen.write_value_with_dp(powerStats[i], 3);
     }
-  } else {
-     screen.screen_fill_color(screen_state);
-     Serial.print("filled screen");
-     Serial.println(screen_state);
+    else {
+      screen.write_value_int(powerStats[i]);
+    }
   }
 }
 
 // display heartbeat status
 void update_heartbeat()
-{ if (screen_state == NORMAL) {
-    int i;
-    screen.set_cursor(200 + OFFSET, 315);
-    // display SBC & SBC-CAN
-    for (i = 1; i < 3; i++) {
+{
+  int i;
+  screen.set_cursor(200 + OFFSET, 315);
+  // display SBC & SBC-CAN
+  for (i = 1; i < 3; i++) {
+    if ((millis() - heartbeat_timeout[i]) > HB_TIMEOUT) {
+      screen.write_value_string("NO");
+    }
+    else {
+      screen.write_value_string("YES");
+    }        
+  }
+  // display THRUSTER to PMB2
+  screen.set_cursor(645 + OFFSET, 210);
+  for (i = 4; i < 9; i++) {
+    if (i != 5) { // Skip ST HB
       if ((millis() - heartbeat_timeout[i]) > HB_TIMEOUT) {
         screen.write_value_string("NO");
       }
-      else {
+      else
         screen.write_value_string("YES");
-      }        
-    }
-    // display THRUSTER to PMB2
-    screen.set_cursor(645 + OFFSET, 210);
-    for (i = 4; i < 9; i++) {
-      if (i != 5) { // Skip ST HB
-        if ((millis() - heartbeat_timeout[i]) > HB_TIMEOUT) {
-          screen.write_value_string("NO");
-        }
-        else
-          screen.write_value_string("YES");
-      }
     }
   }
 }
@@ -476,7 +456,7 @@ double readInternalPressure() {
   uint16_t adc1 = ads.readADC_Continuous();
   return (((double)adc1*0.0001875) / (Vref*0.0040) + 10); 
 }
- 
+
 // Return External Pressure in mbar
 uint16_t readExternalPressure(){
   sensor.read();
@@ -501,3 +481,14 @@ void readTempHumididty() {
     humidloop = millis();
   }
 }
+/*
+//Return bool to indicate whether is it leaking
+//Blinks led if it is leaking
+bool leak() {
+  bool leaking = false;
+  if ((InitialP - IntPressure > 10) || humidity > 85) {
+    leaking = true;
+  }
+  return leaking;
+}
+*/

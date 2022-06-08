@@ -12,17 +12,17 @@
 //
 //
 // BBAUV 4.0 Actuation
-// Firmware Version : v2.7
+// Firmware Version : v2.1
 // 
 // Written by Linxin
 // Edited by Titus   
-// Change log v2.7
-// Increase stepper delay to 800
-// 
+// Change log v2.1:
+// Add CAN filter 
+//
 //###################################################
 //###################################################
 
-#define DEBUG
+//#define DEBUG
 #include "can_defines.h"
 #include "auv_4.0_can_def.h" //update to current version
 #include "define.h"
@@ -97,6 +97,16 @@ void loop()
   reset_manipulate();
 
   #ifdef DEBUG
+    if ((millis() - serialStatusTimer) > SERIAL_STATUS_INTERVAL) {
+      Serial.print("Manipulator Status: ");
+      for (int i = 7; i >= 0; i--)
+      {
+        bool b = bitRead(maniControl, i);
+        Serial.print(b);
+      }
+      Serial.println();
+      serialStatusTimer = millis();
+    }
 
   //Test code using Serial 
   if (Serial.available() > 0) {
@@ -153,43 +163,43 @@ void dropper()
 
 void top_torpedo()
 {
-  servo_torpedo.write(60);
+  servo_torpedo.write(130);
   fired_top = 1;
   torpedoTopTimer = millis();
 }
 
 void bot_torpedo()
 {
-  servo_torpedo.write(130);
+  servo_torpedo.write(65);
   fired_bot = 1;
   torpedoBotTimer = millis();
 }
 
 void activate_grabber() {
   // Set the spinning direction clockwise:
-  digitalWrite(dirPin, LOW);
+  digitalWrite(dirPin, HIGH);
 
   // Spin the stepper motor 1 revolution slowly:
-  for (int i = 0; i < stepsPerRevolution * microstep * 0.9; i++) {
+  for (int i = 0; i < stepsPerRevolution; i++) {
     // These four lines result in 1 step:
     digitalWrite(stepPin, HIGH);
-    delayMicroseconds(stepperdelay);
+    delayMicroseconds(4000);
     digitalWrite(stepPin, LOW);
-    delayMicroseconds(stepperdelay);
+    delayMicroseconds(4000);
   }
 }
 
 void release_grabber(){  
   // Set the spinning direction counterclockwise:
-  digitalWrite(dirPin, HIGH);
+  digitalWrite(dirPin, LOW);
 
   // Spin the stepper motor 1 revolution quickly:
-  for (int i = 0; i < stepsPerRevolution * microstep * 0.9; i++) {
+  for (int i = 0; i < stepsPerRevolution; i++) {
     // These four lines result in 1 step:
     digitalWrite(stepPin, HIGH);
-    delayMicroseconds(stepperdelay);
+    delayMicroseconds(4000);
     digitalWrite(stepPin, LOW);
-    delayMicroseconds(stepperdelay);
+    delayMicroseconds(4000);
   }
 }
 
@@ -234,14 +244,14 @@ void reset_manipulate()
 
   if (fired_top && (millis() - torpedoTopTimer) > TORPEDO_INTERVAL)
   {
-    servo_torpedo.write(95);
+    servo_torpedo.write(90);
     fired_top = 0;
     Serial.println("Closed top torpedo");
   }
 
   if (fired_bot && (millis() - torpedoBotTimer) > TORPEDO_INTERVAL)
   {
-    servo_torpedo.write(95);
+    servo_torpedo.write(90);
     fired_bot = 0;
     Serial.println("Closed bot torpedo");
   }
@@ -250,7 +260,7 @@ void reset_manipulate()
 void CAN_init()
 {
 START_INIT:
-  if (CAN_OK == CAN.begin(CAN_500KBPS)) // init can bus : baudrate = 2220Kbps
+  if (CAN_OK == CAN.begin(CAN_1000KBPS)) // init can bus : baudrate = 2220Kbps
   {
     Serial.println("CAN BUS: OK");
   }
@@ -266,7 +276,7 @@ START_INIT:
 
 void publishCanHB() {
   uint8_t HB[1] = { CAN_ACT_HEARTBEAT };  //CAN_ACT_HEARTBEAT
-  CAN.sendMsgBuf(CAN_ACT_HEARTBEAT, 0, 1, HB); //CAN_HEARTBEAT
+  CAN.sendMsgBuf(CAN_HEARTBEAT, 0, 1, HB); //CAN_HEARTBEAT
 }
 
 boolean receiveCanMessage() {

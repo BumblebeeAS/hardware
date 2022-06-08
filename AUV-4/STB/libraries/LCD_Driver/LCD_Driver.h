@@ -38,7 +38,7 @@ public:
 	void write_value_int(uint32_t var);
 	void write_value_string(const char* var);
 	void write_value_with_dp(uint32_t var, uint32_t dp);
-	void screen_fill_color(uint8_t color);
+
 	void screen_clear();
 	
 #ifdef _SD_
