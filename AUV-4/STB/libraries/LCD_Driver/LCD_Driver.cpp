@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include "LCD_Driver.h"
 #include <stdio.h>
-
 LCD::LCD(int screen_cs, int screen_reset)
 {
 	screen = new Adafruit_RA8875(screen_cs, screen_reset);  //screen
@@ -11,7 +10,6 @@ LCD::LCD(int screen_cs, int screen_reset)
 
 void LCD::screen_init(){
 	/* Initialise the display using 'RA8875_480x272' or 'RA8875_800x480' */
-
 	if (!screen->begin(RA8875_800x480)) {
 		Serial.println("RA8875 Not Found!");
 		while (1);
@@ -21,21 +19,21 @@ void LCD::screen_init(){
 	screen->GPIOX(true);      // Enable screen - display enable tied to GPIOX
 	screen->PWM1config(true, RA8875_PWM_CLK_DIV1024); // PWM output for backlight
 	screen->PWM1out(255);
-	screen->fillScreen(RA8875_GREEN);  //Fill screen with cyan color
-	delay(200);
-	screen->fillScreen(RA8875_CYAN);
-	delay(200);
-	screen->fillScreen(RA8875_BLUE);
-	delay(200);
-	screen->fillScreen(RA8875_RED);
-	delay(200);
-	screen->fillScreen(RA8875_RED);
-	delay(200);
-	screen->fillScreen(RA8875_MAGENTA);
-	delay(200);
-	screen->fillScreen(RA8875_YELLOW);
-	delay(200);
-	screen->fillScreen(RA8875_BLACK);
+	// screen->fillScreen(RA8875_GREEN);  //Fill screen with cyan color
+	// delay(100);
+	// screen->fillScreen(RA8875_CYAN);
+	// delay(100);
+	// screen->fillScreen(RA8875_BLUE);
+	// delay(100);
+	// screen->fillScreen(RA8875_RED);
+	// delay(100);
+	// screen->fillScreen(RA8875_RED);
+	// delay(100);
+	// screen->fillScreen(RA8875_MAGENTA);
+	// delay(100);
+	// screen->fillScreen(RA8875_YELLOW);
+	// delay(100);
+	// screen->fillScreen(RA8875_BLACK);
 
 	/* Switch to graphic mode */  
 	screen->graphicsMode();                 // go back to graphics mode
@@ -72,6 +70,23 @@ void LCD::increment_row()
 static char dummyChar[9];
 static String dummyStr;
 
+void LCD::screen_fill_color(uint8_t color) {
+	switch (color) {
+	case 0:
+		screen->fillScreen(RA8875_RED);
+		break;
+	case 1:
+		screen->fillScreen(RA8875_GREEN);
+		break;
+	case 2: 
+		screen->fillScreen(RA8875_BLUE);
+		break;
+	default: 
+		break;
+	}
+	return;
+}
+
 void LCD::write_string(const char* var){
 	screen->textTransparent(RA8875_WHITE);
 	screen->textWrite(var);
@@ -105,11 +120,32 @@ void LCD::write_value_with_dp(uint32_t var, uint32_t dp) {
 			char buf2[20] = {};
 			uint32_t dec = 0, whole = 0, index = 1;
 			index = power(index, dp);
+			int total_length = (String(int(var)).length());
 			whole = (uint32_t)(var / index);		// whole number
-			dec = (uint32_t)(var % index);	// decimals
-			sprintf(buf, "%lu", whole);
-			sprintf(buf2, "%lu", dec);
+			dec = (uint32_t)(var % index);			// decimals
+			int whole_length = sprintf(buf, "%lu", whole);
+			int dec_length = sprintf(buf2, "%lu", dec);
+			int missing_0s = total_length - whole_length - dec_length;
 			strcat(buf, ".");
+			// not sure why using a loop causes the stb to crash
+			// for (;missing_0s != 0; missing_0s--) {		
+			// 	// strcat(buf, "0");
+			// }
+			switch (missing_0s) {
+			case 1:
+				strcat(buf, "0");
+				break;
+			case 2: 
+				strcat(buf, "0");
+				strcat(buf, "0");
+				break;
+			case 3: 
+				strcat(buf, "0");
+				strcat(buf, "0");
+				strcat(buf, "0");
+				break;
+			}
+		
 			strcat(buf, buf2);
 			screen->textWrite(buf);
 			increment_row();
@@ -121,11 +157,11 @@ void LCD::write_value_with_dp(uint32_t var, uint32_t dp) {
 }
 
 void LCD::write_value_string(const char* var){
-	if(var == "YES" || var == "NO LEAK"){
+	if(var == "YES"){
 		screen->fillRect(_x, _y, 50, 30, RA8875_GREEN);
 		screen->textTransparent(RA8875_BLACK);
 	}
-	else if(var == "NO" || var == "LEAK"){
+	else if(var == "NO"){
 		screen->fillRect(_x, _y, 50, 30, RA8875_RED);
 		screen->textTransparent(RA8875_WHITE);
 	}
