@@ -12,12 +12,12 @@
 //
 //
 // Sensor and Telemetry for BBAUV 4.0
-// Firmware Version :             v1.5
+// Firmware Version :             v1.6
 //
 // Written by Titus
-// Change log v1.5:
-// Add LED functionality for screen
-// todo: add can mask
+// Change log v1.6:
+// Edit CAN mask to include LED message
+// Include external LED functions
 //
 //###################################################
 //###################################################
@@ -102,7 +102,7 @@ void setup()
   //CAN init
   CAN_init();
   Serial.println("CAN OK");
-  //CANSetMask();
+  CANSetMask();
 
   //Sensor init
   Wire.begin();
@@ -176,10 +176,20 @@ void CANSetMask() {
   Filt decide which bit to accept
   */
 
+/* Receive these CAN ID
+ *  4: Heartbeat
+ *  5: CPU_TEMP 
+ *  12: LED - 00001100
+ *  23: BATT 1 STAT
+ *  24: PMB1 STAT
+ *  25: BATT 2 STAT
+ *  26: PMB2 STAT
+ */
 
   //mask register 0
   CAN.init_Mask(0, 0, 0xFE); //  check 1111111X
-  CAN.init_Filt(0, 0, 0x04); // let 0000010X pass (4 and 5)     // Heartbeat and SBC temp
+  CAN.init_Filt(0, 0, 0x04); // let 0000010X pass (4 and 5)         // Heartbeat and SBC temp
+  CAN.init_Filt(1, 0, 0x0C); // let 0x00110x pass (12 and 13)      // LED (13 is unused)
   
   //mask register 1
   CAN.init_Mask(1, 0, 0xFF); // check 11111111
@@ -188,15 +198,7 @@ void CANSetMask() {
   CAN.init_Filt(4, 0, 0x19); // let 00011001 pass (25)    // BATT 2 STAT 
   CAN.init_Filt(5, 0, 0x1A); // let 00011010 pass (26)    // PMB2 STAT
 }
-/* Receive these CAN ID
- *  4: Heartbeat
- *  5: CPU_TEMP
- *  23: LED
- *  23: BATT 1 STAT
- *  24: PMB1 STAT
- *  25: BATT 2 STAT
- *  26: PMB2 STAT
- */
+
 
 void checkCANmsg() {
   if (CAN_MSGAVAIL == CAN.checkReceive()) {
@@ -260,6 +262,7 @@ void checkCANmsg() {
         screen.screen_init();
         screen_prepare();
       }
+      changeLED(screen_state);
       break;
     }
     default:
@@ -499,5 +502,40 @@ void readTempHumididty() {
       readHumid = false;
     }
     humidloop = millis();
+  }
+}
+
+//==========================================
+//
+//        External LED Functions
+//
+//==========================================
+void changeLED(int color) {
+  switch (color) {
+    case RED: {
+      digitalWrite(RPIN, HIGH);
+      digitalWrite(GPIN, LOW);
+      digitalWrite(BPIN, LOW);
+      break;}    
+    case GREEN: {
+      digitalWrite(RPIN, LOW);
+      digitalWrite(GPIN, HIGH);
+      digitalWrite(BPIN, LOW);
+      break;}    
+    case BLUE: {
+      digitalWrite(RPIN, LOW);
+      digitalWrite(GPIN, LOW);
+      digitalWrite(BPIN, HIGH);
+      break;}
+    case NORMAL: {
+      digitalWrite(RPIN, LOW);
+      digitalWrite(GPIN, LOW);
+      digitalWrite(BPIN, LOW);
+      break;}
+    default: {
+      digitalWrite(RPIN, LOW);
+      digitalWrite(GPIN, LOW);
+      digitalWrite(BPIN, LOW);
+      break;}
   }
 }
