@@ -12,12 +12,13 @@
 //
 //
 // BBAUV 4.0 Actuation
-// Firmware Version : v2.7
+// Firmware Version : v2.9
 // 
 // Written by Linxin
 // Edited by Titus   
-// Change log v2.7
-// Increase stepper delay to 800
+// Change log v2.9
+// Update stepper motion to work with Zheng Hao's worm gear grabber
+// Update torpedo code to stop overextension
 // 
 //###################################################
 //###################################################
@@ -44,8 +45,8 @@ void extend_gripper();
 void manipulate();
 void reset_manipulate();
 
-Servo servo_dropper;
-Servo servo_torpedo;
+Servo servo_dropper;      // servo 1 
+Servo servo_torpedo;      // servo 2 
 
 MCP_CAN CAN(CAN_Chip_Select); //Set Chip Select to pin 8
 
@@ -153,14 +154,14 @@ void dropper()
 
 void top_torpedo()
 {
-  servo_torpedo.write(60);
+  servo_torpedo.write(70);
   fired_top = 1;
   torpedoTopTimer = millis();
 }
 
 void bot_torpedo()
 {
-  servo_torpedo.write(130);
+  servo_torpedo.write(120);
   fired_bot = 1;
   torpedoBotTimer = millis();
 }
@@ -170,7 +171,7 @@ void activate_grabber() {
   digitalWrite(dirPin, LOW);
 
   // Spin the stepper motor 1 revolution slowly:
-  for (int i = 0; i < stepsPerRevolution * microstep * 0.9; i++) {
+  for (int i = 0; i < stepsPerRevolution * microstep * 2.8;i++) {
     // These four lines result in 1 step:
     digitalWrite(stepPin, HIGH);
     delayMicroseconds(stepperdelay);
@@ -184,7 +185,7 @@ void release_grabber(){
   digitalWrite(dirPin, HIGH);
 
   // Spin the stepper motor 1 revolution quickly:
-  for (int i = 0; i < stepsPerRevolution * microstep * 0.9; i++) {
+  for (int i = 0; i < stepsPerRevolution * microstep * 2.8; i++) {
     // These four lines result in 1 step:
     digitalWrite(stepPin, HIGH);
     delayMicroseconds(stepperdelay);
