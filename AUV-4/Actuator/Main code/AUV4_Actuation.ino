@@ -12,13 +12,12 @@
 //
 //
 // BBAUV 4.0 Actuation
-// Firmware Version : v2.9
+// Firmware Version : v2.10
 // 
 // Written by Linxin
 // Edited by Titus   
-// Change log v2.9
-// Update stepper motion to work with Zheng Hao's worm gear grabber
-// Update torpedo code to stop overextension
+// Change log v2.10
+// Revert to Justin Bevel gear grabber
 // 
 //###################################################
 //###################################################
@@ -171,7 +170,7 @@ void activate_grabber() {
   digitalWrite(dirPin, LOW);
 
   // Spin the stepper motor 1 revolution slowly:
-  for (int i = 0; i < stepsPerRevolution * microstep * 2.8;i++) {
+  for (int i = 0; i < stepsPerRevolution * microstep * 0.92;i++) {
     // These four lines result in 1 step:
     digitalWrite(stepPin, HIGH);
     delayMicroseconds(stepperdelay);
@@ -185,7 +184,7 @@ void release_grabber(){
   digitalWrite(dirPin, HIGH);
 
   // Spin the stepper motor 1 revolution quickly:
-  for (int i = 0; i < stepsPerRevolution * microstep * 2.8; i++) {
+  for (int i = 0; i < stepsPerRevolution * microstep * 0.92; i++) {
     // These four lines result in 1 step:
     digitalWrite(stepPin, HIGH);
     delayMicroseconds(stepperdelay);
