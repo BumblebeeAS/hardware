@@ -12,12 +12,12 @@
 //
 //
 // BBAUV 4.0 Actuation
-// Firmware Version : v2.10
+// Firmware Version : v2.12
 // 
 // Written by Linxin
 // Edited by Titus   
-// Change log v2.10
-// Revert to Justin Bevel gear grabber
+// Change log v2.12
+// Update to Khangs ball dropper
 // 
 //###################################################
 //###################################################
@@ -55,19 +55,16 @@ uint8_t buf[8] = { 0 };
 
 uint8_t maniControl = 0x00;  // Bit 0 to 7: RETXTXDX
 
-uint32_t dropperTimer = 0;
-uint32_t torpedoTopTimer = 0;
-uint32_t torpedoBotTimer = 0;
-//uint32_t grabberActTimer = 0;
-//uint32_t grabberRelTimer = 0;
-uint32_t serialStatusTimer = 0;
-uint32_t heartbeatTimer = 0;
+unsigned long dropperTimer = 0;
+unsigned long torpedoTopTimer = 0;
+unsigned long torpedoBotTimer = 0;
+unsigned long serialStatusTimer = 0;
+unsigned long heartbeatTimer = 0;
 
 int fired_dropper = 0;
 int fired_top = 0;
 int fired_bot = 0;
-//int activated_grabber = 0;
-//int released_grabber = 0;
+bool last_bottle = false;
 
 int incomingByte = 0;   // for incoming serial data of test code
 
@@ -119,15 +116,19 @@ void loop()
     {
       maniControl |= FIRE_DROPPER;
     }
-    else if (incomingByte == 52) //if 4 is typed in terminal, retract gripper
+    else if (incomingByte == 52) //if 4 is typed in terminal, close gripper
     {
       maniControl |= ACTIVATE_GRABBER;
     }
-    else if (incomingByte == 53) //if 5 is typed in terminal, extend gripper
+    else if (incomingByte == 53) //if 5 is typed in terminal, open gripper
     {
       maniControl |= RELEASE_GRABBER;
     }
-
+    else if (incomingByte == 54) //if 6 is typed in terminal, extend gripper for bottle
+    {
+      maniControl |= BOTTLE_GRABBER;
+      Serial.println("bottle!");
+    }
     manipulate();
     reset_manipulate(); 
   }
@@ -142,11 +143,13 @@ void manipulators_init()
   servo_torpedo.attach(TORP);
   pinMode(stepPin, OUTPUT);
   pinMode(dirPin, OUTPUT);
+  servo_dropper.write(10);     
+  servo_torpedo.write(95);
 }
 
 void dropper()
 {
-  servo_dropper.write(65);
+  servo_dropper.write(173);
   fired_dropper = 1;
   dropperTimer = millis();
 }
@@ -170,7 +173,7 @@ void activate_grabber() {
   digitalWrite(dirPin, LOW);
 
   // Spin the stepper motor 1 revolution slowly:
-  for (int i = 0; i < stepsPerRevolution * microstep * 0.92;i++) {
+  for (int i = 0; i < stepsPerRevolution * microstep * 2.8;i++) {
     // These four lines result in 1 step:
     digitalWrite(stepPin, HIGH);
     delayMicroseconds(stepperdelay);
@@ -179,18 +182,44 @@ void activate_grabber() {
   }
 }
 
-void release_grabber(){  
-  // Set the spinning direction counterclockwise:
-  digitalWrite(dirPin, HIGH);
-
-  // Spin the stepper motor 1 revolution quickly:
-  for (int i = 0; i < stepsPerRevolution * microstep * 0.92; i++) {
+void bottle_grabber() {
+  digitalWrite(dirPin, LOW);
+  // Spin the stepper motor 1 revolution slowly:
+  for (int i = 0; i < stepsPerRevolution * microstep * 2.4;i++) {
     // These four lines result in 1 step:
     digitalWrite(stepPin, HIGH);
     delayMicroseconds(stepperdelay);
     digitalWrite(stepPin, LOW);
     delayMicroseconds(stepperdelay);
   }
+  last_bottle = true;
+}
+
+void release_grabber(){  
+  // Set the spinning direction counterclockwise:
+  digitalWrite(dirPin, HIGH);
+
+  if (!last_bottle) {
+  // Close the grabber full
+    for (int i = 0; i < stepsPerRevolution * microstep * 2.8; i++) {
+      // These four lines result in 1 step:
+      digitalWrite(stepPin, HIGH);
+      delayMicroseconds(stepperdelay);
+      digitalWrite(stepPin, LOW);
+      delayMicroseconds(stepperdelay);
+    }
+  }
+  else {
+      // Close the grabber (it is not fully closed) 
+    for (int i = 0; i < stepsPerRevolution * microstep * 2.4; i++) {
+      // These four lines result in 1 step:
+      digitalWrite(stepPin, HIGH);
+      delayMicroseconds(stepperdelay);
+      digitalWrite(stepPin, LOW);
+      delayMicroseconds(stepperdelay);
+    }
+  }
+  last_bottle = false;
 }
 
 void manipulate() 
@@ -219,6 +248,11 @@ void manipulate()
     release_grabber();
     Serial.println("Release grabber");
   }
+
+  if (maniControl & BOTTLE_GRABBER) {
+    bottle_grabber();
+    Serial.println("Bottle grabber");
+  }
   
   maniControl = 0;
 }
@@ -227,7 +261,7 @@ void reset_manipulate()
 {
   if (fired_dropper && (millis() - dropperTimer) > DROPPER_INTERVAL)
   {
-    servo_dropper.write(125);
+    servo_dropper.writeMicroseconds(850);     
     fired_dropper = 0;
     Serial.println("Closed dropper");
   }
@@ -284,11 +318,11 @@ boolean receiveCanMessage() {
       break;
     default:
       #ifdef DEBUG
-        Serial.println(id);
+        //Serial.println(id);
       #endif
       break;
     }
-    CAN.clearMsg();
+    CAN.clearMsg();     
     return messageForMani;
   }
 

@@ -12,7 +12,7 @@
 #define stepPin A0 // Map to A0 GPIO
 #define dirPin A1 // Map to A1 GPIO
 #define microstep 8
-#define stepperdelay 800
+#define stepperdelay 150
 
 #define stepsPerRevolution 200
 
@@ -29,5 +29,6 @@
 #define FIRE_DROPPER 0x40
 #define ACTIVATE_GRABBER 0x01
 #define RELEASE_GRABBER 0x02
+#define BOTTLE_GRABBER 0x20
 
 #endif // _DEFINES_H
