@@ -77,9 +77,9 @@ void setup() {
   Serial.println("Hi, I'm ASV 3 Telemetry!");
 
 //  Screen init
-//  screen.screen_init();
-//  Serial.println("Screen Ok");
-//  screen_prepare();
+  screen.screen_init();
+  Serial.println("Screen Ok");
+  screen_prepare();
 
   // CAN init 
   CAN_init();
@@ -88,8 +88,8 @@ void setup() {
 //  // frksy
   frsky.init();
 //
-//  // DAC init
-//  Wire.begin();
+  // DAC init
+  Wire.begin();
 
   // initialise heartbeat 
   currentTime = screenloop = hbloop = millis();
