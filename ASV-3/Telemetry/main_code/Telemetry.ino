@@ -13,18 +13,17 @@
 //    Recieve Thruster, actuated hydrophone, and actuated thruster controls from Frsky  Done (left actuated hydrophone and thruster)
 //    Receive OCS control information from Controllink via serial.                      Not done -> thruster values? 
 //    Relay RSSI of OCS and Frsky over CAN.                                             Frsky done OCS no
-//    Determine state of control and send control signal to POSB accordingly.           Not done -> left OCS 
+//    Determine state of control and send control signal to POSB accordingly.           Not done 
 //
 // Written by Titus Ng 
-// Change log v1.3:
-// Add Frsky library and functions 
+// Change log v1.4:
+// Update misc items for integration
+// Todo: dbl check thruster mapping values
 //
 //###################################################
 
 // FOR DEBUG
-// #define DEBUG
-#ifdef DEBUG
-#endif
+//#define DEBUG
 
 #include <Wire.h>
 #include "define.h"
@@ -99,14 +98,14 @@ void setup() {
 }
 
 void loop() {
-//  screen_reset_stats();   // reset stats if past timeout
-//  CAN_read_msg();         // read incoming CAN messages
-//
-//  if ((millis() - screenloop) > SCREEN_LOOP) {      // update screen
-//    screen_update_stats();
-//    screen_update_hb();
-//    screenloop = millis();
-//  }
+  screen_reset_stats();   // reset stats if past timeout
+  CAN_read_msg();         // read incoming CAN messages
+
+  if ((millis() - screenloop) > SCREEN_LOOP) {      // update screen
+    screen_update_stats();
+    screen_update_hb();
+    screenloop = millis();
+  }
 
   frsky_get_controlmode();        // get control mode from frsky 
   frsky_get_rssi();           
@@ -166,9 +165,12 @@ void get_directions() {
   dir_forward = map_cppm(frsky.get_ch(FRISKY_FORWARD));
   dir_side = map_cppm(frsky.get_ch(FRISKY_SIDE));
   dir_yaw = map_cppm(frsky.get_ch(FRISKY_YAW));
-  Serial.println(dir_forward);
-  Serial.println(dir_side);
-  Serial.println(dir_yaw);
+//  Serial.print("for: ");
+//  Serial.println(dir_forward);
+//  Serial.print("side: ");
+//  Serial.println(dir_side);
+//  Serial.print("yaw: ");
+//  Serial.println(dir_yaw);
 }
 
 void set_thruster_values() {
@@ -216,5 +218,13 @@ void CAN_publish_manualthruster()
   CAN.setupCANFrame(buf, 2, 2, (uint32_t)(speed2 + 3200));
   CAN.setupCANFrame(buf, 4, 2, (uint32_t)(speed3 + 3200));
   CAN.setupCANFrame(buf, 6, 2, (uint32_t)(speed4 + 3200));
+//  Serial.print("1: ");
+//  Serial.println(speed1 + 3200);
+//  Serial.print("2: ");
+//  Serial.println(speed2 + 3200);
+//  Serial.print("3: ");
+//  Serial.println(speed3 + 3200);
+//  Serial.print("4: ");
+//  Serial.println(speed4 + 3200);
   CAN.sendMsgBuf(CAN_MANUAL_THRUSTER, 0, 8, buf);
 }

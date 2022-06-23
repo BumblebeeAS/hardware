@@ -47,6 +47,9 @@ void CAN_mask() {
 // Receive CAN messages
 void CAN_read_msg() {
     if (CAN_MSGAVAIL == CAN.checkReceive()) {
+    #ifdef DEBUG
+      Serial.println(CAN.getCanId());
+    #endif
     CAN.readMsgBufID(&id, &len, buf);    // read data,  len: data length, buf: data buf
     switch (CAN.getCanId()) {
       case CAN_HEARTBEAT: 
@@ -64,7 +67,7 @@ void CAN_read_msg() {
         read_posb_stats();
       default: 
         #ifdef DEBUG
-          Serial.println(CAN.getCanId());
+          //Serial.println(CAN.getCanId());
         #endif
         break;
     }
