@@ -7,10 +7,11 @@
 // | \_\ \ \_\ \/ __ \_\___ \  \   / 
 // |___  /___  (____  /____  >  \_/  
 //     \/    \/     \/     \/        
-
+//
+// Refer to CAN messaging standards: 
+// https://docs.google.com/spreadsheets/d/1orc3DUXFo8djK77xSj1-ofPTmk6KvrHwtnzaI6hUamg/edit#gid=219917511
 // Change Log for v1.0:
 // - Initial commit
-
 //###################################################
 //###################################################
 
