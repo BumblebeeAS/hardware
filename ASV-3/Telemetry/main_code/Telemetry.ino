@@ -13,12 +13,11 @@
 //    Recieve Thruster, actuated hydrophone, and actuated thruster controls from Frsky  Done (left actuated hydrophone and thruster)
 //    Receive OCS control information from Controllink via serial.                      Not done -> thruster values? 
 //    Relay RSSI of OCS and Frsky over CAN.                                             Frsky done OCS no
-//    Determine state of control and send control signal to POSB accordingly.           Not done 
+//    Determine state of control and send control signal to POSB accordingly.           Done for Frsky, not for OCS or SBC 
 //
 // Written by Titus Ng 
-// Change log v1.5:
-// Update LCD driver to clear area in write_string
-// Todo: dbl check thruster mapping values
+// Change log v1.6:
+// Add control structure for Frsky
 //
 //###################################################
 
@@ -55,6 +54,7 @@ static uint32_t controllinkloop;
 static uint32_t thrusterloop;
 
 // control 
+bool frsky_alive = false;
 int control_mode_frsky = AUTONOMOUS;
 int control_mode = AUTONOMOUS;
 int control_mode_ocs = AUTONOMOUS;
@@ -111,13 +111,17 @@ void loop() {
   frsky_get_rssi();           
   frsky_send_batt_capacity();
   get_directions();
-//  get_controlmode();            // identify control mode based on control architecture 
+  get_controlmode();            // identify control mode based on control architecture 
   set_thruster_values();        // transmit thruster commands
 
   if ((millis() - hbloop) > HEARTBEAT_LOOP) {     
     CAN_publish_hb(TELEMETRY);                          // Send telemetry hb 
     if (internalStats[RSSI_FRSKY] > RSSI_THRESHOLD) {
       CAN_publish_hb(FRSKY);                            // send frsky hb if rssi is above threshold
+      frsky_alive = true;
+    }
+    else {
+      frsky_alive = false;
     }
     hbloop = millis();
   }
@@ -165,12 +169,14 @@ void get_directions() {
   dir_forward = map_cppm(frsky.get_ch(FRISKY_FORWARD));
   dir_side = map_cppm(frsky.get_ch(FRISKY_SIDE));
   dir_yaw = map_cppm(frsky.get_ch(FRISKY_YAW));
+  #ifdef DEBUG
 //  Serial.print("for: ");
 //  Serial.println(dir_forward);
 //  Serial.print("side: ");
 //  Serial.println(dir_side);
 //  Serial.print("yaw: ");
 //  Serial.println(dir_yaw);
+  #endif
 }
 
 void set_thruster_values() {
@@ -184,9 +190,10 @@ void set_thruster_values() {
     case STATION_KEEP:
       reset_thruster_values();            // If not in manual mode, reset all thrusters
       break;
-    case MANUAL_FRSKY:
+    case MANUAL_FRSKY: {
       convert_thruster_values();
       break;
+    }
     }
   }
 }
@@ -208,8 +215,14 @@ void reset_thruster_values() {
 //          CONTROL FUNCTIONS
 //==========================================
 void get_controlmode() {
-   // If Frsky alive && it says manual, state = MANUAL_FRSKY
-   
+  // For control architure, refer to ASV 3 architure 
+  // If Frsky alive, listen to Frsky
+  if (frsky_alive) {
+    control_mode = control_mode_frsky;
+  } else {
+    control_mode = STATION_KEEP;
+  }
+
 }
 
 void CAN_publish_manualthruster()
@@ -218,13 +231,15 @@ void CAN_publish_manualthruster()
   CAN.setupCANFrame(buf, 2, 2, (uint32_t)(speed2 + 3200));
   CAN.setupCANFrame(buf, 4, 2, (uint32_t)(speed3 + 3200));
   CAN.setupCANFrame(buf, 6, 2, (uint32_t)(speed4 + 3200));
-//  Serial.print("1: ");
-//  Serial.println(speed1 + 3200);
-//  Serial.print("2: ");
-//  Serial.println(speed2 + 3200);
-//  Serial.print("3: ");
-//  Serial.println(speed3 + 3200);
-//  Serial.print("4: ");
-//  Serial.println(speed4 + 3200);
+  #ifdef DEBUG
+    Serial.print("1: ");
+    Serial.println(speed1 + 3200);
+    Serial.print("2: ");
+    Serial.println(speed2 + 3200);
+    Serial.print("3: ");
+    Serial.println(speed3 + 3200);
+    Serial.print("4: ");
+    Serial.println(speed4 + 3200);
+  #endif
   CAN.sendMsgBuf(CAN_MANUAL_THRUSTER, 0, 8, buf);
 }

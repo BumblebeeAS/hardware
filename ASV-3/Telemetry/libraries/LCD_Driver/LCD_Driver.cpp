@@ -89,7 +89,7 @@ void LCD::screen_fill_color(uint8_t color) {
 
 void LCD::write_string(const char* var){
 	screen->fillRect(_x, _y, 130, 30, RA8875_BLACK);
-	screen->textTransparent(RA8875_YELLOW);
+	screen->textTransparent(RA8875_WHITE);
 	screen->textWrite(var);
 	increment_row();
 }

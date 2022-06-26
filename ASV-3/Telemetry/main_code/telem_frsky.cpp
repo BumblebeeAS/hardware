@@ -32,14 +32,23 @@ void frsky_get_controlmode() {
   if (frsky.get_ch(FRISKY_ARM) > 1800)
   {
     control_mode_frsky = MANUAL_FRSKY;
+    #ifdef FRSKYDEBUG
+    Serial.println("Manual Frsky");
+    #endif 
   }
   else if (frsky.get_ch(FRISKY_ARM) > 1200)
   {
     control_mode_frsky = STATION_KEEP;
+    #ifdef FRSKYDEBUG
+    Serial.println("Station keep");
+    #endif 
   }
   else
   {
     control_mode_frsky = AUTONOMOUS;
+    #ifdef FRSKYDEBUG
+    Serial.println("Autonomous");
+    #endif 
   }
 }
 

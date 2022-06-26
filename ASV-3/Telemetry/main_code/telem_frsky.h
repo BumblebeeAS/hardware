@@ -8,9 +8,7 @@
 #define TELEM_FRSKY
 
 // FOR DEBUG
-// #define DEBUG
-#ifdef DEBUG
-#endif
+//#define FRSKYDEBUG
 
 #include "Frisky_CPPM_ASV3.h"
 #include "define.h"

@@ -5,7 +5,7 @@
 //===========================================
 
 // FOR DEBUG
-//#define DEBUG
+//#define CANDEBUG
 
 #ifndef TELEM_CAN
 #define TELEM_CAN

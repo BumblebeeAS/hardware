@@ -56,7 +56,7 @@ void screen_update_stats() {
     } else {
       screen.write_value_int(internalStats[i]);
     }
-    #ifdef DEBUG 
+    #ifdef SCREENDEBUG 
     Serial.print(i);
     Serial.print(": ");
     Serial.println(internalStats[i]);
@@ -73,7 +73,7 @@ void screen_update_stats() {
     } else {
       screen.write_value_int(powerStats[i]);
     }
-    #ifdef DEBUG 
+    #ifdef SCREENDEBUG 
     Serial.print(i);
     Serial.print(": ");
     Serial.println(internalStats[i]);

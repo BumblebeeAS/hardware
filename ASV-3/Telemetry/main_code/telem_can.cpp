@@ -47,8 +47,8 @@ void CAN_mask() {
 // Receive CAN messages
 void CAN_read_msg() {
     if (CAN_MSGAVAIL == CAN.checkReceive()) {
-    #ifdef DEBUG
-      Serial.println(CAN.getCanId());
+    #ifdef CANDEBUG
+//      Serial.println(CAN.getCanId());
     #endif
     CAN.readMsgBufID(&id, &len, buf);    // read data,  len: data length, buf: data buf
     switch (CAN.getCanId()) {
@@ -66,7 +66,7 @@ void CAN_read_msg() {
       case CAN_POSB_STATS: 
         read_posb_stats();
       default: 
-        #ifdef DEBUG
+        #ifdef CANDEBUG
           //Serial.println(CAN.getCanId());
         #endif
         break;
@@ -88,7 +88,7 @@ void read_batt_stats(int batt_no) {
       powerStats[BATT2_CURRENT] = CAN.parseCANFrame(buf, 3, 2);
       break;
     default: 
-      #ifdef DEBUG
+      #ifdef CANDEBUG
         Serial.println("Too many batteries");
       #endif
       break;
