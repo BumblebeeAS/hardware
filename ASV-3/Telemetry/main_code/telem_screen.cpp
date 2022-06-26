@@ -44,12 +44,23 @@ void screen_update_stats() {
   for (int i = 0; i < INT_STAT_COUNT; i++)
   {
     if (i == HULL_LEAK){ 
-      internalStats[HULL_LEAK] ? screen.write_value_string("LEAK") : screen.write_value_string("NO");
+      if (internalStats[HULL_LEAK] == 1) {
+        screen.write_string("YES");
+      } else if (internalStats[HULL_LEAK] == 0) {
+        screen.write_string("NO");
+      } else {
+        screen.write_string("N/A");
+      }
     } else if (i == INT_PRESS) {
       screen.write_value_with_dp(internalStats[i], 1);           // Display pressure kpa with 1dp
     } else {
       screen.write_value_int(internalStats[i]);
     }
+    #ifdef DEBUG 
+    Serial.print(i);
+    Serial.print(": ");
+    Serial.println(internalStats[i]);
+    #endif 
   }
 
   screen.set_cursor(650 + OFFSET, 0);
@@ -62,6 +73,11 @@ void screen_update_stats() {
     } else {
       screen.write_value_int(powerStats[i]);
     }
+    #ifdef DEBUG 
+    Serial.print(i);
+    Serial.print(": ");
+    Serial.println(internalStats[i]);
+    #endif 
   }
 }
 
@@ -114,6 +130,7 @@ void reset_posb_stats() {
     internalStats[INT_PRESS] = 0xFFFF;
     internalStats[HUMIDITY] = 0xFFFF;
     internalStats[POSB_TEMP] = 0xFFFF;
+    internalStats[HULL_LEAK] = 0xFFFF;
     posb_timeout = millis();
   }
 }

@@ -16,8 +16,8 @@
 //    Determine state of control and send control signal to POSB accordingly.           Not done 
 //
 // Written by Titus Ng 
-// Change log v1.4:
-// Update misc items for integration
+// Change log v1.5:
+// Update LCD driver to clear area in write_string
 // Todo: dbl check thruster mapping values
 //
 //###################################################

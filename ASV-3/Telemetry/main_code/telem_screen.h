@@ -1,6 +1,7 @@
 #ifndef TELEM_SCREEN
 #define TELEM_SCREEN
 
+//#define DEBUG
 #include <Adafruit_RA8875.h>
 #include <Adafruit_GFX.h>
 #include "Frisky_CPPM_ASV3.h"
