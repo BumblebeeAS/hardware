@@ -30,7 +30,7 @@
 #include <can.h>
 #include "HIH613x.h"
 #include <Adafruit_ADS1015.h>
-//#include "Xbee.h"
+#include "XBee.h"
 
 #include "can_asv3_defines.h"
 #include "defines.h"
@@ -102,7 +102,7 @@ uint8_t leak_signal = 0x02;
 
 //#define _TELE_DED_
 
-//#define _TEST_
+#define _TEST_
 #ifdef _TEST_
 
 char inputstr[10] = { '\n' };
@@ -247,6 +247,7 @@ void loop()
 	Battery2.checkBatteryOnOff();
 	if (Battery2.readMessage())
 	{
+    Serial.println("read batt");
 		heartbeat_batt2 = true;
 		batt2_loop = millis();
 	}
@@ -478,7 +479,7 @@ void readInternalPressure() {
   ads.set_continuous_conv(1);
   delay(ADS_DELAY);
   uint16_t adc1 = ads.readADC_Continuous();
-  int_pressure = (((double)adc1*0.0001875) / (Vref*0.0040) + 10); 
+  int_pressure = (((double)adc1*0.0001875) / (Vref*0.0040) + 10) * 10; 
 }
 
 void readLeakSignal(){
@@ -623,10 +624,18 @@ void publishCAN()
 void publishCAN_posbstats()
 {
   CAN.setupCANFrame(posb_stat_buf, 0, 1, int_temperature);
-  CAN.setupCANFrame(posb_stat_buf, 1, 2, int_humidity);
-  CAN.setupCANFrame(posb_stat_buf, 2, 4, int_pressure);
-  CAN.setupCANFrame(posb_stat_buf, 4, 5, leak_signal);
-	CAN.sendMsgBuf(CAN_POSB_STATS, 0, 2, posb_stat_buf);
+  CAN.setupCANFrame(posb_stat_buf, 1, 1, int_humidity);
+  CAN.setupCANFrame(posb_stat_buf, 2, 2, int_pressure);
+  CAN.setupCANFrame(posb_stat_buf, 4, 1, leak_signal);
+  #ifndef _TEST_
+    Serial.print("temperature: ");
+    Serial.print(int_temperature);
+    Serial.print(" humidity: ");
+    Serial.print(int_humidity);
+    Serial.print(" pressure: ");
+    Serial.println(int_pressure);
+  #endif
+	CAN.sendMsgBuf(CAN_POSB_STATS, 0, 5, posb_stat_buf);
 }
 void publishCAN_heartbeat()
 {
@@ -655,7 +664,7 @@ void publishCAN_esc1_stats()
 {
 
 	RoboteqStats esc1_stats = roboteq1.getRoboteqStats();
-	/*
+ /*
 	Serial.print("Current(A): ");
 	Serial.print(esc1_stats.motor_current1);
 	Serial.print("\t");
@@ -686,6 +695,7 @@ void publishCAN_esc2_stats()
 void publishCAN_batt1_stats()
 {
 #ifdef _TEST_
+  Serial.println("battery 1");
 	Serial.print("Capacity(%): ");
 	Serial.print(Battery1.getCapacity());
 	Serial.print(" Voltage(V): ");
@@ -708,6 +718,17 @@ void publishCAN_batt1_stats()
 }
 void publishCAN_batt2_stats()
 {
+  #ifdef _TEST_
+  Serial.println("battery 2");
+  Serial.print("Capacity(%): ");
+  Serial.print(Battery1.getCapacity());
+  Serial.print(" Voltage(V): ");
+  Serial.print(Battery1.getVoltage());
+  Serial.print(" Current(A): ");
+  Serial.print(Battery1.getCurrent());
+  Serial.print(" Temp(C): ");
+  Serial.println(Battery1.getTemperature());
+#endif
 	CAN.setupCANFrame(batt2_stat_buf, 0, 1, Battery2.getCapacity());
 	CAN.setupCANFrame(batt2_stat_buf, 1, 2, Battery2.getVoltage());
 	CAN.setupCANFrame(batt2_stat_buf, 3, 2, 0 - (int16_t)Battery2.getCurrent());
