@@ -1,7 +1,6 @@
 //###################################################
 //###################################################
 //
-//####     ####
 //#  #     #  #      ######  ######## ########
 //#  ####  #  ####   #    ## #  ##  # #  ##  #
 //#     ## #     ##  ####  # #  ##  # #  ##  #
@@ -10,14 +9,18 @@
 //#     ## #     ## ##     # ##     #  ##  ##
 // # ####   # ####   #######  #######   ####    
 //
-//
 // BBAUV 4.0 Actuation
-// Firmware Version : v2.12
+// Firmware Version : v2.14
 // 
-// Written by Linxin
-// Edited by Titus   
-// Change log v2.12
-// Update to Khangs ball dropper
+// Grabber: Stepper 
+// Torpedo: Servo 2
+// Dropper: Servo 1
+// 
+// Written by Titus
+// Change log v2.14
+// Increase dropper delay
+// Queue CAN messages 
+// Reduce speed of dropper turning 
 // 
 //###################################################
 //###################################################
@@ -71,6 +74,10 @@ int incomingByte = 0;   // for incoming serial data of test code
 void setup() {
   pinMode(CAN_Chip_Select, OUTPUT);     //CS CAN
   digitalWrite(CAN_Chip_Select, HIGH);
+  pinMode(6, OUTPUT);
+  pinMode(7, OUTPUT);
+  digitalWrite(6, LOW);
+  digitalWrite(7, LOW);
   Serial.begin(115200);
   Serial.println("Hi, I'm 4.0 Manipulator!");
   CAN_init(); //initialise CAN
@@ -124,11 +131,6 @@ void loop()
     {
       maniControl |= RELEASE_GRABBER;
     }
-    else if (incomingByte == 54) //if 6 is typed in terminal, extend gripper for bottle
-    {
-      maniControl |= BOTTLE_GRABBER;
-      Serial.println("bottle!");
-    }
     manipulate();
     reset_manipulate(); 
   }
@@ -144,26 +146,32 @@ void manipulators_init()
   pinMode(stepPin, OUTPUT);
   pinMode(dirPin, OUTPUT);
   servo_dropper.write(10);     
-  servo_torpedo.write(95);
+  servo_torpedo.write(TORP_RESET);
 }
 
 void dropper()
 {
-  servo_dropper.write(173);
+//  servo_dropper.write(DROP_FIRE);  
+  int fire_pos = DROP_FIRE;
+  int reset_pos = DROP_RESET;
+  for (double i = 1; i <= 1000; i++) {
+    servo_dropper.write(fire_pos * (i/1000));
+    delayMicroseconds(DROPPER_STEP);   
+  }
   fired_dropper = 1;
   dropperTimer = millis();
 }
 
 void top_torpedo()
 {
-  servo_torpedo.write(70);
+  servo_torpedo.write(TOP_FIRE);
   fired_top = 1;
   torpedoTopTimer = millis();
 }
 
 void bot_torpedo()
 {
-  servo_torpedo.write(120);
+  servo_torpedo.write(BOT_FIRE);
   fired_bot = 1;
   torpedoBotTimer = millis();
 }
@@ -173,53 +181,27 @@ void activate_grabber() {
   digitalWrite(dirPin, LOW);
 
   // Spin the stepper motor 1 revolution slowly:
-  for (int i = 0; i < stepsPerRevolution * microstep * 2.8;i++) {
+  for (int i = 0; i < stepsPerRevolution * microstep * 3.4;i++) {
     // These four lines result in 1 step:
     digitalWrite(stepPin, HIGH);
     delayMicroseconds(stepperdelay);
     digitalWrite(stepPin, LOW);
     delayMicroseconds(stepperdelay);
   }
-}
-
-void bottle_grabber() {
-  digitalWrite(dirPin, LOW);
-  // Spin the stepper motor 1 revolution slowly:
-  for (int i = 0; i < stepsPerRevolution * microstep * 2.4;i++) {
-    // These four lines result in 1 step:
-    digitalWrite(stepPin, HIGH);
-    delayMicroseconds(stepperdelay);
-    digitalWrite(stepPin, LOW);
-    delayMicroseconds(stepperdelay);
-  }
-  last_bottle = true;
 }
 
 void release_grabber(){  
   // Set the spinning direction counterclockwise:
   digitalWrite(dirPin, HIGH);
 
-  if (!last_bottle) {
-  // Close the grabber full
-    for (int i = 0; i < stepsPerRevolution * microstep * 2.8; i++) {
-      // These four lines result in 1 step:
-      digitalWrite(stepPin, HIGH);
-      delayMicroseconds(stepperdelay);
-      digitalWrite(stepPin, LOW);
-      delayMicroseconds(stepperdelay);
-    }
+// Close the grabber full
+  for (int i = 0; i < stepsPerRevolution * microstep * 3.4; i++) {
+    // These four lines result in 1 step:
+    digitalWrite(stepPin, HIGH);
+    delayMicroseconds(stepperdelay);
+    digitalWrite(stepPin, LOW);
+    delayMicroseconds(stepperdelay);
   }
-  else {
-      // Close the grabber (it is not fully closed) 
-    for (int i = 0; i < stepsPerRevolution * microstep * 2.4; i++) {
-      // These four lines result in 1 step:
-      digitalWrite(stepPin, HIGH);
-      delayMicroseconds(stepperdelay);
-      digitalWrite(stepPin, LOW);
-      delayMicroseconds(stepperdelay);
-    }
-  }
-  last_bottle = false;
 }
 
 void manipulate() 
@@ -248,34 +230,34 @@ void manipulate()
     release_grabber();
     Serial.println("Release grabber");
   }
-
-  if (maniControl & BOTTLE_GRABBER) {
-    bottle_grabber();
-    Serial.println("Bottle grabber");
-  }
-  
   maniControl = 0;
 }
 
 void reset_manipulate()
 {
-  if (fired_dropper && (millis() - dropperTimer) > DROPPER_INTERVAL)
+  if (fired_dropper)
   {
-    servo_dropper.writeMicroseconds(850);     
+    delay(DROPPER_INTERVAL);
+    servo_dropper.write(DROP_RESET);
+    delay(1000);         
     fired_dropper = 0;
     Serial.println("Closed dropper");
   }
 
-  if (fired_top && (millis() - torpedoTopTimer) > TORPEDO_INTERVAL)
+  if (fired_top)
   {
-    servo_torpedo.write(95);
+    delay(TORPEDO_INTERVAL);
+    servo_torpedo.write(TORP_RESET);
+    delay(500);
     fired_top = 0;
     Serial.println("Closed top torpedo");
   }
 
-  if (fired_bot && (millis() - torpedoBotTimer) > TORPEDO_INTERVAL)
+  if (fired_bot)
   {
-    servo_torpedo.write(95);
+    delay(TORPEDO_INTERVAL);
+    servo_torpedo.write(TORP_RESET);
+    delay(500);
     fired_bot = 0;
     Serial.println("Closed bot torpedo");
   }
@@ -307,8 +289,8 @@ boolean receiveCanMessage() {
   if (CAN_MSGAVAIL == CAN.checkReceive()) {
     CAN.readMsgBufID(&id, &len, buf);
     boolean messageForMani = false;
-    switch (id) {
-    case CAN_ACT_CONTROL:  //CAN_ACT_CONTROL
+      switch (id) {
+    case CAN_ACT_CONTROL: { //CAN_ACT_CONTROL
       maniControl = CAN.parseCANFrame(buf, 0, 1);
       messageForMani = true;
       #ifdef DEBUG
@@ -316,11 +298,13 @@ boolean receiveCanMessage() {
         Serial.println(maniControl, HEX);
       #endif
       break;
-    default:
+    }
+    default: {
       #ifdef DEBUG
         //Serial.println(id);
       #endif
       break;
+    }
     }
     CAN.clearMsg();     
     return messageForMani;
