@@ -12,12 +12,12 @@
 //
 //
 // Sensor and Telemetry for BBAUV 4.0
-// Firmware Version :             v1.6
+// Firmware Version :             v1.7
 //
 // Written by Titus
-// Change log v1.6:
-// Edit CAN mask to include LED message
-// Include external LED functions
+// Change log v1.7:
+// Remove screen LED functions
+// Add Software PWM for LED
 //
 //###################################################
 //###################################################
@@ -33,6 +33,7 @@ int timeout_count = 0;
 #include <Adafruit_GFX.h>
 #include <Adafruit_ADS1015.h>
 #include <HIH613x.h>
+#include <PalatisSoftPWM.h>
 #include "LCD_Driver.h"
 #include <can_defines.h>
 #include "define.h"
@@ -82,7 +83,14 @@ static uint32_t dna_timeout = 0;
 static uint32_t heartbeat_loop = 0;
 static uint32_t stats_loop = 0;
 static uint32_t testing_time = 0;
-uint8_t screen_state = NORMAL;
+
+//led variables
+SOFTPWM_DEFINE_PIN24_CHANNEL(0);  //Arduino pin 24 as channel 0
+SOFTPWM_DEFINE_PIN23_CHANNEL(1);  //Arduino pin 23 as channel 1
+SOFTPWM_DEFINE_PIN22_CHANNEL(2);  //Arduino pin 22 as channel 2 
+SOFTPWM_DEFINE_OBJECT(3);         // Initialize 3 channels
+
+uint8_t led_state = OFF;
 
 void setup()
 {
@@ -103,6 +111,9 @@ void setup()
   CAN_init();
   Serial.println("CAN OK");
   CANSetMask();
+
+  //led_init
+  led_init();
 
   //Sensor init
   Wire.begin();
@@ -205,7 +216,6 @@ void checkCANmsg() {
     CAN.readMsgBufID(&id, &len, buf);    // read data,  len: data length, buf: data buf
     #ifdef DEBUG 
       //Serial.println(CAN.getCanId());`
-
     #endif 
     switch (CAN.getCanId()) {
 
@@ -238,7 +248,6 @@ void checkCANmsg() {
       internalStats[PMB2_TEMP] = CAN.parseCANFrame(buf, 0, 2);
       pmb2_timeout = millis();
       break;
-
     case CAN_CPU_TEMP:
     {
       uint8_t temp[5] = { 0 };
@@ -257,12 +266,13 @@ void checkCANmsg() {
       break;
     }
     case CAN_STB_UP: {
-      screen_state = CAN.parseCANFrame(buf, 0, 1);   // 0 = R, 1 = B, 2 = B, 3 = normal
-      if (screen_state == NORMAL) {
-        screen.screen_init();
-        screen_prepare();
-      }
-      changeLED(screen_state);
+      int red = CAN.parseCANFrame(buf, 0, 1);
+      int green = CAN.parseCANFrame(buf, 1, 1);
+      int blue = CAN.parseCANFrame(buf, 2, 1);
+      Serial.println(red);
+      Serial.println(green);
+      Serial.println(blue);
+      setcolour(red, green, blue);
       break;
     }
     default:
@@ -348,66 +358,58 @@ void screen_prepare() {
 }
 
 void screen_update() {
-  if (screen_state == NORMAL) {
-    // row height 35,     increment_row()
-    // display from Ext press to ST temp
-    screen.set_cursor(200 + OFFSET, 0);
-    for (int i = 0; i < INT_STAT_COUNT; i++)
-    {
-      // Display internal pressure as kpa with 1 dp
-      if (i == 0) {
-        screen.write_value_with_dp(internalStats[i], 1);
-      } else if (i == 1) {
-        // Display internal pressure in kpa with 2 dp
-        float intP = readInternalPressure() * 100;
-        screen.write_value_with_dp(intP, 2);
-      } else {
-        screen.write_value_int(internalStats[i]);
-      }
+  // row height 35,     increment_row()
+  // display from Ext press to ST temp
+  screen.set_cursor(200 + OFFSET, 0);
+  for (int i = 0; i < INT_STAT_COUNT; i++)
+  {
+    // Display internal pressure as kpa with 1 dp
+    if (i == 0) {
+      screen.write_value_with_dp(internalStats[i], 1);
+    } else if (i == 1) {
+      // Display internal pressure in kpa with 2 dp
+      float intP = readInternalPressure() * 100;
+      screen.write_value_with_dp(intP, 2);
+    } else {
+      screen.write_value_int(internalStats[i]);
     }
-  
-    // display from Batt 1 capacity to Batt 2 voltage
-    screen.set_cursor(645 + OFFSET, 0);
-    for (int i = 0; i < POWER_STAT_COUNT; i++)
-    {
-      if (i > BATT2_CAPACITY) {
-        screen.write_value_with_dp(powerStats[i], 3);
-      }
-      else {
-        screen.write_value_int(powerStats[i]);
-      }
+  }
+
+  // display from Batt 1 capacity to Batt 2 voltage
+  screen.set_cursor(645 + OFFSET, 0);
+  for (int i = 0; i < POWER_STAT_COUNT; i++)
+  {
+    if (i > BATT2_CAPACITY) {
+      screen.write_value_with_dp(powerStats[i], 3);
     }
-  } else {
-     screen.screen_fill_color(screen_state);
-     Serial.print("filled screen");
-     Serial.println(screen_state);
+    else {
+      screen.write_value_int(powerStats[i]);
+    }
   }
 }
 
 // display heartbeat status
-void update_heartbeat()
-{ if (screen_state == NORMAL) {
-    int i;
-    screen.set_cursor(200 + OFFSET, 315);
-    // display SBC & SBC-CAN
-    for (i = 1; i < 3; i++) {
+void update_heartbeat() {
+  int i;
+  screen.set_cursor(200 + OFFSET, 315);
+  // display SBC & SBC-CAN
+  for (i = 1; i < 3; i++) {
+    if ((millis() - heartbeat_timeout[i]) > HB_TIMEOUT) {
+      screen.write_value_string("NO");
+    }
+    else {
+      screen.write_value_string("YES");
+    }        
+  }
+  // display THRUSTER to PMB2
+  screen.set_cursor(645 + OFFSET, 210);
+  for (i = 4; i < 9; i++) {
+    if (i != 5) { // Skip ST HB
       if ((millis() - heartbeat_timeout[i]) > HB_TIMEOUT) {
         screen.write_value_string("NO");
       }
-      else {
+      else
         screen.write_value_string("YES");
-      }        
-    }
-    // display THRUSTER to PMB2
-    screen.set_cursor(645 + OFFSET, 210);
-    for (i = 4; i < 9; i++) {
-      if (i != 5) { // Skip ST HB
-        if ((millis() - heartbeat_timeout[i]) > HB_TIMEOUT) {
-          screen.write_value_string("NO");
-        }
-        else
-          screen.write_value_string("YES");
-      }
     }
   }
 }
@@ -510,32 +512,29 @@ void readTempHumididty() {
 //        External LED Functions
 //
 //==========================================
-void changeLED(int color) {
-  switch (color) {
-    case RED: {
-      digitalWrite(RPIN, HIGH);
-      digitalWrite(GPIN, LOW);
-      digitalWrite(BPIN, LOW);
-      break;}    
-    case GREEN: {
-      digitalWrite(RPIN, LOW);
-      digitalWrite(GPIN, HIGH);
-      digitalWrite(BPIN, LOW);
-      break;}    
-    case BLUE: {
-      digitalWrite(RPIN, LOW);
-      digitalWrite(GPIN, LOW);
-      digitalWrite(BPIN, HIGH);
-      break;}
-    case NORMAL: {
-      digitalWrite(RPIN, LOW);
-      digitalWrite(GPIN, LOW);
-      digitalWrite(BPIN, LOW);
-      break;}
-    default: {
-      digitalWrite(RPIN, LOW);
-      digitalWrite(GPIN, LOW);
-      digitalWrite(BPIN, LOW);
-      break;}
-  }
+
+
+void setcolour(int red, int green, int blue) {
+  int scale = 2.5;
+  PalatisSoftPWM.set(RED, red);
+  PalatisSoftPWM.set(GREEN, green/scale);
+  PalatisSoftPWM.set(BLUE, blue/scale);
+}
+
+//Blinks through all colour
+void led_init() {
+  PalatisSoftPWM.begin(200); //200Hz
+  setcolour(255,0,0);
+  delay(200);
+  setcolour(255,255,0);
+  delay(200);
+  setcolour(0,255,0);
+  delay(200);
+  setcolour(0,255,255);
+  delay(200);
+  setcolour(0,0,255);
+  delay(200);
+  setcolour(255,0,255);
+  delay(200);
+  setcolour(0,0,0);
 }
