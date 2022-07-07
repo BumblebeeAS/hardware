@@ -1,0 +1,33 @@
+#ifndef _DEFINES_H_
+#define _DEFINES_H_
+
+// CAN
+#define CAN_Chip_Select 8
+
+// KILL
+#define NMOS_CONTACTOR 11
+#define HARDKILL_IN 5
+
+// XBEE
+#define XBEE_BAUDRATE 115200
+#define SERIAL_BAUDRATE 115200
+
+// TIMEOUT
+#define XBEE_TIMEOUT 500
+#define HEARTBEAT_TIMEOUT 500
+#define CAN_TIMEOUT 1000
+#define ESTOP_TIMEOUT 100
+#define FAILSAFE_TIMEOUT 3000
+
+// HEARTBEAT
+
+#define HEARTBEAT_POSB 0x01
+#define HEARTBEAT_POPB 0x02
+#define HEARTBEAT_POKB 0x03
+#define HEARTBEAT_Tele 0x04
+#define HEARTBEAT_LARS 0x05
+#define HEARTBEAT_Cogswell 0x06
+#define HEARTBEAT_OCS 0x07
+
+
+#endif
