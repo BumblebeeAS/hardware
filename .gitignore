@@ -249,3 +249,6 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+.DS_Store
+AUV-4/.DS_Store
+AUV-4/.DS_Store
