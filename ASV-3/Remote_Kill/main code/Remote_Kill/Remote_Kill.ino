@@ -98,5 +98,5 @@ void loop() {
      xbee_loop = millis();
   }
 
-  batteryCheck();
+  //batteryCheck();
 }
