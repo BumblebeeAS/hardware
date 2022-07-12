@@ -23,6 +23,10 @@ extern uint32_t internalStats[INT_STAT_COUNT];        // Array for internal stat
 extern uint32_t powerStats[POWER_STAT_COUNT];         // Array for power stats
 extern uint32_t heartbeat_timeout[HB_COUNT];          // Array for heartbeat timeout 
 extern int control_mode;
+extern uint32_t posb_timeout;
+extern uint32_t sbc_timeout;
+extern uint32_t batt1_timeout;
+extern uint32_t batt2_timeout;
 
 
 void CAN_init();

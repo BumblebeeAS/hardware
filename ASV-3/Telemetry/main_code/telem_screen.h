@@ -14,6 +14,14 @@ extern uint32_t internalStats[];
 extern uint32_t powerStats[];
 extern uint32_t heartbeat_timeout[];
 
+// Timeout
+extern uint32_t posb_timeout;
+extern uint32_t ocs_timeout;
+extern uint32_t frsky_timeout;
+extern uint32_t sbc_timeout;
+extern uint32_t batt1_timeout;
+extern uint32_t batt2_timeout;
+
 void screen_prepare();
 void screen_update_stats();
 void screen_update_heartbeat();
@@ -25,5 +33,7 @@ void reset_rc_stats();
 void reset_sbc_stats();
 void reset_batt1_stats();
 void reset_batt2_stats();
+
+
 
 #endif
