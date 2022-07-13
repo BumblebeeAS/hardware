@@ -17,11 +17,9 @@
 // Dropper: Servo 1
 //
 // Written by Titus & Isabella
-// Change log v3.0
-// Integrated UART & Stallguard for grabber
-// STALL_VALUE yet to be calibrated
-// cleanup to be done after calibration
-//
+// Change log v3.1
+// Calibrated stall value for grabber
+// 
 //###################################################
 //###################################################
 
@@ -149,10 +147,10 @@ void loop()
 #endif
 
   //testing, to take out
-  stall_guard();
+//  stall_guard();
 }
 
-void stall_guard() {
+void stall_guard(int stall_value) {     // different stall value based on closing or opening
   static uint32_t last_time = 0;
   uint32_t ms = millis();
 
@@ -163,7 +161,7 @@ void stall_guard() {
     int load = (int) grabber.SG_RESULT();
     Serial.print("Status: ");
     Serial.println(load);
-    if (load && load < STALL_VALUE )
+    if (load && load < stall_value )
     {
       grabberSpeed = 0;
       grabber.VACTUAL(grabberSpeed);
@@ -250,7 +248,7 @@ void activate_grabber() {
 
   while ((ms - last_time) < gTime) { // stop the grabber after ard 1.5 seconds
     ms = millis();
-    stall_guard();
+    stall_guard(STALL_VALUE_CLOSE);
   }
 
   // stop grabber
@@ -270,7 +268,7 @@ void release_grabber() {
 
   while ((ms - last_time) < gTime) { // stop the grabber after ard 1.5 seconds
     ms = millis();
-    stall_guard();
+    stall_guard(STALL_VALUE_OPEN);
   }
 
   // stop grabber
