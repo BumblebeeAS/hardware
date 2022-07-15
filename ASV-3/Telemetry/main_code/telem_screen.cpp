@@ -110,12 +110,7 @@ void screen_update_hb() {
 //==========================================
 //          UPDATE DATA
 //==========================================
-uint32_t posb_timeout = millis();
-uint32_t ocs_timeout = millis();
-uint32_t frsky_timeout = millis();
-uint32_t sbc_timeout = millis();
-uint32_t batt1_timeout = millis();
-uint32_t batt2_timeout = millis();
+
 
 void screen_reset_stats() {
   reset_posb_stats();
@@ -127,11 +122,16 @@ void screen_reset_stats() {
 }
 void reset_posb_stats() {
   if ((millis() - posb_timeout) > STAT_TIMEOUT) {
+    Serial.print("reset: ");
+    Serial.print(millis());
+    Serial.print(" ");
+    Serial.println(posb_timeout);
     internalStats[INT_PRESS] = 0xFFFF;
     internalStats[HUMIDITY] = 0xFFFF;
     internalStats[POSB_TEMP] = 0xFFFF;
     internalStats[HULL_LEAK] = 0xFFFF;
     posb_timeout = millis();
+
   }
 }
 void reset_ocs_stats() {
