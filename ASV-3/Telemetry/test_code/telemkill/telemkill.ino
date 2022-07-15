@@ -10,16 +10,18 @@
 // Telemetry for BBASV 3.0
 //    Goals:
 //    Drive Telemetry LCD Display using data received over CAN                          Done 
-//    Recieve Thruster, actuated hydrophone, and actuated thruster controls from Frsky  Done (left actuated hydrophone and thruster)
+//    Recieve Thruster, actuated hydrophone and ball shooter controls from Frsky        Done (left actuated hydrophone and ball shooter)
 //    Receive OCS control information from Controllink via serial.                      Not done -> thruster values? 
 //    Relay RSSI of OCS and Frsky over CAN.                                             Frsky done OCS no
-//    Determine state of control and send control signal to POSB accordingly.           Done for Frsky, not for OCS or SBC 
+//    Determine state of control and send control signal to POSB accordingly.           Not done
 //
 // Written by Titus Ng 
-// Change log v1.6:
-// Add control structure for Frsky
+// Change log v1.8: 
+// Solve stat timeout issue
+
 //
-//###################################################
+//
+//####################################### ############
 
 // FOR DEBUG
 //#define DEBUG
@@ -45,6 +47,14 @@ uint8_t buf[8];  //Buffer for CAN message
 uint32_t internalStats[INT_STAT_COUNT];
 uint32_t powerStats[POWER_STAT_COUNT];
 uint32_t heartbeat_timeout[HB_COUNT];
+
+// Timeout
+uint32_t posb_timeout = millis();
+uint32_t ocs_timeout = millis();
+uint32_t frsky_timeout = millis();
+uint32_t sbc_timeout = millis();
+uint32_t batt1_timeout = millis();
+uint32_t batt2_timeout = millis();
 
 // loop times
 static uint32_t screenloop;
@@ -114,7 +124,7 @@ void loop() {
   frsky_send_batt_capacity();
   frsky_get_kill();
   get_directions();
-  get_controlmode();            // identify control mode based on control architecture 
+  publish_controlmode();           // identify control mode based on control architecture 
   get_kill();
   set_thruster_values();        // transmit thruster commands
 
@@ -218,7 +228,7 @@ void reset_thruster_values() {
 //==========================================
 //          CONTROL FUNCTIONS
 //==========================================
-void get_controlmode() {
+void publish_controlmode() {
   // For control architure, refer to ASV 3 architure 
   // If Frsky alive, listen to Frsky
   if (frsky_alive) {
@@ -232,10 +242,20 @@ void get_controlmode() {
 void get_kill() {
   if (frsky_alive) {
     remotekill = remotekill_frsky;
-    CAN.setupCANFrame(buf, 0, 1, 0);
-    CAN.sendMsgBuf(CAN_SOFT_E_STOP, 0, 1, buf);
   } else {
     remotekill = false;
+  }
+//  Serial.print("main: ");
+//  Serial.println(remotekill);
+  if (remotekill) {
+    // send soft e stop
+    CAN.setupCANFrame(buf, 0, 1, 0);
+    CAN.sendMsgBuf(CAN_SOFT_E_STOP, 0, 1, buf);
+  }
+  else {
+    // send soft resume
+    CAN.setupCANFrame(buf, 0, 1, 1);
+    CAN.sendMsgBuf(CAN_SOFT_E_STOP, 0, 1, buf);    
   }
 }
 

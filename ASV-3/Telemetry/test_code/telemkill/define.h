@@ -30,7 +30,7 @@
 #define FRISKY_YAW 3
 #define FRISKY_ARM 4
 #define FRISKY_RSSI 5
-#define FRISKY_HYDROPHONE 6
+#define FRISKY_KILL 6
 
 //Internal stats
 #define INT_STAT_COUNT 7
@@ -76,8 +76,15 @@
 
 // TIMEOUTS
 #define HB_TIMEOUT 1000
-#define STAT_TIMEOUT 2000
+#define STAT_TIMEOUT 3000
 #define FAILSAFE_TIMEOUT 2000
+#define TIMEOUT_COUNT 6
+#define POSB_TIMEOUT 0
+#define OCS_TIMEOUT 1
+#define FRSKY_TIMEOUT 2
+#define SBC_TIMEOUT 3
+#define BATT1_TIMEOUT 4
+#define BATT2_TIMEOUT 5
 
 // LOOPS
 #define HEARTBEAT_LOOP 500

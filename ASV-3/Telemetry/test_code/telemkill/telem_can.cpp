@@ -8,15 +8,15 @@
 
 // Initialize CAN bus 
 void CAN_init() {
-	if (CAN_OK == CAN.begin(CAN_1000KBPS)) {                   // init can bus : baudrate = 1000k
-		Serial.println("CAN init ok!");
-	}
-	else {
-		Serial.println("CAN init fail");
-		Serial.println("Init CAN again");
-		delay(100);
+  if (CAN_OK == CAN.begin(CAN_1000KBPS)) {                   // init can bus : baudrate = 1000k
+    Serial.println("CAN init ok!");
+  }
+  else {
+    Serial.println("CAN init fail");
+    Serial.println("Init CAN again");
+    delay(100);
     CAN_init();
-	}
+  }
 }
 
 /* Receive these CAN ID
@@ -47,36 +47,54 @@ void CAN_mask() {
 // Receive CAN messages
 void CAN_read_msg() {
     if (CAN_MSGAVAIL == CAN.checkReceive()) {
-    #ifdef CANDEBUG
-//      Serial.println(CAN.getCanId());
-    #endif
     CAN.readMsgBufID(&id, &len, buf);    // read data,  len: data length, buf: data buf
     switch (CAN.getCanId()) {
-      case CAN_HEARTBEAT: 
+      case CAN_HEARTBEAT: {
         read_heartbeat();
         break;
-      case CAN_BATT1_STATS: 
+      }
+      case CAN_BATT1_STATS: {
         read_batt_stats(1);       // 1 for batt 1 
+        batt1_timeout = millis();
         break;
-      case CAN_BATT2_STATS: 
+      }
+      case CAN_BATT2_STATS: {
         read_batt_stats(2);       // 2 for batt 2
+        batt2_timeout = millis();
         break;
-      case CAN_SBC_TEMP:
+      }
+      case CAN_SBC_TEMP: {
         internalStats[CPU_TEMP] = CAN.parseCANFrame(buf, 0, 1);
-      case CAN_POSB_STATS: 
+        sbc_timeout = millis();
+        break;
+      }
+      case CAN_POSB_STATS: {
         read_posb_stats();
-      default: 
+        posb_timeout = millis();
+      }
+      case 1: { 
         #ifdef CANDEBUG
-          //Serial.println(CAN.getCanId());
+//          Serial.println("id");
+//          Serial.println(CAN.parseCANFrame(buf, 0, 2));
+//          Serial.println(CAN.parseCANFrame(buf, 2, 2));
+//          Serial.println(CAN.parseCANFrame(buf, 4, 2));
+//          Serial.println(CAN.parseCANFrame(buf, 6, 2));
+//          break;
+        #endif
+      }
+      default: {
+        #ifdef CANDEBUG
+          Serial.println(CAN.getCanId());
         #endif
         break;
+      }
     }
   }
 }
 
 // Byte 5: Temp (celsius), Byte 4-3: Current (0.1A), Byte 3-2: Voltage (0.01V), Byte 0: Capacity (%) 
 void read_batt_stats(int batt_no) {
-  switch (batt_no) {
+  switch (batt_no) {  
     case 1:
       powerStats[BATT1_CAPACITY] = CAN.parseCANFrame(buf, 0, 1);
       powerStats[BATT1_VOLTAGE] = CAN.parseCANFrame(buf, 1, 2);
@@ -93,18 +111,30 @@ void read_batt_stats(int batt_no) {
       #endif
       break;
   }
+  for (int i = 0; i < 6; i++) {
+    
+  }
 }
 
 void read_heartbeat() {
    uint8_t device = CAN.parseCANFrame(buf, 0, 1);
    heartbeat_timeout[device] = millis();
+   #ifdef CANDEBUG
+//   Serial.println("Heartbeat: ");
+//   Serial.println(device);
+   #endif 
 }
 
 void read_posb_stats() {
-   internalStats[POSB_TEMP] = CAN.parseCANFrame(buf, 1, 0);
+   internalStats[POSB_TEMP] = CAN.parseCANFrame(buf, 0, 1);
    internalStats[HUMIDITY] = CAN.parseCANFrame(buf, 1, 1);
    internalStats[INT_PRESS] = CAN.parseCANFrame(buf, 2, 2); 
    internalStats[HULL_LEAK] = CAN.parseCANFrame(buf, 4, 1);
+//   Serial.println("stats");
+//   Serial.println(internalStats[POSB_TEMP]);
+//   Serial.println(internalStats[HUMIDITY]);
+//   Serial.println(internalStats[INT_PRESS]);
+//   Serial.println(internalStats[HULL_LEAK]);
 }
 
 void CAN_publish_hb(int hb) {

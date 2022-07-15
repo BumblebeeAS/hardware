@@ -74,18 +74,18 @@ void frsky_send_batt_capacity() {
 
 // TODO remote kill
 void frsky_get_kill() {
-  if (frsky.get_ch(7) < 1000)
+  if (frsky.get_ch(FRISKY_KILL) <= 1000)
   {
     remotekill_frsky = false;
     #ifdef FRSKYDEBUG
-    Serial.println("KILL");
+    Serial.println("Alive");
     #endif 
   }
   else
   {
     remotekill_frsky = true;
     #ifdef FRSKYDEBUG
-    Serial.println("ALIVE");
+    Serial.println("Kill");
     #endif 
   }
 }
