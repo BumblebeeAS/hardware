@@ -84,7 +84,7 @@ void CAN_read_msg() {
       }
       default: {
         #ifdef CANDEBUG
-          //Serial.println(CAN.getCanId());
+          Serial.println(CAN.getCanId());
         #endif
         break;
       }

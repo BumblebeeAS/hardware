@@ -17,7 +17,8 @@
 //
 // Written by Titus Ng 
 // Change log v1.8: 
-// Solve stat timeout issue  
+// Solve stat timeout issue  \
+
 //
 //
 //####################################### ############
@@ -29,7 +30,7 @@
 #include "define.h"
 #include <Arduino.h>
 #include "telem_screen.h"       
-#include "telem_can.h" 
+#include "telem_can.h" x`
 #include "telem_frsky.h"         
 
 // Create objects
