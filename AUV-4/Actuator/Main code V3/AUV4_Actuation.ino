@@ -129,12 +129,15 @@ void loop()
       maniControl |= RELEASE_GRABBER;
     }
 
-    //testing, to take out
+    //testing, uart communication
     else if (incomingByte == 54) //if 6 is typed in terminal, stop motor
     {
+      grabber_talk();
       grabberSpeed = 0;
       grabber.VACTUAL(grabberSpeed);
     }
+    
+    //testing, to take out
     else if (incomingByte == 55) //if 7 is typed in terminal, run motor
     {
       grabberSpeed = 5000;
@@ -165,6 +168,7 @@ void stall_guard(int stall_value) {     // different stall value based on closin
     {
       grabberSpeed = 0;
       grabber.VACTUAL(grabberSpeed);
+      Serial.println("Stall detected");
     }
   }
 }

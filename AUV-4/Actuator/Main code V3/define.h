@@ -20,10 +20,12 @@
 #define DRIVER_ADDRESS 0b00
 
 //Grabber stepper Stall definitions
-#define gSpeed    4660  //motor velocity in +-(2^23)-1 [μsteps / t]
-#define gTime     1900  //motor run time 3.4 rnds -> 1.5s
-#define STALL_VALUE_CLOSE     260 //tune with load
-#define STALL_VALUE_OPEN      260
+#define gSpeed    5000  
+#define gTime     1900
+//#define gSpeed    4660  //motor velocity in +-(2^23)-1 [μsteps / t]
+//#define gTime     2000  //motor run time 3.4 rnds -> 1.5s
+#define STALL_VALUE_CLOSE     240 //tune with load
+#define STALL_VALUE_OPEN      240
 
 // Grabber stepper definitions
 #define microstep 8
