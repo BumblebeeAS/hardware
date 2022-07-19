@@ -17,7 +17,7 @@
 //
 // Written by Titus Ng 
 // Change log v1.8: 
-// Solve stat timeout issue  \
+// Solve stat timeout issue
 
 //
 //
@@ -30,7 +30,7 @@
 #include "define.h"
 #include <Arduino.h>
 #include "telem_screen.h"       
-#include "telem_can.h" x`
+#include "telem_can.h" 
 #include "telem_frsky.h"         
 
 // Create objects
@@ -65,6 +65,8 @@ static uint32_t thrusterloop;
 
 // control 
 bool frsky_alive = false;
+bool remotekill = false;
+bool remotekill_frsky = false;
 int control_mode_frsky = AUTONOMOUS;
 int control_mode = AUTONOMOUS;
 int control_mode_ocs = AUTONOMOUS;
@@ -105,7 +107,6 @@ void setup() {
   for (int i = 0; i < HB_COUNT; i++) {
     heartbeat_timeout[i] = millis();
   }
-
 }
 
 void loop() {
@@ -121,8 +122,10 @@ void loop() {
   frsky_get_controlmode();        // get control mode from frsky 
   frsky_get_rssi();           
   frsky_send_batt_capacity();
+  frsky_get_kill();
   get_directions();
-  publish_controlmode();            // identify control mode based on control architecture 
+  publish_controlmode();           // identify control mode based on control architecture 
+  get_kill();
   set_thruster_values();        // transmit thruster commands
 
   if ((millis() - hbloop) > HEARTBEAT_LOOP) {     
@@ -234,6 +237,26 @@ void publish_controlmode() {
     control_mode = STATION_KEEP;
   }
 
+}
+
+void get_kill() {
+  if (frsky_alive) {
+    remotekill = remotekill_frsky;
+  } else {
+    remotekill = false;
+  }
+//  Serial.print("main: ");
+//  Serial.println(remotekill);
+  if (remotekill) {
+    // send soft e stop
+    CAN.setupCANFrame(buf, 0, 1, 0);
+    CAN.sendMsgBuf(CAN_SOFT_E_STOP, 0, 1, buf);
+  }
+  else {
+    // send soft resume
+    CAN.setupCANFrame(buf, 0, 1, 1);
+    CAN.sendMsgBuf(CAN_SOFT_E_STOP, 0, 1, buf);    
+  }
 }
 
 void CAN_publish_manualthruster()

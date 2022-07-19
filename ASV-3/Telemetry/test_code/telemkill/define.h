@@ -30,7 +30,7 @@
 #define FRISKY_YAW 3
 #define FRISKY_ARM 4
 #define FRISKY_RSSI 5
-#define FRISKY_HYDROPHONE 6
+#define FRISKY_KILL 6
 
 //Internal stats
 #define INT_STAT_COUNT 7
@@ -78,7 +78,6 @@
 #define HB_TIMEOUT 1000
 #define STAT_TIMEOUT 3000
 #define FAILSAFE_TIMEOUT 2000
-
 #define TIMEOUT_COUNT 6
 #define POSB_TIMEOUT 0
 #define OCS_TIMEOUT 1
@@ -92,6 +91,7 @@
 #define SCREEN_LOOP 1000
 #define CONTROLLINK_LOOP 500
 #define THRUSTER_LOOP 100
+
 
 
 #endif // _DEFINES_H

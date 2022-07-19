@@ -8,15 +8,15 @@
 
 // Initialize CAN bus 
 void CAN_init() {
-	if (CAN_OK == CAN.begin(CAN_1000KBPS)) {                   // init can bus : baudrate = 1000k
-		Serial.println("CAN init ok!");
-	}
-	else {
-		Serial.println("CAN init fail");
-		Serial.println("Init CAN again");
-		delay(100);
+  if (CAN_OK == CAN.begin(CAN_1000KBPS)) {                   // init can bus : baudrate = 1000k
+    Serial.println("CAN init ok!");
+  }
+  else {
+    Serial.println("CAN init fail");
+    Serial.println("Init CAN again");
+    delay(100);
     CAN_init();
-	}
+  }
 }
 
 /* Receive these CAN ID
