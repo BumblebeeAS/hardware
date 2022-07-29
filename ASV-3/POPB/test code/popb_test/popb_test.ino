@@ -1,6 +1,6 @@
 #include "Arduino.h"
 #include "can.h"
-#include "can_asv_defines.h"
+#include "can_asv3_defines.h"
 
 #define DEBUG_MODE true
 #define DEBUG_MODEVVV false
@@ -26,11 +26,12 @@
 #define CAN_HEARTBEAT_INTERVAL 500
 #define CAN_STATUS_INTERVAL 1000
 #define SERIAL_INTERVAL 2000
+#define HEARTBEAT_POPB 0x02
 
 MCP_CAN CAN(8);
 uint32_t id = 0;
 uint8_t len = 0;
-uint8_t buf[8] = { 0 };
+uint8_t buf[8];
 uint32_t autoResetLoop = 0;
 uint32_t CanHeartbeatLoop = 0;
 uint32_t CanStatusLoop = 0;
@@ -48,7 +49,7 @@ void setup()
 	CAN.init_Mask(0, 0, 0x3FF);
 	CAN.init_Mask(1, 0, 0x3FF);
 
-	CAN.init_Filt(0, 0, CAN_POPB_control);
+	CAN.init_Filt(0, 0, CAN_POPB_CONTROL);
 
 	/* Initialise Load Switch Pins*/
 	pinMode(LS_NAVTIC, OUTPUT);
@@ -136,13 +137,13 @@ START_INIT:
 }
 
 void publishCanStatus() {
-	uint8_t STATUS[1] = { LsControl };
-	CAN.sendMsgBuf(CAN_POPB_stats, 0, 1, STATUS);
+	CAN.setupCANFrame(buf, 0, 1, LsControl);
+	CAN.sendMsgBuf(CAN_POPB_STATS, 0, 1, buf);
 }
 
 void publishCanHB() {
-	uint8_t HB[1] = { HEARTBEAT_POPB };
-	CAN.sendMsgBuf(CAN_heartbeat, 0, 1, HB);
+  CAN.setupCANFrame(buf, 0, 1, HEARTBEAT_POPB);
+	CAN.sendMsgBuf(CAN_HEARTBEAT, 0, 1, buf);
 }
 
 boolean checkCanMsg() {
@@ -151,7 +152,7 @@ boolean checkCanMsg() {
 		CAN.readMsgBufID(&id, &len, buf);    // read data,  len: data length, buf: data buf
 		boolean mine = false;
 		switch (id) {
-		case CAN_POPB_control:
+		case CAN_POPB_CONTROL:
 			LsControl = CAN.parseCANFrame(buf, 0, 1);
 			mine = true;
 			if (DEBUG_MODE)

@@ -1,5 +1,5 @@
 #include "n2420.h"
-#include "can.h"
+#include <can.h>
 #include "can_asv3_defines.h"
 #include "defines.h"
 
@@ -124,6 +124,13 @@ void receiveRemoteKill() {
   n2420.readPacket();
 
   if (n2420.isAvailable()) {
+    Serial.println("Response available.");
+    Serial.print("ID: ");
+    Serial.println(n2420.getReceivingAddress() );
+    inBuf = n2420.showReceived();
+    inByte = *(inBuf+2);
+    Serial.print("inByte: ");
+    Serial.println(inByte, HEX);
     // Serial.println("Response available.");
 
     if (n2420.getReceivingAddress() == REMOTE_KILL_ADDRESS){    //REMOTE_KILL_ADDRESS is defined as 4 from library
@@ -156,7 +163,7 @@ void receiveRemoteKill() {
 
   else {
     noData++;
-    Serial.print("noData: ");
+    Serial.print("n240 unavail noData: ");
     Serial.println(noData);
 
     if (noData >= 20) {
@@ -170,6 +177,17 @@ void receiveRemoteKill() {
 void receiveCanMessage() {
   if (CAN.checkReceive() == CAN_MSGAVAIL) {
     CAN.readMsgBufID(&id, &len, buf);
+
+//    Serial.print(CAN.getCanId());
+//    Serial.print(": ");
+//    Serial.print(CAN.parseCANFrame(buf, 0, 1));
+//    Serial.print(" ");
+//    Serial.print(CAN.parseCANFrame(buf, 2, 2));
+//    Serial.print(" ");
+//    Serial.print(CAN.parseCANFrame(buf, 4, 2));
+//    Serial.print(" ");
+//    Serial.println(CAN.parseCANFrame(buf, 6, 2));
+//    
 
     switch (id) {
     case CAN_HEARTBEAT:
