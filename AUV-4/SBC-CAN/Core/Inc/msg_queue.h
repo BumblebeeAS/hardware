@@ -10,7 +10,7 @@
 
 #include "stdint.h"
 
-#define BUFSIZE (512)
+#define BUFSIZE (256)
 
 typedef struct {
 	volatile uint8_t data[BUFSIZE];
@@ -21,8 +21,13 @@ typedef struct {
 
 
 void MsgQueue_Init(msg_queue* buf);
+
+// FIXME: Epush is done in IRQ while pop is done in main code, this causes size to update incorrectly.
+// After some time if size is too off, program fail
+// In Arduino, only head and tail are used to maintain queue
 uint8_t MsgQueue_Empty(msg_queue* buf);
 uint8_t MsgQueue_Full(msg_queue* buf);
+
 uint8_t MsgQueue_push(msg_queue* buf, uint8_t d);
 uint8_t MsgQueue_pop(msg_queue * buf);
 

@@ -25,7 +25,7 @@
 extern TIM_HandleTypeDef htim17;
 extern UART_HandleTypeDef huart2;
 extern msg_queue uart_txbuf, uart_rxbuf;
-extern uint8_t isIdle;
+extern volatile uint8_t isUartIdle;
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* USER CODE END Includes */
@@ -153,7 +153,8 @@ void TIM17_IRQHandler(void) {
 }
 
 void USART2_IRQHandler(void) {
-	static uint32_t cnt = 0;
+	// static uint32_t cnt = 0;
+	// cnt ++;
 
 	// multiple interrupts should be cleared in a single call
 	// HAL_NVIC_ClearPendingIRQ(USART3_IRQn);
@@ -162,7 +163,7 @@ void USART2_IRQHandler(void) {
 	if (huart2.Instance->ISR & (1 << 5))
 	{
 		uint8_t d = huart2.Instance->RDR;
-		if (huart2.Instance->ISR & (1 << 2 ) || huart2.Instance->ISR & (1 << 1) || !isIdle)
+		if (huart2.Instance->ISR & (1 << 2 ) || huart2.Instance->ISR & (1 << 1) || huart2.Instance->ISR & (1 << 0) || !isUartIdle)
 			return;
 		MsgQueue_push(&uart_rxbuf,d);
 	}
@@ -170,12 +171,11 @@ void USART2_IRQHandler(void) {
 	// Overrun error
 	if (huart2.Instance->ISR & (1 << 3))
 	{
-		cnt ++;
 		// clear ORE
 		huart2.Instance->ICR |= (1 << 3);
 		uint8_t d = huart2.Instance->RDR;
 
-		if (huart2.Instance->ISR & (1 << 2 ) || huart2.Instance->ISR & (1 << 1) || !isIdle)
+		if (huart2.Instance->ISR & (1 << 2 ) || huart2.Instance->ISR & (1 << 1) || huart2.Instance->ISR & (1 << 0) || !isUartIdle)
 			return;
 		MsgQueue_push(&uart_rxbuf,d);
 	}

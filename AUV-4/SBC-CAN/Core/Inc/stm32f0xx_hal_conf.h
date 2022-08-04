@@ -42,7 +42,7 @@
 /*#define HAL_TSC_MODULE_ENABLED   */
 /*#define HAL_DAC_MODULE_ENABLED   */
 /*#define HAL_I2S_MODULE_ENABLED   */
-/*#define HAL_IWDG_MODULE_ENABLED   */
+#define HAL_IWDG_MODULE_ENABLED
 /*#define HAL_LCD_MODULE_ENABLED   */
 /*#define HAL_LPTIM_MODULE_ENABLED   */
 /*#define HAL_RNG_MODULE_ENABLED   */
@@ -64,6 +64,7 @@
 #define HAL_PWR_MODULE_ENABLED
 #define HAL_RCC_MODULE_ENABLED
 #define HAL_I2C_MODULE_ENABLED
+#define HAL_WWDG_MODULE_ENABLED
 
 /* ########################## HSE/HSI Values adaptation ##################### */
 /**
