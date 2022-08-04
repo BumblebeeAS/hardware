@@ -17,9 +17,9 @@
 // Dropper: Servo 1
 //
 // Written by Titus & Isabella
-// Change log v3.1
-// Calibrated stall value for grabber
-// 
+// Change log v3.2
+// add pinmode in init sequence to ensure actuator do not ignore first command
+// add checks to prevent actuator activation due to extended frame message of same CAN id sent to esc 2 
 //###################################################
 //###################################################
 
@@ -200,6 +200,8 @@ void grabber_talk() {
 void manipulators_init()
 {
   //Initialize Servos
+  pinMode(DROP, OUTPUT);
+  pinMode(TORP, OUTPUT);
   servo_dropper.attach(DROP);
   servo_torpedo.attach(TORP);
   servo_dropper.write(10);
@@ -367,12 +369,22 @@ boolean receiveCanMessage() {
     boolean messageForMani = false;
     switch (id) {
       case CAN_ACT_CONTROL: { //CAN_ACT_CONTROL
-          maniControl = CAN.parseCANFrame(buf, 0, 1);
-          messageForMani = true;
+          if (len == 1)
+          {
+            maniControl = CAN.parseCANFrame(buf, 0, 1);
+            messageForMani = true;
 #ifdef DEBUG
-          Serial.print("Mani Control Received: ");
-          Serial.println(maniControl, HEX);
-#endif
+            Serial.print("Mani Control Received: ");
+            Serial.println(maniControl, HEX);
+#endif            
+          }
+          else
+          {
+            Serial.println("Wrong Mani command size");
+            Serial.print("bytes received:"); 
+            Serial.println(len);         
+            Serial.println("Expected size: 1"); 
+          }
           break;
         }
       default: {
