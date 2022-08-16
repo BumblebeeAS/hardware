@@ -10,7 +10,7 @@
 void frsky_get_rssi() {
   // Map RSSI from 1000 to 2000 duty cycle to 0 to 100 dB
   internalStats[RSSI_FRSKY] = calculate_rssi();
-  if ((internalStats[RSSI_FRSKY] != 255) && (internalStats[RSSI_FRSKY] > RSSI_THRESHOLD)) {
+  if ((internalStats[RSSI_FRSKY] != 100) && (internalStats[RSSI_FRSKY] > RSSI_THRESHOLD)) {
     heartbeat_timeout[FRSKY] = millis();
   }
   else {
@@ -70,6 +70,19 @@ void frsky_send_batt_capacity() {
   Wire.endTransmission(true);
 }
 
-// TODO get actuated hydrophone control
-void frsky_get_hydrophone() {
+void frsky_get_kill() {
+  if (frsky.get_ch(FRISKY_KILL) <= 1000)
+  {
+    remotekill_frsky = false;
+    #ifdef FRSKYDEBUG
+    Serial.println("Alive");
+    #endif 
+  }
+  else
+  {
+    remotekill_frsky = true;
+    #ifdef FRSKYDEBUG
+    Serial.println("Kill");
+    #endif 
+  }
 }

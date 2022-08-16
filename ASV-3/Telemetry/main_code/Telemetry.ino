@@ -16,12 +16,11 @@
 //    Determine state of control and send control signal to POSB accordingly.           Not done
 //
 // Written by Titus Ng 
-// Change log v1.8: 
-// Solve stat timeout issue  \
-
-//
-//
-//####################################### ############
+// Change log v1.9: 
+// Fix battery voltage display bug 
+// Added frsky kill to telemetry
+// Fix bug where frsky off but RSSI signal remains
+//###################################################
 
 // FOR DEBUG
 //#define DEBUG
@@ -30,7 +29,7 @@
 #include "define.h"
 #include <Arduino.h>
 #include "telem_screen.h"       
-#include "telem_can.h" x`
+#include "telem_can.h"
 #include "telem_frsky.h"         
 
 // Create objects
@@ -65,6 +64,8 @@ static uint32_t thrusterloop;
 
 // control 
 bool frsky_alive = false;
+bool remotekill = false;
+bool remotekill_frsky = false;
 int control_mode_frsky = AUTONOMOUS;
 int control_mode = AUTONOMOUS;
 int control_mode_ocs = AUTONOMOUS;
@@ -234,6 +235,26 @@ void publish_controlmode() {
     control_mode = STATION_KEEP;
   }
 
+}
+
+void get_kill() {
+  if (frsky_alive) {
+    remotekill = remotekill_frsky;
+  } else {
+    remotekill = false;
+  }
+//  Serial.print("main: ");
+//  Serial.println(remotekill);
+  if (remotekill) {
+    // send soft e stop
+    CAN.setupCANFrame(buf, 0, 1, 0);
+    CAN.sendMsgBuf(CAN_SOFT_E_STOP, 0, 1, buf);
+  }
+  else {
+    // send soft resume
+    CAN.setupCANFrame(buf, 0, 1, 1);
+    CAN.sendMsgBuf(CAN_SOFT_E_STOP, 0, 1, buf);    
+  }
 }
 
 void CAN_publish_manualthruster()

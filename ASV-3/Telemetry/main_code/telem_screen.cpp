@@ -57,26 +57,25 @@ void screen_update_stats() {
       screen.write_value_int(internalStats[i]);
     }
     #ifdef SCREENDEBUG 
-    Serial.print(i);
-    Serial.print(": ");
-    Serial.println(internalStats[i]);
+//    Serial.print(i);
+//    Serial.print(": ");
+//    Serial.println(internalStats[i]);
     #endif 
   }
 
   screen.set_cursor(650 + OFFSET, 0);
   for (int i = 0; i < POWER_STAT_COUNT; i++)
   {
-    if (i == BATT1_CURRENT || i == BATT2_CURRENT) {
-      screen.write_value_with_dp(powerStats[i], 1);           // Display pressure as A with 1dp 
-    } else if (i == BATT1_VOLTAGE || i == BATT1_VOLTAGE) {
-      screen.write_value_with_dp(powerStats[i], 2);           // Display pressure as V with 1dp 
-    } else {
+    if (i > 1) {
+      screen.write_value_with_dp(powerStats[i], 3);           // Display current as A with 1dp, voltage as V with 1dp
+    }
+    else {
       screen.write_value_int(powerStats[i]);
     }
     #ifdef SCREENDEBUG 
-    Serial.print(i);
-    Serial.print(": ");
-    Serial.println(internalStats[i]);
+//    Serial.print(i);
+//    Serial.print(": ");
+//    Serial.println(internalStats[i]);
     #endif 
   }
 }
@@ -122,10 +121,10 @@ void screen_reset_stats() {
 }
 void reset_posb_stats() {
   if ((millis() - posb_timeout) > STAT_TIMEOUT) {
-    Serial.print("reset: ");
-    Serial.print(millis());
-    Serial.print(" ");
-    Serial.println(posb_timeout);
+//    Serial.print("reset: ");
+//    Serial.print(millis());
+//    Serial.print(" ");
+//    Serial.println(posb_timeout);
     internalStats[INT_PRESS] = 0xFFFF;
     internalStats[HUMIDITY] = 0xFFFF;
     internalStats[POSB_TEMP] = 0xFFFF;

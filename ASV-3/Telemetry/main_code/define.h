@@ -30,7 +30,7 @@
 #define FRISKY_YAW 3
 #define FRISKY_ARM 4
 #define FRISKY_RSSI 5
-#define FRISKY_HYDROPHONE 6
+#define FRISKY_KILL 6
 
 //Internal stats
 #define INT_STAT_COUNT 7
@@ -40,7 +40,7 @@
 #define CPU_TEMP 2                // Degree Celsius
 #define POSB_TEMP 3               // Degree Celsius
 #define RSSI_OCS 4                // 1db
-#define RSSI_FRSKY 5                 // 1db
+#define RSSI_FRSKY 5              // 1db
 #define HULL_LEAK 6               // 1 = leak, 0 = no leak 
 
 #define I2C_ADDR_DAC 0x0C         // DAC address
@@ -50,9 +50,9 @@
 
 #define BATT1_CAPACITY 0          // %
 #define BATT2_CAPACITY 1
-#define BATT1_CURRENT 2           // 0.1A
+#define BATT1_CURRENT 2           // mA
 #define BATT2_CURRENT 3
-#define BATT1_VOLTAGE 4           // 0.01V
+#define BATT1_VOLTAGE 4           // mV
 #define BATT2_VOLTAGE 5 
 
 //Heartbeat
