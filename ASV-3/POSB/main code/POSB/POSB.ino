@@ -16,12 +16,8 @@
 //	Humidity & Temperature & Internal Pressure & Leak Sensor
 //	Light Tower
 
-// Change Log for v1.0:
-// - Initial commit
-// Change Log for v2.0:
-// - Updated CAN messaging standards
-// - Added Internal Pressure Sensor and Leak Sensor
-
+// Change Log for v2.1:
+// Fix stat bugs
 
 //###################################################
 //###################################################
@@ -30,7 +26,7 @@
 #include <can.h>
 #include "HIH613x.h"
 #include <Adafruit_ADS1015.h>
-#include "XBee.h"
+//#include "XBee.h"
 
 #include "can_asv3_defines.h"
 #include "defines.h"
@@ -102,7 +98,7 @@ uint8_t leak_signal = 0x02;
 
 //#define _TELE_DED_
 
-#define _TEST_
+//#define _TEST_
 #ifdef _TEST_
 
 char inputstr[10] = { '\n' };
@@ -625,7 +621,7 @@ void publishCAN_posbstats()
 {
   CAN.setupCANFrame(posb_stat_buf, 0, 1, int_temperature);
   CAN.setupCANFrame(posb_stat_buf, 1, 1, int_humidity);
-  CAN.setupCANFrame(posb_stat_buf, 2, 2, int_pressure);
+  //CAN.setupCANFrame(posb_stat_buf, 2, 2, int_pressure); disabiling pressure temporarily
   CAN.setupCANFrame(posb_stat_buf, 4, 1, leak_signal);
   #ifndef _TEST_
     Serial.print("temperature: ");
@@ -640,8 +636,23 @@ void publishCAN_posbstats()
 void publishCAN_heartbeat()
 {
 	buf[0] = HEARTBEAT_POSB;
-	buf[1] = heartbeat_batt1 + (heartbeat_batt2 << 1) + (heartbeat_esc1 << 2) + (heartbeat_esc2 << 3);
-	CAN.sendMsgBuf(CAN_HEARTBEAT, 0, 2, buf);
+  CAN.sendMsgBuf(CAN_HEARTBEAT, 0, 1, buf);
+  if (heartbeat_batt1) {
+    buf[0] = HEARTBEAT_BATT1;
+    CAN.sendMsgBuf(CAN_HEARTBEAT, 0, 1, buf);
+  }
+  if (heartbeat_batt2) {
+    buf[0] = HEARTBEAT_BATT2;
+    CAN.sendMsgBuf(CAN_HEARTBEAT, 0, 1, buf);
+  }
+  if (heartbeat_esc1) {
+    buf[0] = HEARTBEAT_ESC1;
+    CAN.sendMsgBuf(CAN_HEARTBEAT, 0, 1, buf);
+  }
+  if (heartbeat_esc2) {
+    buf[0] = HEARTBEAT_ESC2;
+    CAN.sendMsgBuf(CAN_HEARTBEAT, 0, 1, buf);
+  }
 	Serial.println("HEARTBEAT!");
 }
 /*	no windsensor used currently
@@ -711,8 +722,8 @@ void publishCAN_batt1_stats()
 	CAN.setupCANFrame(batt1_stat_buf, 5, 1, 38);
 	CAN.sendMsgBuf(CAN_battery1_motor_stats, 0, 6, batt1_stat_buf);*/
 	CAN.setupCANFrame(batt1_stat_buf, 0, 1, Battery1.getCapacity());
-	CAN.setupCANFrame(batt1_stat_buf, 1, 2, Battery1.getVoltage());
-	CAN.setupCANFrame(batt1_stat_buf, 3, 2, 0 - (int16_t)Battery1.getCurrent());
+	CAN.setupCANFrame(batt1_stat_buf, 1, 2, Battery1.getVoltage()*100);
+	CAN.setupCANFrame(batt1_stat_buf, 3, 2, 0 - (int16_t)Battery1.getCurrent()*100);
 	CAN.setupCANFrame(batt1_stat_buf, 5, 2, Battery1.getTemperature());
 	CAN.sendMsgBuf(CAN_BATT1_STATS, 0, 7, batt1_stat_buf);
 }
@@ -729,11 +740,13 @@ void publishCAN_batt2_stats()
   Serial.print(" Temp(C): ");
   Serial.println(Battery1.getTemperature());
 #endif
+  if (heartbeat_batt2) {
 	CAN.setupCANFrame(batt2_stat_buf, 0, 1, Battery2.getCapacity());
-	CAN.setupCANFrame(batt2_stat_buf, 1, 2, Battery2.getVoltage());
-	CAN.setupCANFrame(batt2_stat_buf, 3, 2, 0 - (int16_t)Battery2.getCurrent());
+	CAN.setupCANFrame(batt2_stat_buf, 1, 2, Battery2.getVoltage()*100);
+	CAN.setupCANFrame(batt2_stat_buf, 3, 2, 0 - (int16_t)Battery2.getCurrent()*100);
 	CAN.setupCANFrame(batt2_stat_buf, 5, 2, Battery2.getTemperature());
 	CAN.sendMsgBuf(CAN_BATT2_STATS, 0, 7, batt2_stat_buf);
+  }
 }
 void checkCANmsg() {
 	if (CAN_MSGAVAIL == CAN.checkReceive()) {
