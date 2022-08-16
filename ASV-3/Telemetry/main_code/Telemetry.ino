@@ -16,10 +16,8 @@
 //    Determine state of control and send control signal to POSB accordingly.           Not done
 //
 // Written by Titus Ng 
-// Change log v1.9: 
-// Fix battery voltage display bug 
-// Added frsky kill to telemetry
-// Fix bug where frsky off but RSSI signal remains
+// Change log v1.10: 
+// Fix pressure bug
 //###################################################
 
 // FOR DEBUG

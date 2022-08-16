@@ -118,6 +118,7 @@ void read_batt_stats(int batt_no) {
 
 void read_heartbeat() {
    uint8_t device = CAN.parseCANFrame(buf, 0, 1);
+   Serial.println(device);
    heartbeat_timeout[device] = millis();
    #ifdef CANDEBUG
 //   Serial.println("Heartbeat: ");
@@ -128,7 +129,7 @@ void read_heartbeat() {
 void read_posb_stats() {
    internalStats[POSB_TEMP] = CAN.parseCANFrame(buf, 0, 1);
    internalStats[HUMIDITY] = CAN.parseCANFrame(buf, 1, 1);
-   internalStats[INT_PRESS] = CAN.parseCANFrame(buf, 2, 2); 
+   internalStats[INT_PRESS] = CAN.parseCANFrame(buf, 2, 2) == 0 ? 0xFFFF : CAN.parseCANFrame(buf, 2, 2);
    internalStats[HULL_LEAK] = CAN.parseCANFrame(buf, 4, 1);
 //   Serial.println("stats");
 //   Serial.println(internalStats[POSB_TEMP]);
