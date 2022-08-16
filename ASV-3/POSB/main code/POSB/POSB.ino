@@ -721,11 +721,13 @@ void publishCAN_batt1_stats()
 	CAN.setupCANFrame(batt1_stat_buf, 3, 2, 0 - (int16_t)(-14));
 	CAN.setupCANFrame(batt1_stat_buf, 5, 1, 38);
 	CAN.sendMsgBuf(CAN_battery1_motor_stats, 0, 6, batt1_stat_buf);*/
-	CAN.setupCANFrame(batt1_stat_buf, 0, 1, Battery1.getCapacity());
-	CAN.setupCANFrame(batt1_stat_buf, 1, 2, Battery1.getVoltage()*100);
-	CAN.setupCANFrame(batt1_stat_buf, 3, 2, 0 - (int16_t)Battery1.getCurrent()*100);
-	CAN.setupCANFrame(batt1_stat_buf, 5, 2, Battery1.getTemperature());
-	CAN.sendMsgBuf(CAN_BATT1_STATS, 0, 7, batt1_stat_buf);
+  if (heartbeat_batt1) {
+  	CAN.setupCANFrame(batt1_stat_buf, 0, 1, Battery1.getCapacity());
+  	CAN.setupCANFrame(batt1_stat_buf, 1, 2, Battery1.getVoltage()*100);
+  	CAN.setupCANFrame(batt1_stat_buf, 3, 2, 0 - (int16_t)Battery1.getCurrent()*100);
+  	CAN.setupCANFrame(batt1_stat_buf, 5, 2, Battery1.getTemperature());
+  	CAN.sendMsgBuf(CAN_BATT1_STATS, 0, 7, batt1_stat_buf);
+  }
 }
 void publishCAN_batt2_stats()
 {
@@ -741,11 +743,11 @@ void publishCAN_batt2_stats()
   Serial.println(Battery1.getTemperature());
 #endif
   if (heartbeat_batt2) {
-	CAN.setupCANFrame(batt2_stat_buf, 0, 1, Battery2.getCapacity());
-	CAN.setupCANFrame(batt2_stat_buf, 1, 2, Battery2.getVoltage()*100);
-	CAN.setupCANFrame(batt2_stat_buf, 3, 2, 0 - (int16_t)Battery2.getCurrent()*100);
-	CAN.setupCANFrame(batt2_stat_buf, 5, 2, Battery2.getTemperature());
-	CAN.sendMsgBuf(CAN_BATT2_STATS, 0, 7, batt2_stat_buf);
+  	CAN.setupCANFrame(batt2_stat_buf, 0, 1, Battery2.getCapacity());
+  	CAN.setupCANFrame(batt2_stat_buf, 1, 2, Battery2.getVoltage()*100);
+  	CAN.setupCANFrame(batt2_stat_buf, 3, 2, 0 - (int16_t)Battery2.getCurrent()*100);
+  	CAN.setupCANFrame(batt2_stat_buf, 5, 2, Battery2.getTemperature());
+  	CAN.sendMsgBuf(CAN_BATT2_STATS, 0, 7, batt2_stat_buf);
   }
 }
 void checkCANmsg() {
