@@ -25,6 +25,6 @@ void frsky_get_rssi();
 int calculate_rssi();
 void frsky_get_controlmode();
 void frsky_send_batt_capacity();
+void frsky_get_kill();
 void frsky_get_hydrophone();
-
 #endif

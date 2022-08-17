@@ -74,6 +74,7 @@ int16_t speed1 = 0;
 int16_t speed2 = 0;
 int16_t speed3 = 0;
 int16_t speed4 = 0;
+int frsky_timeout_count = 0;
 
 void setup() {
   pinMode(SCREEN_CS, OUTPUT);           //CS screen
@@ -120,8 +121,10 @@ void loop() {
   frsky_get_controlmode();        // get control mode from frsky 
   frsky_get_rssi();           
   frsky_send_batt_capacity();
+  frsky_get_kill();
   get_directions();
   publish_controlmode();            // identify control mode based on control architecture 
+  get_kill();
   set_thruster_values();        // transmit thruster commands
 
   if ((millis() - hbloop) > HEARTBEAT_LOOP) {     
@@ -236,13 +239,34 @@ void publish_controlmode() {
 }
 
 void get_kill() {
-  if (frsky_alive) {
-    remotekill = remotekill_frsky;
+
+  
+  if (!frsky_alive || internalStats[RSSI_FRSKY] == 0xFFFF) {
+    frsky_timeout_count += 1;
+    if (frsky_timeout_count > 20){
+      remotekill = true;
+      frsky_timeout_count = 0;
+    }
+    #ifdef DEBUG
+    Serial.print("Frsky Status: ");
+    Serial.print(frsky_alive);
+    Serial.print(" Timeout Count: ");
+    Serial.print(frsky_timeout_count);
+    Serial.print(" RSSI: ");
+    Serial.println(internalStats[RSSI_FRSKY]);  
+    #endif
   } else {
-    remotekill = false;
+    #ifdef DEBUG
+    if(remotekill_frsky){
+      Serial.println("Frsky button triggered");
+    }
+    #endif
+    remotekill = remotekill_frsky;
+    frsky_timeout_count = 0;
   }
-//  Serial.print("main: ");
-//  Serial.println(remotekill);
+
+
+
   if (remotekill) {
     // send soft e stop
     CAN.setupCANFrame(buf, 0, 1, 0);

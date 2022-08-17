@@ -240,13 +240,15 @@ void publish_controlmode() {
 }
 
 void get_kill() {
+  Serial.print("Frsky Status: ");
+  Serial.println(frsky_alive);
   if (!frsky_alive || internalStats[RSSI_FRSKY] == 0xFFFF) {
     remotekill = true;
   } else {
     remotekill = remotekill_frsky;
   }
-//  Serial.print("main: ");
-//  Serial.println(remotekill);
+  Serial.print("main: ");
+  Serial.println(remotekill);
   if (remotekill) {
     // send soft e stop
     CAN.setupCANFrame(buf, 0, 1, 0);
