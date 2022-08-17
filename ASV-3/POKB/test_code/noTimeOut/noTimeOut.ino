@@ -103,8 +103,12 @@ void loop() {
   }
 
   //Display Status
-  Serial.print("Kill Status: ");
-  Serial.println(onboardKill||remoteKill||softwareKill);
+  Serial.print("Onboard: ");
+  Serial.print(onboardKill);
+  Serial.print(" Remote: ");
+  Serial.print(remoteKill);
+  Serial.print(" Software: ");
+  Serial.println(softwareKill);
 }
 
 void canInitialise() {
@@ -155,11 +159,12 @@ void receiveRemoteKill() {
     }
   }
 
+
+  // if dont have nvm
   else {
-    noData++;
-    Serial.print("n240 unavail noData: ");
-    Serial.println(noData);
+    
   }
+
 
   
 //  if (noData >= 20) {
