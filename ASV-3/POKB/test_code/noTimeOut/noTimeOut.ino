@@ -101,6 +101,10 @@ void loop() {
 
     sendPOKBStatusTime = millis();
   }
+
+  //Display Status
+  Serial.print("Kill Status: ");
+  Serial.println(onboardKill||remoteKill||softwareKill);
 }
 
 void canInitialise() {
@@ -158,11 +162,11 @@ void receiveRemoteKill() {
   }
 
   
-  if (noData >= 20) {
-      remoteKill = true;
-      noData = 0;
-      Serial.println("Connection timeout kill.");
-   }
+//  if (noData >= 20) {
+//      remoteKill = true; NO TIMEOUT KILL
+//      noData = 0;
+//      Serial.println("Connection timeout");
+//   }
 }
 
 void receiveCanMessage() {

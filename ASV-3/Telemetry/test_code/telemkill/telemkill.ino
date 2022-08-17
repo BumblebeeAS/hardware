@@ -240,10 +240,10 @@ void publish_controlmode() {
 }
 
 void get_kill() {
-  if (frsky_alive) {
-    remotekill = remotekill_frsky;
+  if (!frsky_alive || internalStats[RSSI_FRSKY] == 0xFFFF) {
+    remotekill = true;
   } else {
-    remotekill = false;
+    remotekill = remotekill_frsky;
   }
 //  Serial.print("main: ");
 //  Serial.println(remotekill);
