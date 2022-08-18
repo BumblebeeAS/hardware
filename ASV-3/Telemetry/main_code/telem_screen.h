@@ -10,6 +10,7 @@
 
 extern LCD screen;
 extern Frisky frsky;
+extern bool remotekill;
 extern uint32_t internalStats[];
 extern uint32_t powerStats[];
 extern uint32_t heartbeat_timeout[];

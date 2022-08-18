@@ -30,7 +30,7 @@ void screen_prepare() {
   screen.write_string("Batt2 voltage:");
   screen.write_string("Logic Bkplane OK:");
   screen.write_string("Ballshooter OK:");
-  screen.write_string("Act Hydrophone OK:");
+  screen.write_string("Kill:");
   screen.write_string("Batt1 OK:");
   screen.write_string("Batt2 OK:");
   screen.write_string("ESC1 OK:");
@@ -97,7 +97,10 @@ void screen_update_hb() {
   screen.set_cursor(650 + OFFSET, 210);           // do left half
   for (; i < HB_COUNT; i++) {                     
     if (i != ACTUATED_THRUSTERS) {                // skip actuated thrusters for now 
-      if ((millis() - heartbeat_timeout[i]) > HB_TIMEOUT) {
+      if (i == KILL) {
+        screen.write_value_string(remotekill ? "YES" : "NO");
+      }
+      else if ((millis() - heartbeat_timeout[i]) > HB_TIMEOUT) {
         screen.write_value_string("NO");
       }
       else

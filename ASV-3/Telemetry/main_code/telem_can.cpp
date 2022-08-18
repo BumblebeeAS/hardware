@@ -118,7 +118,6 @@ void read_batt_stats(int batt_no) {
 
 void read_heartbeat() {
    uint8_t device = CAN.parseCANFrame(buf, 0, 1);
-   Serial.println(device);
    heartbeat_timeout[device] = millis();
    #ifdef CANDEBUG
 //   Serial.println("Heartbeat: ");

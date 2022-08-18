@@ -67,7 +67,7 @@
 #define FRSKY 8
 #define LOGICBACKPLANE 9
 #define BALLSHOOTER 10
-#define ACOUSTICS_MANI 11
+#define KILL 11
 #define ACTUATED_THRUSTERS 12
 #define BATT1 13
 #define BATT2 14

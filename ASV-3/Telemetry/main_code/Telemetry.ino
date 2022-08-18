@@ -16,8 +16,8 @@
 //    Determine state of control and send control signal to POSB accordingly.           Not done
 //
 // Written by Titus Ng 
-// Change log v1.10: 
-// Fix pressure bug
+// Change log v1.11: 
+// Display kill status on screen
 //###################################################
 
 // FOR DEBUG
