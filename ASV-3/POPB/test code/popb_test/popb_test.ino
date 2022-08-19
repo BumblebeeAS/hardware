@@ -1,6 +1,6 @@
 #include "Arduino.h"
-#include "can.h"
-#include "can_asv3_defines.h"
+#include <can.h>
+#include <can_asv3_defines.h>
 
 #define DEBUG_MODE true
 #define DEBUG_MODEVVV false
