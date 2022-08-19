@@ -82,6 +82,14 @@ void CAN_read_msg() {
 //          break;
         #endif
       }
+      case CAN_SOFT_E_STOP: {
+        softkill = (CAN.parseCANFrame(buf, 0, 1) == 1 ? false : true);
+//        Serial.println(CAN.parseCANFrame(buf, 0, 1));
+      }
+      case CAN_E_STOP: {
+        hardkill = (CAN.parseCANFrame(buf, 0, 1) == 0 ? false : true);
+        //Serial.println(CAN.parseCANFrame(buf, 0, 1));
+      }
       default: {
         #ifdef CANDEBUG
 //          Serial.println(CAN.getCanId());

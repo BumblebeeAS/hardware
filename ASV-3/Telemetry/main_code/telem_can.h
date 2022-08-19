@@ -27,6 +27,8 @@ extern uint32_t posb_timeout;
 extern uint32_t sbc_timeout;
 extern uint32_t batt1_timeout;
 extern uint32_t batt2_timeout;
+extern bool hardkill;
+extern bool softkill;
 
 
 void CAN_init();

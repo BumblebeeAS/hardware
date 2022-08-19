@@ -63,11 +63,12 @@ void screen_update_stats() {
     #endif 
   }
 
-  screen.set_cursor(650 + OFFSET, 0);
+  screen.set_cursor(600 + OFFSET, 0);
   for (int i = 0; i < POWER_STAT_COUNT; i++)
   {
     if (i > 1) {
-      screen.write_value_with_dp(powerStats[i], 3);           // Display current as A with 1dp, voltage as V with 1dp
+      Serial.println(powerStats[i]);
+      screen.write_value_with_dp((powerStats[i] == 0xFFFF ? 0xFFFF : powerStats[i]/ 100), 1);           // Display current as A with 1dp, voltage as V with 1dp
     }
     else {
       screen.write_value_int(powerStats[i]);
@@ -83,7 +84,7 @@ void screen_update_stats() {
 // Display heartbeats
 void screen_update_hb() {
   int i; 
-  screen.set_cursor(170 + OFFSET, 245);            // do right half
+  screen.set_cursor(170 + OFFSET, 245);            // do left half
   for (i = 1; i < 9; i++) {
     if (i != TELEMETRY && i != DTLS)                           // Skip Telemetry and DTLS HB 
     {
@@ -94,11 +95,19 @@ void screen_update_hb() {
         screen.write_value_string("YES");
     }
   }   
-  screen.set_cursor(650 + OFFSET, 210);           // do left half
+  screen.set_cursor(600 + OFFSET, 210);           // do right half
   for (; i < HB_COUNT; i++) {                     
     if (i != ACTUATED_THRUSTERS) {                // skip actuated thrusters for now 
-      if (i == KILL) {
-        screen.write_value_string(remotekill ? "YES" : "NO");
+      if (i == KILL) {                            // display kill status
+        char * value;
+        if (remotekill) {
+          value = "Remote     ";                
+        } else if (softkill) {                    // Software kill activated
+          value = "Soft Kill  ";
+        } else if (hardkill) {                    // Any kill activated
+          value = "Hard Kill  ";
+        }
+        screen.write_string(value);
       }
       else if ((millis() - heartbeat_timeout[i]) > HB_TIMEOUT) {
         screen.write_value_string("NO");

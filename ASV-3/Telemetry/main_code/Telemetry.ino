@@ -16,16 +16,20 @@
 //    Determine state of control and send control signal to POSB accordingly.           Not done
 //
 // Written by Titus Ng 
-// Change log v1.11: 
-// Display kill status on screen
+// Change log v1.12: 
+// Add more detailed kill information
+// Remove extra 0s in batt stats
+// 
+// Todo: add DTLS heartbeat (possibly remove RSSI OCS?)
+// Fix hard and soft kill CAN msgs
 //###################################################
 
 // FOR DEBUG
 //#define DEBUG
 
 #include <Wire.h>
-#include "define.h"
 #include <Arduino.h>
+#include "define.h"
 #include "telem_screen.h"       
 #include "telem_can.h"
 #include "telem_frsky.h"         
@@ -63,6 +67,8 @@ static uint32_t thrusterloop;
 // control 
 bool frsky_alive = false;
 bool remotekill = false;
+bool hardkill = true;
+bool softkill = true;
 bool remotekill_frsky = false;
 int control_mode_frsky = AUTONOMOUS;
 int control_mode = AUTONOMOUS;
