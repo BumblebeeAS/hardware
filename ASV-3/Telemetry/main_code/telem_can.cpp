@@ -82,13 +82,11 @@ void CAN_read_msg() {
 //          break;
         #endif
       }
-      case CAN_SOFT_E_STOP: {
-        softkill = (CAN.parseCANFrame(buf, 0, 1) == 1 ? false : true);
-//        Serial.println(CAN.parseCANFrame(buf, 0, 1));
-      }
       case CAN_E_STOP: {
-        hardkill = (CAN.parseCANFrame(buf, 0, 1) == 0 ? false : true);
-        //Serial.println(CAN.parseCANFrame(buf, 0, 1));
+        uint8_t kill = CAN.parseCANFrame(buf, 0, 1);
+        Serial.println(kill, BIN);
+        hard_kill = kill & 0b00001000;
+        SBC_kill = kill & 0b00000100; 
       }
       default: {
         #ifdef CANDEBUG
@@ -156,4 +154,15 @@ void CAN_publish_controllink() {
   buf[1] = internalStats[RSSI_FRSKY];
   buf[2] = internalStats[RSSI_OCS];
   CAN.sendMsgBuf(CAN_CONTROL_LINK, 0, len, buf);
+}
+
+void CAN_publish_kill() {
+  // OCS kill
+  CAN.setupCANFrame(buf, 0, 1, OCS_kill ? 1 : 0);
+  CAN.setupCANFrame(buf, 1, 1, 0);
+  CAN.sendMsgBuf(CAN_SOFT_E_STOP, 0, 2, buf);
+  // Frsky kill
+  CAN.setupCANFrame(buf, 0, 1, frsky_kill ? 1 : 0);
+  CAN.setupCANFrame(buf, 1, 1, 1);
+  CAN.sendMsgBuf(CAN_SOFT_E_STOP, 0, 2, buf);
 }

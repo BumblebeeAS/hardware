@@ -92,7 +92,7 @@
 #define SCREEN_LOOP 1000
 #define CONTROLLINK_LOOP 500
 #define THRUSTER_LOOP 100
-
+#define KILL_LOOP 100
 
 
 #endif // _DEFINES_H

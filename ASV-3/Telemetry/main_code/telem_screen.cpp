@@ -67,7 +67,6 @@ void screen_update_stats() {
   for (int i = 0; i < POWER_STAT_COUNT; i++)
   {
     if (i > 1) {
-      Serial.println(powerStats[i]);
       screen.write_value_with_dp((powerStats[i] == 0xFFFF ? 0xFFFF : powerStats[i]/ 100), 1);           // Display current as A with 1dp, voltage as V with 1dp
     }
     else {
@@ -100,12 +99,14 @@ void screen_update_hb() {
     if (i != ACTUATED_THRUSTERS) {                // skip actuated thrusters for now 
       if (i == KILL) {                            // display kill status
         char * value;
-        if (remotekill) {
-          value = "Remote     ";                
-        } else if (softkill) {                    // Software kill activated
-          value = "Soft Kill  ";
-        } else if (hardkill) {                    // Any kill activated
-          value = "Hard Kill  ";
+        if (hard_kill) {
+          value = "Hard kill";
+        } else if (frsky_kill) {
+          value = "Frsky kill";                
+        } else if (OCS_kill) {                    // Software kill activated
+          value = "OCS kill";
+        } else if (SBC_kill) {
+          value = "SBC_kill";
         }
         screen.write_string(value);
       }

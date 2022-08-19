@@ -10,9 +10,10 @@
 
 extern LCD screen;
 extern Frisky frsky;
-extern bool remotekill;
-extern bool hardkill;
-extern bool softkill;
+extern bool frsky_kill;
+extern bool OCS_kill;
+extern bool SBC_kill;
+extern bool hard_kill;
 extern uint32_t internalStats[];
 extern uint32_t powerStats[];
 extern uint32_t heartbeat_timeout[];

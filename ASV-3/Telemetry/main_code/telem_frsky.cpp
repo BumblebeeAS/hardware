@@ -79,14 +79,14 @@ void frsky_get_kill() {
 
   if (tempbut <= 1500)
   {
-    remotekill_frsky = false;
+    frsky_kill = false;
     #ifdef FRSKYDEBUG
     Serial.println("Alive");
     #endif 
   }
   else
   {
-    remotekill_frsky = true;
+    frsky_kill = true;
     #ifdef FRSKYDEBUG
     Serial.println("Kill");
     #endif 
