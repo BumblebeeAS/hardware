@@ -1,22 +1,7 @@
 #include "n2420.h"
 #include <can.h>
-#include "can_asv3_defines.h"
+#include <can_asv3_defines.h>
 #include "defines.h"
-
-#define CAN_CHIP_SELECT 8
-#define SERIAL_BAUD_RATE 115200
-#define N2420_BAUD_RATE 115200
-#define REMOTE_KILL_ADDRESS 4
-
-#define CONTACTOR_CONTROL 11 //NMOS, Active High
-#define ONBOARD_SWITCH 21      
-#define KILL 31
-
-#define RECEIVE_REMOTE_KILL_TIMEOUT 500
-#define RECEIVE_POSB_HEARTBEAT_TIMEOUT 3000
-#define UPDATE_CONTACTOR_TIMEOUT 100
-#define SEND_POKB_HEARTBEAT_TIMEOUT 500
-#define SEND_POKB_STATUS_TIMEOUT 1000
 
 // CAN Setup
 uint32_t id = 0;
@@ -32,17 +17,14 @@ uint8_t* inBuf;
 
 // Time Counter Variables
 uint32_t receiveRemoteKillTime = 0;
-uint32_t receivePOSBHeartbeatTime = 0;
+uint32_t receiveTelemHeartbeatTime = 0;
 uint32_t updateContactorTime = 0;
 uint32_t sendPOKBHeartbeatTime = 0;
 uint32_t sendPOKBStatusTime = 0;
 
 int noData = 0;
 
-// Control Variables
-bool onboardKill = false;
-bool remoteKill = false;
-bool softwareKill = false;
+byte pokbStatus = 0;
 
 void setup() {
   // put your setup code here, to run once:
@@ -61,7 +43,7 @@ void setup() {
   canInitialise();
 
   receiveRemoteKillTime = millis();
-  receivePOSBHeartbeatTime = millis();
+  receiveTelemHeartbeatTime = millis();
   updateContactorTime = millis();
   sendPOKBHeartbeatTime = millis();
   sendPOKBStatusTime = millis();
@@ -69,7 +51,12 @@ void setup() {
 
 void loop() {
   // Receive Onboard Kill via ATmega 2560 Input Pin
-  onboardKill = !digitalRead(ONBOARD_SWITCH);
+  if (digitalRead(ONBOARD_SWITCH)) {
+    bitClear(pokbStatus,3);
+  }
+  else {
+    bitSet(pokbStatus,3);
+  }
 
   // Receive Remote Kill via N2420
   if ((millis() - receiveRemoteKillTime) > RECEIVE_REMOTE_KILL_TIMEOUT) {
@@ -91,14 +78,7 @@ void loop() {
 
   // Send POKB Status via CAN
   if ((millis() - sendPOKBStatusTime) > SEND_POKB_STATUS_TIMEOUT) {
-    if (onboardKill || remoteKill || softwareKill) {
-      sendPOKBStatus(true);
-    }
-
-    else {
-      sendPOKBStatus(false);
-    }
-
+    sendPOKBStatus();
     sendPOKBStatusTime = millis();
   }
 }
@@ -138,11 +118,11 @@ void receiveRemoteKill() {
       //remoteKill = (inByte == 0x15) ? false : true;
       //noData = 0;
       if (inByte == 0x15) {
-        remoteKill = false;
+        bitClear(pokbStatus,4);
         noData = 0;
       } 
       else if (inByte == 0x44) {
-        remoteKill = true;
+        bitSet(pokbStatus,4);
         noData = 0;
       } 
       else {
@@ -151,6 +131,8 @@ void receiveRemoteKill() {
     }
   }
 
+  // Uncomment bottom if want to have radio timeout
+  /*
   else {
     noData++;
     Serial.print("n240 unavail noData: ");
@@ -163,6 +145,7 @@ void receiveRemoteKill() {
       noData = 0;
       Serial.println("Connection timeout kill.");
    }
+  */
 }
 
 void receiveCanMessage() {
@@ -170,14 +153,26 @@ void receiveCanMessage() {
     CAN.readMsgBufID(&id, &len, buf);
 
     switch (id) {
-    case CAN_HEARTBEAT:
 
-    if (buf[0] == HEARTBEAT_POSB)
-        receivePOSBHeartbeatTime = millis();
+    case CAN_HEARTBEAT:
+      if (buf[0] == HEARTBEAT_TELEM)
+        receiveTelemHeartbeatTime = millis();
+        bitClear(pokbStatus,6);
       break;
+     
     case CAN_SOFT_E_STOP:
-      softwareKill = !buf[0];
+      if (buf[0] == 1){ // if killed
+//        Serial.print("Killed: ");
+//        Serial.println(buf[1]);
+        bitSet(pokbStatus,buf[1]);
+      }
+      else { // if alive
+//        Serial.print("Not Killed: ");
+//        Serial.println(buf[1]);
+        bitClear(pokbStatus,buf[1]);
+      }   
       break;
+      
     default:
       break;
     }
@@ -189,25 +184,24 @@ void receiveCanMessage() {
 void updateContactor() {
   // Failsafe
   // Check POSB Heartbeat 
+  // can change to check tele mheartbeat 
 
-  /*
-  if ((millis() - receivePOSBHeartbeatTime) > RECEIVE_POSB_HEARTBEAT_TIMEOUT) {
-    // digitalWrite(CONTACTOR_CONTROL, LOW);
+  
+  if ((millis() - receiveTelemHeartbeatTime) > RECEIVE_TELEM_HEARTBEAT_TIMEOUT) {
+    bitSet(pokbStatus,6);
+    digitalWrite(CONTACTOR_CONTROL, LOW);
   }
-  */
+  
 
   // else if ((millis() - updateContactorTime) > UPDATE_CONTACTOR_TIMEOUT) {
   if ((millis() - updateContactorTime) > UPDATE_CONTACTOR_TIMEOUT) {
-    // Serial.print("Onboard Kill: ");
-    // Serial.print(onboardKill);
-    // Serial.print(" | ");
-    // Serial.print("Remote Kill: ");
-    // Serial.print(remoteKill);
-    // Serial.print(" | ");
-    // Serial.print("Software Kill: ");
-    // Serial.println(softwareKill);
 
-    if (onboardKill || remoteKill || softwareKill) {
+   
+     Serial.println("ESTOP Status (Telem,Radio,Hard,SBC,FRSKY,OCS): ");
+     Serial.println(pokbStatus,BIN);
+    
+
+    if (pokbStatus) {
       digitalWrite(CONTACTOR_CONTROL, LOW);
       digitalWrite(KILL, HIGH);
       //Serial.println("Contactor switched off.");
@@ -228,7 +222,7 @@ void sendPOKBHeartbeat() {
   CAN.sendMsgBuf(CAN_HEARTBEAT, 0, 1, buf);
 }
 
-void sendPOKBStatus(bool pokbStatus) {
+void sendPOKBStatus() {
   CAN.setupCANFrame(buf, 0, 1, pokbStatus);
   CAN.sendMsgBuf(CAN_E_STOP, 0, 1, buf);
 }
