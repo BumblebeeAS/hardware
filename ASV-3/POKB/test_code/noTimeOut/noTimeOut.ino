@@ -1,6 +1,6 @@
 #include "n2420.h"
 #include <can.h>
-#include "can_asv3_defines.h"
+#include <can_asv3_defines.h>
 #include "defines.h"
 
 #define CAN_CHIP_SELECT 8
