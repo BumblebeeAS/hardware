@@ -22,6 +22,7 @@
 //  
 // Todo: add DTLS heartbeat (possibly remove RSSI OCS?)
 // Add radio
+// fix phantom kill msg 
 //###################################################
 
 // FOR DEBUG

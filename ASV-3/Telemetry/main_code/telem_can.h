@@ -10,7 +10,7 @@
 #ifndef TELEM_CAN
 #define TELEM_CAN
 
-#include "can_asv3_defines.h"
+#include <can_asv3_defines.h>
 #include "define.h"
 #include <SPI.h> 
 #include <can.h>

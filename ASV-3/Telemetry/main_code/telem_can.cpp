@@ -82,7 +82,7 @@ void CAN_read_msg() {
 //          break;
         #endif
       }
-      case CAN_E_STOP: {
+      case 5: {
         uint8_t kill = CAN.parseCANFrame(buf, 0, 1);
         Serial.println(kill, BIN);
         hard_kill = kill & 0b00001000;
