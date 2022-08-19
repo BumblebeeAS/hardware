@@ -30,7 +30,7 @@ void screen_prepare() {
   screen.write_string("Batt2 voltage:");
   screen.write_string("Logic Bkplane OK:");
   screen.write_string("Ballshooter OK:");
-  screen.write_string("Act Hydrophone OK:");
+  screen.write_string("Kill:");
   screen.write_string("Batt1 OK:");
   screen.write_string("Batt2 OK:");
   screen.write_string("ESC1 OK:");
@@ -63,11 +63,11 @@ void screen_update_stats() {
     #endif 
   }
 
-  screen.set_cursor(650 + OFFSET, 0);
+  screen.set_cursor(600 + OFFSET, 0);
   for (int i = 0; i < POWER_STAT_COUNT; i++)
   {
     if (i > 1) {
-      screen.write_value_with_dp(powerStats[i], 3);           // Display current as A with 1dp, voltage as V with 1dp
+      screen.write_value_with_dp((powerStats[i] == 0xFFFF ? 0xFFFF : powerStats[i]/ 100), 1);           // Display current as A with 1dp, voltage as V with 1dp
     }
     else {
       screen.write_value_int(powerStats[i]);
@@ -83,7 +83,7 @@ void screen_update_stats() {
 // Display heartbeats
 void screen_update_hb() {
   int i; 
-  screen.set_cursor(170 + OFFSET, 245);            // do right half
+  screen.set_cursor(170 + OFFSET, 245);            // do left half
   for (i = 1; i < 9; i++) {
     if (i != TELEMETRY && i != DTLS)                           // Skip Telemetry and DTLS HB 
     {
@@ -94,10 +94,23 @@ void screen_update_hb() {
         screen.write_value_string("YES");
     }
   }   
-  screen.set_cursor(650 + OFFSET, 210);           // do left half
+  screen.set_cursor(600 + OFFSET, 210);           // do right half
   for (; i < HB_COUNT; i++) {                     
     if (i != ACTUATED_THRUSTERS) {                // skip actuated thrusters for now 
-      if ((millis() - heartbeat_timeout[i]) > HB_TIMEOUT) {
+      if (i == KILL) {                            // display kill status
+        char * value;
+        if (hard_kill) {
+          value = "Hard kill";
+        } else if (frsky_kill) {
+          value = "Frsky kill";                
+        } else if (OCS_kill) {                    // Software kill activated
+          value = "OCS kill";
+        } else if (SBC_kill) {
+          value = "SBC_kill";
+        }
+        screen.write_string(value);
+      }
+      else if ((millis() - heartbeat_timeout[i]) > HB_TIMEOUT) {
         screen.write_value_string("NO");
       }
       else

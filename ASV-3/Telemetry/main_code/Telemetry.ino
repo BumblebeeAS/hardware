@@ -16,16 +16,20 @@
 //    Determine state of control and send control signal to POSB accordingly.           Not done
 //
 // Written by Titus Ng 
-// Change log v1.10: 
-// Fix pressure bug
+// Change log v1.13: 
+// Update kill to follow can msg standard
+// Add kill display on screen
+//  
+// Todo: add DTLS heartbeat (possibly remove RSSI OCS?)
+// Add radio
 //###################################################
 
 // FOR DEBUG
 //#define DEBUG
 
 #include <Wire.h>
-#include "define.h"
 #include <Arduino.h>
+#include "define.h"
 #include "telem_screen.h"       
 #include "telem_can.h"
 #include "telem_frsky.h"         
@@ -59,11 +63,14 @@ static uint32_t currentTime;
 static uint32_t hbloop;
 static uint32_t controllinkloop;
 static uint32_t thrusterloop;
+static uint32_t killloop;
 
 // control 
 bool frsky_alive = false;
-bool remotekill = false;
-bool remotekill_frsky = false;
+bool frsky_kill = true;      // kill = true
+bool OCS_kill = false;         // default false for now
+bool SBC_kill = true;
+bool hard_kill = true;
 int control_mode_frsky = AUTONOMOUS;
 int control_mode = AUTONOMOUS;
 int control_mode_ocs = AUTONOMOUS;
@@ -123,7 +130,7 @@ void loop() {
   frsky_send_batt_capacity();
   frsky_get_kill();
   get_directions();
-  publish_controlmode();            // identify control mode based on control architecture 
+  publish_controlmode();        // identify control mode based on control architecture
   get_kill();
   set_thruster_values();        // transmit thruster commands
 
@@ -147,6 +154,11 @@ void loop() {
   if ((millis() - thrusterloop) > THRUSTER_LOOP) {
     CAN_publish_manualthruster();
     thrusterloop = millis();
+  }
+
+  if ((millis() - killloop) > KILL_LOOP) {
+    CAN_publish_kill();
+    killloop = millis();
   }
 }
 
@@ -239,44 +251,38 @@ void publish_controlmode() {
 }
 
 void get_kill() {
-
-  
-  if (!frsky_alive || internalStats[RSSI_FRSKY] == 0xFFFF) {
-    frsky_timeout_count += 1;
-    if (frsky_timeout_count > 20){
-      remotekill = true;
-      frsky_timeout_count = 0;
-    }
-    #ifdef DEBUG
-    Serial.print("Frsky Status: ");
-    Serial.print(frsky_alive);
-    Serial.print(" Timeout Count: ");
-    Serial.print(frsky_timeout_count);
-    Serial.print(" RSSI: ");
-    Serial.println(internalStats[RSSI_FRSKY]);  
-    #endif
-  } else {
-    #ifdef DEBUG
-    if(remotekill_frsky){
-      Serial.println("Frsky button triggered");
-    }
-    #endif
-    remotekill = remotekill_frsky;
-    frsky_timeout_count = 0;
-  }
-
-
-
-  if (remotekill) {
-    // send soft e stop
-    CAN.setupCANFrame(buf, 0, 1, 0);
-    CAN.sendMsgBuf(CAN_SOFT_E_STOP, 0, 1, buf);
-  }
-  else {
-    // send soft resume
-    CAN.setupCANFrame(buf, 0, 1, 1);
-    CAN.sendMsgBuf(CAN_SOFT_E_STOP, 0, 1, buf);    
-  }
+//  if (!frsky_alive || internalStats[RSSI_FRSKY] == 0xFFFF) {
+//    frsky_timeout_count += 1;
+//    if (frsky_timeout_count > 20){
+//      frsky_kill = true;
+//      frsky_timeout_count = 0;
+//    }
+//    #ifdef DEBUG
+////    Serial.print("Frsky Status: ");
+////    Serial.print(frsky_alive);
+////    Serial.print(" Timeout Count: ");
+////    Serial.print(frsky_timeout_count);
+////    Serial.print(" RSSI: ");
+////    Serial.println(internalStats[RSSI_FRSKY]);  
+//    #endif
+//  } else {
+//    #ifdef DEBUG
+//    if(frsky_kill){
+//      Serial.println("Frsky button triggered");
+//    }
+//    #endif
+//    frsky_timeout_count = 0;
+//  }
+//  if (frsky_kill) {
+//    // send soft e stop
+//    CAN.setupCANFrame(buf, 0, 1, 0);
+//    CAN.sendMsgBuf(CAN_SOFT_E_STOP, 0, 1, buf);
+//  }
+//  else {
+//    // send soft resume
+//    CAN.setupCANFrame(buf, 0, 1, 1);
+//    CAN.sendMsgBuf(CAN_SOFT_E_STOP, 0, 1, buf);    
+//  }
 }
 
 void CAN_publish_manualthruster()

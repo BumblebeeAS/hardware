@@ -22,7 +22,11 @@ void frsky_get_rssi() {
 int calculate_rssi() {
 	// Map from [1000 to 2000] to [0 to 100]
 	int cppm = constrain(frsky.get_ch(FRISKY_RSSI), 1500, 2000);
+//  Serial.println("RSSI");
+//  Serial.println(frsky.get_ch(FRISKY_RSSI));
+//  Serial.println(cppm);
 	cppm -= 1500;
+//  Serial.println(map(cppm, 0, 500, 0, 100));
 	return map(cppm, 0, 500, 0, 100);
 }
 
@@ -75,14 +79,14 @@ void frsky_get_kill() {
 
   if (tempbut <= 1500)
   {
-    remotekill_frsky = false;
+    frsky_kill = false;
     #ifdef FRSKYDEBUG
     Serial.println("Alive");
     #endif 
   }
   else
   {
-    remotekill_frsky = true;
+    frsky_kill = true;
     #ifdef FRSKYDEBUG
     Serial.println("Kill");
     #endif 

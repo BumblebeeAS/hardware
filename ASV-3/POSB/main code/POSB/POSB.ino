@@ -16,7 +16,7 @@
 //	Humidity & Temperature & Internal Pressure & Leak Sensor
 //	Light Tower
 
-// Change Log for v2.1:
+// Change Log for v2.2:
 // Fix stat bugs
 
 //###################################################

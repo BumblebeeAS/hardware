@@ -82,6 +82,12 @@ void CAN_read_msg() {
 //          break;
         #endif
       }
+      case CAN_E_STOP: {
+        uint8_t kill = CAN.parseCANFrame(buf, 0, 1);
+        Serial.println(kill, BIN);
+        hard_kill = kill & 0b00001000;
+        SBC_kill = kill & 0b00000100; 
+      }
       default: {
         #ifdef CANDEBUG
 //          Serial.println(CAN.getCanId());
@@ -118,7 +124,6 @@ void read_batt_stats(int batt_no) {
 
 void read_heartbeat() {
    uint8_t device = CAN.parseCANFrame(buf, 0, 1);
-   Serial.println(device);
    heartbeat_timeout[device] = millis();
    #ifdef CANDEBUG
 //   Serial.println("Heartbeat: ");
@@ -149,4 +154,15 @@ void CAN_publish_controllink() {
   buf[1] = internalStats[RSSI_FRSKY];
   buf[2] = internalStats[RSSI_OCS];
   CAN.sendMsgBuf(CAN_CONTROL_LINK, 0, len, buf);
+}
+
+void CAN_publish_kill() {
+  // OCS kill
+  CAN.setupCANFrame(buf, 0, 1, OCS_kill ? 1 : 0);
+  CAN.setupCANFrame(buf, 1, 1, 0);
+  CAN.sendMsgBuf(CAN_SOFT_E_STOP, 0, 2, buf);
+  // Frsky kill
+  CAN.setupCANFrame(buf, 0, 1, frsky_kill ? 1 : 0);
+  CAN.setupCANFrame(buf, 1, 1, 1);
+  CAN.sendMsgBuf(CAN_SOFT_E_STOP, 0, 2, buf);
 }

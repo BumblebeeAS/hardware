@@ -67,7 +67,7 @@
 #define FRSKY 8
 #define LOGICBACKPLANE 9
 #define BALLSHOOTER 10
-#define ACOUSTICS_MANI 11
+#define KILL 11
 #define ACTUATED_THRUSTERS 12
 #define BATT1 13
 #define BATT2 14
@@ -92,6 +92,7 @@
 #define SCREEN_LOOP 1000
 #define CONTROLLINK_LOOP 500
 #define THRUSTER_LOOP 100
+#define KILL_LOOP 100
 
 
 #endif // _DEFINES_H

@@ -27,7 +27,10 @@ extern uint32_t posb_timeout;
 extern uint32_t sbc_timeout;
 extern uint32_t batt1_timeout;
 extern uint32_t batt2_timeout;
-
+extern bool frsky_kill;
+extern bool OCS_kill;
+extern bool SBC_kill;
+extern bool hard_kill;
 
 void CAN_init();
 void CAN_mask();
@@ -37,6 +40,7 @@ void read_batt_stats(int batt_no);
 void read_posb_stats();
 void CAN_publish_hb(int hb);
 void CAN_publish_controllink();
+void CAN_publish_kill();
 
 
 
