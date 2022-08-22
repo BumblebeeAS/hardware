@@ -98,7 +98,7 @@ void screen_update_hb() {
   for (; i < HB_COUNT; i++) {                     
     if (i != ACTUATED_THRUSTERS) {                // skip actuated thrusters for now 
       if (i == KILL) {                            // display kill status
-        char * value;
+        char * value = "?";
         if (hard_kill) {
           value = "Hard kill";
         } else if (frsky_kill) {

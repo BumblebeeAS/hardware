@@ -19,6 +19,7 @@ extern uint32_t internalStats[];
 extern uint32_t powerStats[];
 extern uint32_t heartbeat_timeout[];
 extern int control_mode_frsky;
+extern bool frsky_alive;
 extern bool frsky_kill;
 
 void frsky_get_rssi();

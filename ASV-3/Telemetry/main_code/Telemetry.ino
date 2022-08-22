@@ -16,12 +16,12 @@
 //    Determine state of control and send control signal to POSB accordingly.           Not done
 //
 // Written by Titus Ng 
-// Change log v1.13: 
-// Update kill to follow can msg standard
-// Add kill display on screen
+// Change log v1.14: 
+// Fix char * undefined 
+// Fix startup frsky stat
 //  
 // Todo: add DTLS heartbeat (possibly remove RSSI OCS?)
-// Add radio
+// Add radio and frsky timeout kill
 // fix phantom kill msg 
 //###################################################
 
@@ -132,12 +132,11 @@ void loop() {
   frsky_get_kill();
   get_directions();
   publish_controlmode();        // identify control mode based on control architecture
-  get_kill();
   set_thruster_values();        // transmit thruster commands
 
   if ((millis() - hbloop) > HEARTBEAT_LOOP) {     
     CAN_publish_hb(TELEMETRY);                          // Send telemetry hb 
-    if (internalStats[RSSI_FRSKY] > RSSI_THRESHOLD) {
+    if (internalStats[RSSI_FRSKY] > RSSI_THRESHOLD && internalStats[RSSI_FRSKY] != 0xFFFF) {
       CAN_publish_hb(FRSKY);                            // send frsky hb if rssi is above threshold
       frsky_alive = true;
     }
@@ -249,41 +248,6 @@ void publish_controlmode() {
     control_mode = STATION_KEEP;
   }
 
-}
-
-void get_kill() {
-//  if (!frsky_alive || internalStats[RSSI_FRSKY] == 0xFFFF) {
-//    frsky_timeout_count += 1;
-//    if (frsky_timeout_count > 20){
-//      frsky_kill = true;
-//      frsky_timeout_count = 0;
-//    }
-//    #ifdef DEBUG
-////    Serial.print("Frsky Status: ");
-////    Serial.print(frsky_alive);
-////    Serial.print(" Timeout Count: ");
-////    Serial.print(frsky_timeout_count);
-////    Serial.print(" RSSI: ");
-////    Serial.println(internalStats[RSSI_FRSKY]);  
-//    #endif
-//  } else {
-//    #ifdef DEBUG
-//    if(frsky_kill){
-//      Serial.println("Frsky button triggered");
-//    }
-//    #endif
-//    frsky_timeout_count = 0;
-//  }
-//  if (frsky_kill) {
-//    // send soft e stop
-//    CAN.setupCANFrame(buf, 0, 1, 0);
-//    CAN.sendMsgBuf(CAN_SOFT_E_STOP, 0, 1, buf);
-//  }
-//  else {
-//    // send soft resume
-//    CAN.setupCANFrame(buf, 0, 1, 1);
-//    CAN.sendMsgBuf(CAN_SOFT_E_STOP, 0, 1, buf);    
-//  }
 }
 
 void CAN_publish_manualthruster()

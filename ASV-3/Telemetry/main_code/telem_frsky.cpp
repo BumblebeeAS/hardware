@@ -77,7 +77,7 @@ void frsky_send_batt_capacity() {
 void frsky_get_kill() {
   int tempbut = frsky.get_ch(FRISKY_KILL);
 
-  if (tempbut <= 1500)
+  if (tempbut <= 1500 && frsky_alive)
   {
     frsky_kill = false;
     #ifdef FRSKYDEBUG
