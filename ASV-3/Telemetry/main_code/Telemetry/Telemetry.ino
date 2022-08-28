@@ -16,13 +16,11 @@
 //    Determine state of control and send control signal to POSB accordingly.           Not done
 //
 // Written by Titus Ng 
-// Change log v1.14: 
-// Fix char * undefined 
-// Fix startup frsky stat
+// Change log v1.15: 
+// Fix phantom kill msg
+// Add DTLS heartbeat in place of hull leak msg
 //  
-// Todo: add DTLS heartbeat (possibly remove RSSI OCS?)
-// Add radio and frsky timeout kill
-// fix phantom kill msg 
+// Todo: Add OCS RSSI + msgs
 //###################################################
 
 // FOR DEBUG
