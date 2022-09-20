@@ -71,23 +71,13 @@ void CAN_read_msg() {
       case CAN_POSB_STATS: {
         read_posb_stats();
         posb_timeout = millis();
+        break;
       }
-//      case 1: { 
-//        #ifdef CANDEBUG
-////          Serial.println("id");
-////          Serial.println(CAN.parseCANFrame(buf, 0, 2));
-////          Serial.println(CAN.parseCANFrame(buf, 2, 2));
-////          Serial.println(CAN.parseCANFrame(buf, 4, 2));
-////          Serial.println(CAN.parseCANFrame(buf, 6, 2));
-////          break;
-//        #endif
-//      }
       case CAN_E_STOP: {
         uint8_t kill = CAN.parseCANFrame(buf, 0, 1);
-//        Serial.println(kill, BIN);
         hard_kill = kill & 0b00001000;
         SBC_kill = kill & 0b00000100; 
-        
+        break;
       }
       default: {
         #ifdef CANDEBUG

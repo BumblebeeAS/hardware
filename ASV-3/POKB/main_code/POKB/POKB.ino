@@ -18,6 +18,7 @@ uint8_t* inBuf;
 // Time Counter Variables
 uint32_t receiveRemoteKillTime = 0;
 uint32_t receiveTelemHeartbeatTime = 0;
+uint32_t receivePOSBHeartbeatTime = 0;
 uint32_t updateContactorTime = 0;
 uint32_t sendPOKBHeartbeatTime = 0;
 uint32_t sendPOKBStatusTime = 0;
@@ -44,6 +45,7 @@ void setup() {
 
   receiveRemoteKillTime = millis();
   receiveTelemHeartbeatTime = millis();
+  receivePOSBHeartbeatTime = millis();
   updateContactorTime = millis();
   sendPOKBHeartbeatTime = millis();
   sendPOKBStatusTime = millis();
@@ -155,20 +157,25 @@ void receiveCanMessage() {
     switch (id) {
 
     case CAN_HEARTBEAT:
-      if (buf[0] == HEARTBEAT_TELEM)
+      if (buf[0] == HEARTBEAT_TELEM) {
         receiveTelemHeartbeatTime = millis();
+        bitClear(pokbStatus,5);
+      }
+      else if (buf[0] == HEARTBEAT_POSB) {
+        receivePOSBHeartbeatTime = millis();
         bitClear(pokbStatus,6);
+      }
       break;
      
     case CAN_SOFT_E_STOP:
       if (buf[0] == 1){ // if killed
-//        Serial.print("Killed: ");
-//        Serial.println(buf[1]);
+       // Serial.print("Killed: ");
+        //Serial.println(buf[1]);
         bitSet(pokbStatus,buf[1]);
       }
       else { // if alive
-//        Serial.print("Not Killed: ");
-//        Serial.println(buf[1]);
+       // Serial.print("Not Killed: ");
+       // Serial.println(buf[1]);
         bitClear(pokbStatus,buf[1]);
       }   
       break;
@@ -185,9 +192,12 @@ void updateContactor() {
   // Failsafe
   // Check POSB Heartbeat 
   // can change to check tele mheartbeat 
-
-  
   if ((millis() - receiveTelemHeartbeatTime) > RECEIVE_TELEM_HEARTBEAT_TIMEOUT) {
+    bitSet(pokbStatus,5);
+    digitalWrite(CONTACTOR_CONTROL, LOW);
+  }
+
+  if ((millis() - receivePOSBHeartbeatTime) > RECEIVE_POSB_HEARTBEAT_TIMEOUT) {
     bitSet(pokbStatus,6);
     digitalWrite(CONTACTOR_CONTROL, LOW);
   }
@@ -197,7 +207,7 @@ void updateContactor() {
   if ((millis() - updateContactorTime) > UPDATE_CONTACTOR_TIMEOUT) {
 
    
-     Serial.println("ESTOP Status (Telem,Radio,Hard,SBC,FRSKY,OCS): ");
+     Serial.println("ESTOP Status (POSB,Telem,Radio,Hard,SBC,FRSKY,OCS): ");
      Serial.println(pokbStatus,BIN);
     
 

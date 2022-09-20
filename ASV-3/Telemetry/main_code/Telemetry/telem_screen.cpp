@@ -13,10 +13,11 @@ void screen_prepare() {
   screen.write_string("POSB temp:");
   screen.write_string("RSSI OCS:");
   screen.write_string("RSSI RC:");
-  screen.write_string("Hull leak:");
+//  screen.write_string("Hull leak:");
   screen.write_string("POSB OK:");
   screen.write_string("POPB OK:");
   screen.write_string("POKB OK:");
+  screen.write_string("DTLS OK:");
   screen.write_string("SBC OK:");
   screen.write_string("OCS OK:");
   screen.write_string("Frsky OK:");
@@ -43,14 +44,13 @@ void screen_update_stats() {
   screen.set_cursor(170 + OFFSET, 0);
   for (int i = 0; i < INT_STAT_COUNT; i++)
   {
-    if (i == HULL_LEAK){ 
-      if (internalStats[HULL_LEAK] == 1) {
-        screen.write_string("YES");
-      } else if (internalStats[HULL_LEAK] == 0) {
-        screen.write_string("NO");
-      } else {
-        screen.write_string("N/A");
-      }
+    if (i == HULL_LEAK){                              
+//      if (internalStats[HULL_LEAK] == 1) {                      // Skip hull leak
+//        screen.write_string("YES");
+//      } else if (internalStats[HULL_LEAK] == 0) {
+//        screen.write_string("NO");
+//      } else {
+//        screen.write_string("N/A");
     } else if (i == INT_PRESS) {
       screen.write_value_with_dp(internalStats[i], 1);           // Display pressure kpa with 1dp
     } else {
@@ -83,9 +83,9 @@ void screen_update_stats() {
 // Display heartbeats
 void screen_update_hb() {
   int i; 
-  screen.set_cursor(170 + OFFSET, 245);            // do left half
+  screen.set_cursor(170 + OFFSET, 215);            // do left half
   for (i = 1; i < 9; i++) {
-    if (i != TELEMETRY && i != DTLS)                           // Skip Telemetry and DTLS HB 
+    if (i != TELEMETRY)                           // Skip Telemetry HB
     {
       if ((millis() - heartbeat_timeout[i]) > HB_TIMEOUT) {
         screen.write_value_string("NO");
@@ -98,7 +98,7 @@ void screen_update_hb() {
   for (; i < HB_COUNT; i++) {                     
     if (i != ACTUATED_THRUSTERS) {                // skip actuated thrusters for now 
       if (i == KILL) {                            // display kill status
-        char * value = "?";
+        char * value = "All OK";
         if (hard_kill) {
           value = "Hard kill";
         } else if (frsky_kill) {
