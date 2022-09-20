@@ -33,7 +33,7 @@
 #include "Arduino.h"
 #include "Roboteq.h"
 #include "Torqeedo.h"
-//#include "wind_sensor.h"	// no windsensor used currently
+#include "wind_sensor.h"	// no windsensor used currently
 
 MCP_CAN CAN(8);
 uint8_t buf[8];
@@ -65,7 +65,7 @@ uint32_t sensor_poll_loop;
 uint8_t power_ctr = 0;
 uint32_t thruster_loop;
 uint32_t thruster_stat_loop;
-//uint32_t windspeed_loop;	// no windsensor used currently
+uint32_t windspeed_loop;	// no windsensor used currently
 uint32_t blink_loop;
 uint32_t autothruster_loop;
 static uint32_t pressure_loop = 0;
@@ -84,11 +84,10 @@ Adafruit_ADS1115 ads(0X48);
 uint16_t int_pressure;
 uint16_t initial_pressure = 0;
 
-/*	no windsensor used currently
 WindSensor windSensor = WindSensor();
 uint16_t wind_dir = 0;
 uint16_t wind_speed = 0;
-*/
+
 HIH613x humidTempSensor(0x27);
 static uint32_t Temp_Humid_loop = 0; //250ms loop Publish temp and humidity
 uint8_t humid_ctr = 0;
@@ -124,7 +123,7 @@ void setup()
 
 	// SENSORS INIT
 	Wire.begin();
-	//windSensor.init();	// no windsensor used currently
+	windSensor.init();	// no windsensor used currently
   
 	// LIGHT INIT
 	initLightTower();
@@ -134,7 +133,7 @@ void setup()
 	heartbeat_loop = millis();
 	blink_loop = millis();
 	batt_loop = millis();
-	//windspeed_loop = millis();	// no windsensor used currently
+	windspeed_loop = millis();	// no windsensor used currently
 	esc1_loop = millis();
 	esc2_loop = millis();
 	batt1_loop = millis();
@@ -243,7 +242,6 @@ void loop()
 	Battery2.checkBatteryOnOff();
 	if (Battery2.readMessage())
 	{
-    Serial.println("read batt");
 		heartbeat_batt2 = true;
 		batt2_loop = millis();
 	}
@@ -269,7 +267,7 @@ void loop()
     sensor_poll_loop = millis();
     readPosbStats();
   }
-	// windSensor.readValues();	// no windsensor used currently
+	windSensor.readValues();
 
 	/************************************/
 	/*			Light Tower				*/
@@ -579,14 +577,12 @@ void publishCAN()
 		publishCAN_heartbeat();
 		heartbeat_loop = millis();
 	}
-	/*	no windsensor used currently
 	// Windspeed
 	if ((millis() - windspeed_loop) > WINDSPEED_TIMEOUT)
 	{
 		publishCAN_windspeed();
 		windspeed_loop = millis();
 	}
-	*/
 	// POWER: Batt + ESC
 	// Cycle btw batt1,2,esc1,2 at 250ms
 	if ((millis() - power_loop) > POWER_TIMEOUT)
@@ -655,22 +651,21 @@ void publishCAN_heartbeat()
   }
 	Serial.println("HEARTBEAT!");
 }
-/*	no windsensor used currently
 void publishCAN_windspeed()
 {
 	wind_dir = windSensor.getDirection();
 	wind_speed = windSensor.getWindSpeed();
 	
-	//Serial.print(" WIND: ");
-	//Serial.print(wind_dir);
-	//Serial.print(" ");
-	//Serial.print(wind_speed);
+	Serial.print(" WIND: ");
+	Serial.print(wind_dir);
+	Serial.print(" ");
+	Serial.print(wind_speed);
 	
 	CAN.setupCANFrame(buf, 0, 2, wind_dir);
 	CAN.setupCANFrame(buf, 2, 2, wind_speed);
-	CAN.sendMsgBuf(CAN_wind_speed, 0, 4, buf);
+	CAN.sendMsgBuf(CAN_WIND_SENSOR_STATS, 0, 4, buf);
 }
-*/
+
 void publishCAN_esc1_stats()
 {
 
