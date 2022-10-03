@@ -1,4 +1,11 @@
-// input uart code here 
+// -------------------------------
+//  tmc2209 in uart mode
+//  - step & dir pin must be pulled to ground
+//  - uart pins must be physically shorted
+//  - DIAG pin pulled high during stall (SGTHRS)
+//  - single line rx tx transmission (1k resistor)
+//  - talk to me baby
+// -------------------------------
 
 void check_all_UART() {
   Serial.print(F(" Testing UART of Stepper 0: ...  "));

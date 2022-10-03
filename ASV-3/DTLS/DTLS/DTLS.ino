@@ -4,37 +4,15 @@
 // v4.0
 // 14 Sep 2022
 // Log:
-// - open and close established 
-// - not all stallguard will trigger, might be checking at a too high frequency   
-// - only need 2 stallguard: for pair 0&3 and pair 1&2
-// - research on sfotware interupt for safe kill
-// - implementing coolstep to save energy
-// Stepper Position:
-// Stepper 0 & 3 : long distance, moving out/forward when opening 
-// Stepper 1 & 2 : short distance, moving in/backward when opening
+// - adding can bus and hydrophone actuation
+// - can doesnt work yet
+// 
 //----------------------------------
 
-//----defitions---------------------
-#define SW_RX 6 //sw serial for uart line 1
-#define SW_TX 7
-#define R_SENSE 0.11f
-#define DRIVER_ADDRESS 0b00
-#define EN 5
-
-#define microstep 16 
-#define gSpeed 4000
-// #define gTime 2000
-#define STALL_VALUE 330
-
-#define FORWARD 0
-#define BACKWORD 1
-
-#define OPENING 0
-#define CLOSING 1
-
-//-----------------------------------
-
 #include <TMCStepper.h> // The library is edited
+#include <dtls_define.h>
+#include <can.h>
+
 
 TMC2209Stepper stepper0 (SW_RX, SW_TX, R_SENSE, 0b00);
 TMC2209Stepper stepper1 (SW_RX, SW_TX, R_SENSE, 0b01);
@@ -51,12 +29,13 @@ void setup() {
   Serial.begin(250000);
   Serial.println( "Bienvenue. C'est DTLS.");
 
-  //initialise dtls steppers
+
+  CAN_init();
   dtls_init();
 }
 
 void loop() {
-
+  #ifdef DEBUG      // need to read up on this
   while (Serial.available() > 0) {
     int8_t commandIndex = Serial.parseInt();
 
@@ -87,7 +66,7 @@ void loop() {
     }
 
   }
-
+  #endif 
 }
 
 void dtls_init() {
