@@ -52,8 +52,8 @@ void Roboteq::decodeReply(uint16_t index)
 		if (getSubindex() == 1)
 		{
 			stats.motor_current1 = CAN->parseCANFrame(_buf, 4, 2);
-		//Serial.print("Motor current1: "); 
-		//Serial.println(stats.motor_current1);
+		Serial.print("Motor current1: "); 
+		Serial.println(stats.motor_current1);
 		}
 		else
 		{
@@ -71,14 +71,35 @@ void Roboteq::decodeReply(uint16_t index)
 		if (getSubindex() == 1)
 		{
 			stats.motor_status_flags1 = CAN->parseCANFrame(_buf, 4, 1);
-			//Serial.print("Motor status flag 1: ");
-			//Serial.println(stats.motor_status_flags1, BIN);
+			Serial.print("Motor status flag 1: ");
+			Serial.println(stats.motor_status_flags1, BIN);
 		}
 		else
 		{
 			stats.motor_status_flags2 = CAN->parseCANFrame(_buf, 4, 1);
-			//Serial.print("Motor status flag 2: ");
-			//Serial.println(stats.motor_status_flags2, BIN);
+			Serial.print("Motor status flag 2: ");
+			Serial.println(stats.motor_status_flags2, BIN);
+		}
+		break;
+	case INDEX_READ_MOTOR_POWER:
+		if(getSubindex() ==1)
+		{
+			stats.motor_power1 = CAN->parseCANFrame(_buf, 4, 2);
+			Serial.print("Motor power 1: ");
+			Serial.println(stats.motor_power1);
+		}
+		else
+		{
+			stats.motor_power2 = CAN->parseCANFrame(_buf, 4, 2);
+			Serial.print("Motor power 2: ");
+			Serial.println(stats.motor_power2);
+		}
+		break;
+	case INDEX_READ_MCU_TEMP:
+		if (getSubindex() == 1){
+			stats.mcu_temp = CAN->parseCANFrame(_buf, 4, 1);
+			Serial.print("MCU temp: ");
+			Serial.println(stats.mcu_temp);
 		}
 		break;
 	case INDEX_READ_ACTUAL_MOTOR_COMMAND:
@@ -109,7 +130,7 @@ void Roboteq::decodeReply(uint16_t index)
 void Roboteq::requestUpdate()
 {
 	msg_type++; //change message type
-	msg_type %= 5;
+	msg_type %= 8;
 	//Serial.println("UPDATE");
 	switch (msg_type) {
 	case 0:
@@ -127,6 +148,12 @@ void Roboteq::requestUpdate()
 	case 4:
 		requestFaultFlags();
 		break;
+	case 5:
+		requestMotorPower(1);
+	case 6:
+		requestMotorPower(2);
+	case 7:
+		requestMCUTemp(1);
 	default:
 		//Error
 		break;
@@ -166,6 +193,16 @@ void Roboteq::requestMotorStatusFlags(uint8_t ch)
 	Serial.println(ch);
 #endif
 	sendCANmsg(INDEX_READ_MOTOR_STATUS_FLAGS, ch, CCS_QUERY, 2, 0x0);
+}
+
+void Roboteq::requestMotorPower(uint8_t ch)
+{
+	sendCANmsg(INDEX_READ_MOTOR_POWER, ch, CCS_QUERY, 4, 0x0);
+}
+
+void Roboteq::requestMCUTemp(uint8_t ch)
+{
+	sendCANmsg(INDEX_READ_MOTOR_POWER, ch, CCS_QUERY, 2, 0x0);
 }
 
 
