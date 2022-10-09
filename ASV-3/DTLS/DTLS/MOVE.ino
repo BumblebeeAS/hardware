@@ -64,3 +64,22 @@ bool stall_guard(TMC2209Stepper s, int stall_value) {
     }
     return false;
 }
+
+// Acoustics actaution
+void extend_acous() {
+  digitalWrite(ACOUS_DIR_PIN, HIGH);     // Not sure if dir is correct, to find out at sea trial lol 
+  digitalWrite(ACOUS_PWM_PIN, HIGH);
+  delay(ACOUS_DELAY);      // Didn't wire up limit switches so no idea if its done. Arbitary delay to send ok msg.
+  digitalWrite(ACOUS_PWM_PIN, LOW);
+  CAN_send_acous_status(1);
+  
+}
+
+void retract_acous() {
+  digitalWrite(ACOUS_DIR_PIN, LOW);
+  digitalWrite(ACOUS_PWM_PIN, HIGH);
+  delay(ACOUS_DELAY);
+  digitalWrite(ACOUS_PWM_PIN, LOW);
+  CAN_send_acous_status(2);
+
+}

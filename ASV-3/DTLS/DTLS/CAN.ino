@@ -26,7 +26,7 @@ void CAN_mask() {
 
   /* set 1 filter to receive from id 21 only */
   CAN.init_Filt(0, 0, 0x15);
-
+  CAN.init_Filt(1, 0, 0x0E);
 }
 
 void CAN_publish() {
@@ -77,7 +77,24 @@ void CAN_parse_command() {
           break;
       }
     }
+    if (id == CAN_ACOUSTICS_ACTUATION) {
+      int acousCommand = CAN.parseCANFrame(buf, 0, 1); //convert buf[0] to decimal
+      switch(acousCommand) {
+        case ACOUS_EXTEND: {
+          extend_acous();
+          break; }
+        case ACOUS_RETRACT: {
+#ifdef DEBUG
+          Serial.print("retract");
+#endif
+          retract_acous();
+          break; }
+      default: 
+        break;
+      }
+    }
   }
+  CAN.clearMsg();
 }
 
 /*  send dtls execution status to can bus.
@@ -87,6 +104,11 @@ void CAN_parse_command() {
 void CAN_send_status(uint8_t dtlsStatus) {
   CAN.setupCANFrame(buf, 0, 1, dtlsStatus);
   CAN.sendMsgBuf(CAN_DTLS_STATS, 0, 1, buf);
+}
+
+void CAN_send_acous_status(int acous_status) {
+  CAN.setupCANFrame(buf, 0, 1, acous_status);
+  CAN.sendMsgBuf(CAN_ACOUSTICS_ACTUATION_STATS, 0, 1, buf);  
 }
 
 /*  send heartbeat of dtls board at 2Hz */

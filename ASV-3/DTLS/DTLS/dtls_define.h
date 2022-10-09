@@ -19,6 +19,15 @@
 #define CAN_HEARTBEAT 0x03              // id for can heartbeat msg
 #define DTLS_HEARTBEAT 0x05             // value for dtls heartbeat sent to can
 #define CAN_HEARTBEAT_INTERVAL  500     // heart beat publish at 2Hz
+#define ACOUS_EXTEND 1
+#define ACOUS_RETRACT 2
+
+//---- hydrophone actuation definitions -------
+#define ACOUS_EXTEND 1
+#define ACOUS_RETRACT 2
+#define ACOUS_DIR_PIN 9
+#define ACOUS_PWM_PIN 10
+#define ACOUS_DELAY 10000
 
 //---- tmc2209 definitions---------------------
 #define SW_RX 6 //sw serial for uart line 1

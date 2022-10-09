@@ -1,10 +1,11 @@
 //----------------------------------
 // Testing code for controlling multiple tmc2209
 // writen by Isabella
-// v4.0
-// 14 Sep 2022
+// v5.0
+// 9 Oct 2022
 // Log:
-// - nneed to integrate hydrophone actuation
+// - Actuated hydrophone integrated
+// - Not sure if extend and retract directions are correct, to test at sea trial
 // - can code is done woohoo, not thoroughly tested
 // - connectors done and testing 
 //----------------------------------
@@ -12,6 +13,7 @@
 #include <TMCStepper.h> // The library is edited
 #include "dtls_define.h"
 #include <can.h>
+#include <can_asv3_defines.h>
 
 TMC2209Stepper stepper0 (SW_RX, SW_TX, R_SENSE, 0b00);
 TMC2209Stepper stepper1 (SW_RX, SW_TX, R_SENSE, 0b01);
@@ -33,6 +35,7 @@ void setup() {
   CAN_init();
   CAN_mask(); // to stop printing debug msg, comment out debug mode in can_define.h
   dtls_init();
+  acous_init();
 #ifdef DEBUG
   check_all_UART();
 #endif
@@ -74,6 +77,13 @@ void loop() {
     }
   }
 #endif
+}
+
+void acous_init() {
+  pinMode(ACOUS_DIR_PIN, OUTPUT);
+  pinMode(ACOUS_PWM_PIN, OUTPUT);
+  digitalWrite(ACOUS_DIR_PIN, LOW);
+  digitalWrite(ACOUS_PWM_PIN, LOW);
 }
 
 void dtls_init() {
