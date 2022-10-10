@@ -77,6 +77,7 @@ void CAN_read_msg() {
         uint8_t kill = CAN.parseCANFrame(buf, 0, 1);
         hard_kill = kill & 0b00001000;
         SBC_kill = kill & 0b00000100; 
+        OCS_kill = kill & 0b00000001;
         break;
       }
       default: {
@@ -149,9 +150,9 @@ void CAN_publish_controllink() {
 
 void CAN_publish_kill() {
   // OCS kill
-  CAN.setupCANFrame(buf, 0, 1, OCS_kill ? 1 : 0);
-  CAN.setupCANFrame(buf, 1, 1, 0);
-  CAN.sendMsgBuf(CAN_SOFT_E_STOP, 0, 2, buf);
+//  CAN.setupCANFrame(buf, 0, 1, OCS_kill ? 1 : 0);
+//  CAN.setupCANFrame(buf, 1, 1, 0);
+//  CAN.sendMsgBuf(CAN_SOFT_E_STOP, 0, 2, buf);
   // Frsky kill
   CAN.setupCANFrame(buf, 0, 1, frsky_kill ? 1 : 0);
   CAN.setupCANFrame(buf, 1, 1, 1);

@@ -13,14 +13,13 @@
 //    Recieve Thruster, actuated hydrophone and ball shooter controls from Frsky        Done (left actuated hydrophone and ball shooter)
 //    Receive OCS control information from Controllink via serial.                      Not done -> thruster values? 
 //    Relay RSSI of OCS and Frsky over CAN.                                             Frsky done OCS no
-//    Determine state of control and send control signal to POSB accordingly.           Not done
+//    Determine state of control and send control signal to POSB accordingly.           done
 //
 // Written by Titus Ng 
-// Change log v1.15: 
-// Fix phantom kill msg
-// Add DTLS heartbeat in place of hull leak msg
+// Change log v1.16:
+// Stop sending OCS_kill msg
+// Display OCS kill status on screen
 //  
-// Todo: Add OCS RSSI + msgs
 //###################################################
 
 // FOR DEBUG
