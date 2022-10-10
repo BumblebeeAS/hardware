@@ -1,6 +1,6 @@
 #include "n2420.h"
 #include <can.h>
-#include "can_asv3_defines.h"
+#include <can_asv3_defines.h>
 #include "defines.h"
 
 // CAN Setup
@@ -136,19 +136,19 @@ void receiveRemoteKill() {
 
   // Uncomment bottom if want to have radio timeout
   
-//  else {
-//    noData++;
-//    Serial.print("n240 unavail noData: ");
-//    Serial.println(noData);
-//  }
-//
-//  
-//  if (noData >= 20) {
-//      remoteKill = true;
-//      noData = 0;
-//      Serial.println("Connection timeout kill.");
-//   }
-//  
+  else {
+    noData++;
+    Serial.print("n240 unavail noData: ");
+    Serial.println(noData);
+  }
+
+  
+  if (noData >= 20) {
+      remoteKill = true;
+      noData = 0;
+      Serial.println("Connection timeout kill.");
+   }
+  
 }
 
 void receiveCanMessage() {
@@ -193,10 +193,10 @@ void updateContactor() {
   // Failsafe
   // Check POSB Heartbeat 
   // can change to check tele mheartbeat 
-//  if ((millis() - receiveTelemHeartbeatTime) > RECEIVE_TELEM_HEARTBEAT_TIMEOUT) {
-//    bitSet(pokbStatus,5);
-//    digitalWrite(CONTACTOR_CONTROL, LOW);
-//  }
+  if ((millis() - receiveTelemHeartbeatTime) > RECEIVE_TELEM_HEARTBEAT_TIMEOUT) {
+    bitSet(pokbStatus,5);
+    digitalWrite(CONTACTOR_CONTROL, LOW);
+  }
 
   if ((millis() - receivePOSBHeartbeatTime) > RECEIVE_POSB_HEARTBEAT_TIMEOUT) {
     bitSet(pokbStatus,6);
