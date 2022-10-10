@@ -7,10 +7,11 @@
 // | \_\ \ \_\ \/ __ \_\___ \  \   / 
 // |___  /___  (____  /____  >  \_/  
 //     \/    \/     \/     \/        
-
-// Change Log for v1.0:
-// - Initial commit
-
+//
+// Refer to CAN messaging standards: 
+// https://docs.google.com/spreadsheets/d/1orc3DUXFo8djK77xSj1-ofPTmk6KvrHwtnzaI6hUamg/edit#gid=219917511
+// Change Log for v1.1:
+// - Add DTLS command and stats ids
 //###################################################
 //###################################################
 
@@ -38,6 +39,8 @@
 #define CAN_POSB_STATS 18
 #define CAN_POPB_STATS 19
 #define CAN_WIND_SENSOR_STATS 20
+#define CAN_DTLS_COMMAND 21
+#define CAN_DTLS_STATS 22
 
 #endif
 
