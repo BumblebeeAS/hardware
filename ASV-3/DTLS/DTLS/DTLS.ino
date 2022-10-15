@@ -1,9 +1,10 @@
 //----------------------------------
 // Testing code for controlling multiple tmc2209
 // writen by Isabella
-// v5.0
+// v5.1
 // 9 Oct 2022
 // Log:
+// - remote dtls init as it was preventing can from init
 // - Actuated hydrophone integrated
 // - Not sure if extend and retract directions are correct, to test at sea trial
 // - can code is done woohoo, not thoroughly tested
@@ -34,7 +35,7 @@ void setup() {
 
   CAN_init();
   CAN_mask(); // to stop printing debug msg, comment out debug mode in can_define.h
-  dtls_init();
+//  dtls_init();
   acous_init();
 #ifdef DEBUG
   check_all_UART();

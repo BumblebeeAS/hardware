@@ -5,7 +5,7 @@
 #ifndef _DEFINES_H
 #define _DEFINES_H
 
-// #define DEBUG 
+ #define DEBUG 
 // #define SERIAL
 
 //---- CAN definitions ---------------------
