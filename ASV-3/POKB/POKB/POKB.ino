@@ -110,17 +110,17 @@ void receiveRemoteKill() {
     Serial.println("Response available.");
     Serial.print("ID: ");
     Serial.println(n2420.getReceivingAddress() );
+    // get data
+    inBuf = n2420.showReceived();
+    inByte = *(inBuf+2);
+    Serial.print("inByte: ");
+    Serial.println(inByte, HEX);
 
-    if (n2420.getReceivingAddress() == REMOTE_KILL_ADDRESS){    //REMOTE_KILL_ADDRESS is defined as 4 from library
-      // Get data
-      inBuf = n2420.showReceived();
-      inByte = *(inBuf+2);
-      Serial.print("inByte: ");
-      Serial.println(inByte, HEX);
+    if (n2420.getReceivingAddress() == REMOTE_KILL || n2420.getReceivingAddress() == OCS_EXTENSION){    //REMOTE_KILL is defined as 4 from library
   
       //remoteKill = (inByte == 0x15) ? false : true;
-      //noData = 0;
       if (inByte == 0x15) {
+        Serial.println("Inside 15");
         bitClear(pokbStatus,4);
         noData = 0;
       } 
@@ -136,19 +136,19 @@ void receiveRemoteKill() {
 
   // Uncomment bottom if want to have radio timeout
   
-//  else {
-//    noData++;
-//    Serial.print("n240 unavail noData: ");
-//    Serial.println(noData);
-//  }
-//
-//  
-//  if (noData >= 20) {
-//      remoteKill = true;
-//      noData = 0;
-//      Serial.println("Connection timeout kill.");
-//   }
-//  
+  else {
+    noData++;
+    Serial.print("n240 unavail noData: ");
+    Serial.println(noData);
+  }
+
+  
+  if (noData >= 20) {
+      bitSet(pokbStatus,4);
+      noData = 0;
+      Serial.println("Connection timeout kill.");
+   }
+  
 }
 
 void receiveCanMessage() {
