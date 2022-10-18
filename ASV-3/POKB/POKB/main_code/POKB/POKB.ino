@@ -26,6 +26,7 @@ uint32_t sendPOKBStatusTime = 0;
 int noData = 0;
 
 byte pokbStatus = 0;
+byte escControl = 0;
 
 void setup() {
   // put your setup code here, to run once:
@@ -177,16 +178,16 @@ void receiveCanMessage() {
       }   
       break;
 
-     case CAN_ESC_CONTROL: // kill if ESC hang but dont activate light tower
-      if (buf[0] == 1){ // if killed
-        Serial.println("SW Kill ESC");
-        digitalWrite(CONTACTOR_CONTROL, LOW);
-      }
-      else { // if alive
-        Serial.println("SW unkill ESC");
-        digitalWrite(CONTACTOR_CONTROL, HIGH);
-      }   
-      break;
+//     case CAN_ESC_CONTROL: // kill if ESC hang but dont activate light tower
+//      if (buf[0] == 1){ // if killed
+//        Serial.println("SW Kill ESC");
+//        escControl = 1;
+//      }
+//      else { // if alive
+//        Serial.println("SW unkill ESC");
+//        escControl = 0;
+//      }   
+//      break;
       
     default:
       break;
@@ -222,6 +223,7 @@ void updateContactor() {
      Serial.println(pokbStatus,BIN);
     
 
+    //if (pokbStatus || escControl) {
     if (pokbStatus) {
       digitalWrite(CONTACTOR_CONTROL, LOW);
       digitalWrite(KILL, HIGH);
