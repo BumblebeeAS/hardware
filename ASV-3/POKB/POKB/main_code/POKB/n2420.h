@@ -17,8 +17,8 @@
 #define END_BYTE 0x7d   //'}'
 #define ASV_EXTENSION 1
 #define POKB 2
-#define OCS_EXTENSION 3
-#define REMOTE_KILL 4
+#define REMOTE_KILL 3
+#define OCS_EXTENSION 4
 #define RECIEVE_TIMEOUT 1000
 
 /*

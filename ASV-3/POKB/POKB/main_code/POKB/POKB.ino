@@ -109,18 +109,18 @@ void receiveRemoteKill() {
   if (n2420.isAvailable()) {
     Serial.println("Response available.");
     Serial.print("ID: ");
-    Serial.println(n2420.getReceivingAddress() );
+    int receiveID = n2420.getReceivingAddress();
+    Serial.println(receiveID);
     // get data
     inBuf = n2420.showReceived();
     inByte = *(inBuf+2);
     Serial.print("inByte: ");
     Serial.println(inByte, HEX);
 
-    if (n2420.getReceivingAddress() == REMOTE_KILL || n2420.getReceivingAddress() == OCS_EXTENSION){    //REMOTE_KILL is defined as 4 from library
+    if (receiveID == REMOTE_KILL || receiveID == OCS_EXTENSION){    //REMOTE_KILL is defined as 4 from library
   
       //remoteKill = (inByte == 0x15) ? false : true;
       if (inByte == 0x15) {
-        Serial.println("Inside 15");
         bitClear(pokbStatus,4);
         noData = 0;
       } 
@@ -170,14 +170,21 @@ void receiveCanMessage() {
      
     case CAN_SOFT_E_STOP:
       if (buf[0] == 1){ // if killed
-       // Serial.print("Killed: ");
-        //Serial.println(buf[1]);
         bitSet(pokbStatus,buf[1]);
       }
       else { // if alive
-       // Serial.print("Not Killed: ");
-       // Serial.println(buf[1]);
         bitClear(pokbStatus,buf[1]);
+      }   
+      break;
+
+     case CAN_ESC_CONTROL: // kill if ESC hang but dont activate light tower
+      if (buf[0] == 1){ // if killed
+        Serial.println("SW Kill ESC");
+        digitalWrite(CONTACTOR_CONTROL, LOW);
+      }
+      else { // if alive
+        Serial.println("SW unkill ESC");
+        digitalWrite(CONTACTOR_CONTROL, HIGH);
       }   
       break;
       
@@ -191,13 +198,16 @@ void receiveCanMessage() {
 
 void updateContactor() {
   // Failsafe
-  // Check POSB Heartbeat 
-  // can change to check tele mheartbeat 
-//  if ((millis() - receiveTelemHeartbeatTime) > RECEIVE_TELEM_HEARTBEAT_TIMEOUT) {
-//    bitSet(pokbStatus,5);
-//    digitalWrite(CONTACTOR_CONTROL, LOW);
-//  }
+  
+ /*
+  // Check Telem Heartbeat 
+  if ((millis() - receiveTelemHeartbeatTime) > RECEIVE_TELEM_HEARTBEAT_TIMEOUT) {
+    bitSet(pokbStatus,5);
+    digitalWrite(CONTACTOR_CONTROL, LOW);
+  }
+*/
 
+  // check POSB Heartbeat
   if ((millis() - receivePOSBHeartbeatTime) > RECEIVE_POSB_HEARTBEAT_TIMEOUT) {
     bitSet(pokbStatus,6);
     digitalWrite(CONTACTOR_CONTROL, LOW);
@@ -208,7 +218,7 @@ void updateContactor() {
   if ((millis() - updateContactorTime) > UPDATE_CONTACTOR_TIMEOUT) {
 
    
-     Serial.println("ESTOP Status (POSB,Telem,Radio,Hard,SBC,FRSKY,OCS): ");
+     Serial.println("ESTOP Status (POSB,Telem,Remote,Hard,SBC,FRSKY,OCS): ");
      Serial.println(pokbStatus,BIN);
     
 
