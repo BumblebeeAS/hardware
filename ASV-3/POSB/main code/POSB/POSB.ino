@@ -9,15 +9,13 @@
 //     \/    \/     \/     \/        
 
 // Written by Ng Ren Zhi
+// Edited by Justin
 
 // POSB firmware:
 //	Thruster control (to ESC via CAN)
 //	Battery monitoring (via RS485)
 //	Humidity & Temperature & Internal Pressure & Leak Sensor
 //	Light Tower
-
-// Change Log for v2.2:
-// Fix stat bugs
 
 //###################################################
 //###################################################
@@ -125,7 +123,7 @@ void setup()
 
 	// SENSORS INIT
 	Wire.begin();
-	windSensor.init();	// no windsensor used currently
+	windSensor.init();	// windsensor used
   
 	// LIGHT INIT
 	initLightTower();
@@ -135,7 +133,7 @@ void setup()
 	heartbeat_loop = millis();
 	blink_loop = millis();
 	batt_loop = millis();
-	windspeed_loop = millis();	// no windsensor used currently
+	windspeed_loop = millis();
 	esc1_loop = millis();
 	esc2_loop = millis();
 	batt1_loop = millis();
@@ -215,10 +213,10 @@ void loop()
 	// Write thruster values to ESC
 	if ((millis() - thruster_loop) > THRUSTER_TIMEOUT)
 	{
-		roboteq1.setMotorSpeed(speed1, 1);
-		roboteq1.setMotorSpeed(speed2, 2);
-		roboteq2.setMotorSpeed(speed3, 1);
-		roboteq2.setMotorSpeed(speed4, 2);
+		roboteq1.setMotorSpeed(speed1, 1); //FL
+		roboteq1.setMotorSpeed(speed2, 2); //FR
+		roboteq2.setMotorSpeed(speed3, 1); //BL
+		roboteq2.setMotorSpeed(speed4, 2); //BR
 		thruster_loop = millis();
 	}
 	// Send queries for ESC stats
@@ -541,10 +539,12 @@ void resetEscHeartbeat()
 	if ((millis() - esc1_loop) > INACTIVITY_TIMEOUT)
 	{
 		heartbeat_esc1 = false;
+    Serial.println("Esc1 dead ....................................");
 		esc1_loop = millis();
 	}
 	if ((millis() - esc2_loop) > INACTIVITY_TIMEOUT)
 	{
+    Serial.println("Esc2 dead ....................................");
 		heartbeat_esc2 = false;
 		esc2_loop = millis();
 	}
@@ -621,7 +621,7 @@ void publishCAN_posbstats()
   CAN.setupCANFrame(posb_stat_buf, 1, 1, int_humidity);
   //CAN.setupCANFrame(posb_stat_buf, 2, 2, int_pressure); disabiling pressure temporarily
   CAN.setupCANFrame(posb_stat_buf, 4, 1, leak_signal);
-  #ifndef _TEST_
+  #ifdef _TEST_
     Serial.print("temperature: ");
     Serial.print(int_temperature);
     Serial.print(" humidity: ");
@@ -644,6 +644,7 @@ void publishCAN_heartbeat()
     CAN.sendMsgBuf(CAN_HEARTBEAT, 0, 1, buf);
   }
   if (heartbeat_esc1) {
+    Serial.println("ESC1 heartbeat sent");
     buf[0] = HEARTBEAT_ESC1;
     CAN.sendMsgBuf(CAN_HEARTBEAT, 0, 1, buf);
   }
@@ -657,12 +658,12 @@ void publishCAN_windspeed()
 {
 	wind_dir = windSensor.getDirection();
 	wind_speed = windSensor.getWindSpeed();
-	
-	Serial.print(" WIND: ");
-	Serial.print(wind_dir);
-	Serial.print(" ");
-	Serial.print(wind_speed);
-	
+	#ifdef _TEST_
+	  Serial.print(" WIND: ");
+	  Serial.print(wind_dir);
+	  Serial.print(" ");
+	  Serial.print(wind_speed);
+	#endif
 	CAN.setupCANFrame(buf, 0, 2, wind_dir);
 	CAN.setupCANFrame(buf, 2, 2, wind_speed);
 	CAN.sendMsgBuf(CAN_WIND_SENSOR_STATS, 0, 4, buf);
@@ -792,14 +793,16 @@ void checkCANmsg() {
 			roboteq1.readRoboteqReply(id, len, buf);
 			heartbeat_esc1 = true;
 			esc1_loop = millis();
+      Serial.println("esc 1 read data\n");
 			break;
 		case ROBOTEQ_CAN2_REPLY_INDEX:
 			roboteq2.readRoboteqReply(id, len, buf);
 			heartbeat_esc2 = true;
-			esc2_loop = millis();
+			esc2_loop = millis(); 
+      Serial.println("esc 2 read data\n");
 			break;
 		default:
-			//Serial.println("Others");
+			Serial.println("Others");
 			break;
 		}
 		/*
