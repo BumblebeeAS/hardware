@@ -31,6 +31,7 @@ byte escControl = 0;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(SERIAL_BAUD_RATE);
+
   Serial1.begin(N2420_BAUD_RATE);
 
   n2420.setSerial(&Serial1);
@@ -178,16 +179,16 @@ void receiveCanMessage() {
       }   
       break;
 
-//     case CAN_ESC_CONTROL: // kill if ESC hang but dont activate light tower
-//      if (buf[0] == 1){ // if killed
-//        Serial.println("SW Kill ESC");
-//        escControl = 1;
-//      }
-//      else { // if alive
-//        Serial.println("SW unkill ESC");
-//        escControl = 0;
-//      }   
-//      break;
+     case CAN_ESC_CONTROL: // kill if ESC hang but dont activate light tower
+      if (buf[0] == 1){ // if killed
+        Serial.println("SW Kill ESC");
+        escControl = 1;
+      }
+      else { // if alive
+        Serial.println("SW unkill ESC");
+        escControl = 0;
+      }   
+      break;
       
     default:
       break;
@@ -223,8 +224,8 @@ void updateContactor() {
      Serial.println(pokbStatus,BIN);
     
 
-    //if (pokbStatus || escControl) {
-    if (pokbStatus) {
+    if (pokbStatus || escControl) {
+    //if (pokbStatus) {
       digitalWrite(CONTACTOR_CONTROL, LOW);
       digitalWrite(KILL, HIGH);
       //Serial.println("Contactor switched off.");
