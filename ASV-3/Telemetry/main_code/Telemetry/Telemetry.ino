@@ -16,23 +16,28 @@
 //    Determine state of control and send control signal to POSB accordingly.           done
 //
 // Written by Titus Ng 
-// Change log v1.16:
-// Stop sending OCS_kill msg
-// Display OCS kill status on screen
+// Change log v1.17:
+// Read from mast radio
+// Display mast radio status on screen
+// remove ocs hb from screen
+// mostly fix posb hb flickering
 //  
 //###################################################
 
 // FOR DEBUG
 //#define DEBUG
+#define RADIODEBUG
 
 #include <Wire.h>
 #include <Arduino.h>
 #include "define.h"
 #include "telem_screen.h"       
 #include "telem_can.h"
-#include "telem_frsky.h"         
+#include "telem_frsky.h"        
+#include "n2420.h"
+ 
 
-// Create objects
+// Create objects 
 LCD screen = LCD(SCREEN_CS, SCREEN_RESET); 
 Frisky frsky = Frisky(RC_INT);
 MCP_CAN CAN(CAN_Chip_Select);
@@ -69,6 +74,7 @@ bool frsky_kill = true;      // kill = true
 bool OCS_kill = false;         // default false for now
 bool SBC_kill = true;
 bool hard_kill = true;
+bool radio_kill = true;
 int control_mode_frsky = AUTONOMOUS;
 int control_mode = AUTONOMOUS;
 int control_mode_ocs = AUTONOMOUS;
@@ -80,6 +86,12 @@ int16_t speed2 = 0;
 int16_t speed3 = 0;
 int16_t speed4 = 0;
 int frsky_timeout_count = 0;
+
+// N2420 setup
+N2420 n2420 (ASV_EXTENSION);
+uint8_t inByte = 0;
+uint8_t* inBuf;
+uint32_t receiveRadioTime = 0;
 
 void setup() {
   pinMode(SCREEN_CS, OUTPUT);           //CS screen
@@ -111,9 +123,19 @@ void setup() {
     heartbeat_timeout[i] = millis();
   }
 
+  // initalize radio 
+  Serial2.begin(N2420_BAUD_RATE);
+  n2420.setSerial(&Serial2);
+  receiveRadioTime = millis();
+
 }
 
 void loop() {
+#ifdef DEBUG 
+  Serial.print("loop: ");
+  Serial.println(millis());
+#endif
+
   screen_reset_stats();   // reset stats if past timeout
   CAN_read_msg();         // read incoming CAN messages
 
@@ -156,6 +178,59 @@ void loop() {
   if ((millis() - killloop) > KILL_LOOP) {
     CAN_publish_kill();
     killloop = millis();
+  }
+
+  // Receive N2420 radio msg from mast
+  if ((millis() - receiveRadioTime) > RECEIVE_RADIO_TIMEOUT) {
+    receiveRadio();
+    receiveRadioTime = millis();
+  }
+}
+
+uint32_t last_response = millis();
+//==========================================
+//          RADIO FUNCTIONS
+//==========================================
+void receiveRadio() {
+  n2420.readPacket();
+  if (n2420.isAvailable()) {
+#ifdef RADIODEBUG
+    Serial.println("Response available.");
+    Serial.print("ID: ");
+#endif 
+    int receiveID = n2420.getReceivingAddress();
+#ifdef RADIODEBUG
+    Serial.println(receiveID);
+#endif
+    // get data
+    inBuf = n2420.showReceived();
+    inByte = *(inBuf+2);
+#ifdef RADIODEBUG
+    Serial.print("inByte: ");
+    Serial.println(inByte, HEX);
+    uint32_t timebtwresponse = millis() - last_response;
+    Serial.println(timebtwresponse);
+    last_response = millis();
+#endif
+    if (receiveID == REMOTE_KILL || receiveID == OCS_EXTENSION){    //REMOTE_KILL is defined as 4 from library
+      if (inByte == 0x15) {
+#ifdef RADIODEBUG
+       Serial.println("unkill");
+#endif
+       heartbeat_timeout[RADIO] = millis();
+      } 
+      else if (inByte == 0x44) {
+#ifdef RADIODEBUG
+        Serial.println("kill");
+#endif
+        heartbeat_timeout[RADIO] = millis();
+      } 
+      else {
+#ifdef RADIODEBUG
+        Serial.println("no data");
+#endif
+      }
+    }
   }
 }
 
@@ -254,14 +329,14 @@ void CAN_publish_manualthruster()
   CAN.setupCANFrame(buf, 4, 2, (uint32_t)(speed3 + 3200));
   CAN.setupCANFrame(buf, 6, 2, (uint32_t)(speed4 + 3200));
   #ifdef DEBUG
-    Serial.print("1: ");
-    Serial.println(speed1 + 3200);
-    Serial.print("2: ");
-    Serial.println(speed2 + 3200);
-    Serial.print("3: ");
-    Serial.println(speed3 + 3200);
-    Serial.print("4: ");
-    Serial.println(speed4 + 3200);
+//    Serial.print("1: ");
+//    Serial.println(speed1 + 3200);
+//    Serial.print("2: ");
+//    Serial.println(speed2 + 3200);
+//    Serial.print("3: ");
+//    Serial.println(speed3 + 3200);
+//    Serial.print("4: ");
+//    Serial.println(speed4 + 3200);
   #endif
   CAN.sendMsgBuf(CAN_MANUAL_THRUSTER, 0, 8, buf);
 }
