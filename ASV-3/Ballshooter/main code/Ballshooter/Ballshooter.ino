@@ -16,12 +16,12 @@
 // 2. Run reloading mechanism (1 stepper, 1 servo) 
 // 
 // Todo: 
-// Add CAN heartbeat & receive
+// Exact motor control for each CAN msg
 // Calibrate servo angles
 //
 // Written by Titus Ng 
-// Change log v0.2: 
-// Add serial control for basic ballshooter movement
+// Change log v0.3: 
+// Add can hb, send receive
 //###################################################
 
 #include "define.h" 
@@ -99,7 +99,7 @@ void release_latch(void) {
     Serial.println("3: Released latch");
 }
 
-void cock_act(){      // to adjust direction
+void cock_act(){      
   digitalWrite(DIR_PIN, LOW);
   digitalWrite(PWM_PIN, HIGH);
   delay(DELAY_SHOOTER);
@@ -157,6 +157,7 @@ void loop() {
       reload_drum();
     }
   }
+  while (Serial.available()) Serial.read();
   delay(100);
   #endif
 }

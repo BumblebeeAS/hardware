@@ -3,18 +3,50 @@
 //    CAN functions
 //
 //===========================================
-
+uint32_t id = 0;
+uint8_t len = 0;
+uint8_t buf[8];
+uint32_t last_heartbeat_time = millis();
 void CAN_send_heartbeat() {
-
+  if (millis() >= last_heartbeat_time + HB_TIMEOUT) {
+    CAN.setupCANFrame(buf, 0, 1, BALL_HEARTBEAT);
+    CAN.sendMsgBuf(CAN_HEARTBEAT, 0, 1, buf);
+    last_heartbeat_time = millis();
+  }
 }
 
 void CAN_parse_command() {
-  
+  if (CAN_MSGAVAIL == CAN.checkReceive()) { // check if data is coming
+    CAN.readMsgBufID(&id, &len, buf); // udpate id and len to recceived
+    if (id == CAN_BALL_SHOOTER) {
+      int command = CAN.parseCANFrame(buf, 0, 1);
+      switch(command) {
+        case COCK: {
+          cock_act();
+          CAN_acknowledgement(COCK);
+          break;
+        }
+        case LOAD: {
+          CAN_acknowledgement(LOAD);
+          break;
+        }
+        case FIRE: {
+          release_latch();
+          CAN_acknowledgement(FIRE);
+          break;
+        }
+        default:
+          Serial.println("wrong command");
+      }
+    }
+  }
 }
 
-void CAN_acknowledgement() {
-  
+void CAN_acknowledgement(int command) {
+  CAN.setupCANFrame(buf, 0, 1, command);
+  CAN.sendMsgBuf(CAN_BALL_SHOOTER_STATS, 0, 1, buf);  
 }
+
 // Initialize CAN bus 
 void CAN_init() {
   if (CAN_OK == CAN.begin(CAN_1000KBPS)) {                   // init can bus : baudrate = 1000k

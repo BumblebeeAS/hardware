@@ -9,8 +9,11 @@
 
 // ------------------ CAN ----------------------
 #define CS_CAN 8
-
-
+#define COCK 1
+#define LOAD 2
+#define FIRE 3
+#define BALL_HEARTBEAT 0x0A
+#define HB_TIMEOUT 500
 // ---------------- servo 1 (latch release for firing)-----------
 #define LATCH_PIN 3
 #define LATCH_START_ANGLE 180
