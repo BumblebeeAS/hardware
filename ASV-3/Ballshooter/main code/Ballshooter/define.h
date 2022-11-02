@@ -15,27 +15,30 @@
 #define LATCH_PIN 3
 #define LATCH_START_ANGLE 180
 #define LATCH_ENGAGE_ANGLE 150
-#define LATCH_RELEASE_DELAY 300
+#define LATCH_RELEASE_DELAY 500
 
 // ---------------- servo 2 (drum servo)----------------------
 #define DRUM_PIN 5
-#define DRUM_START_ANGLE 100
-#define DRUM_ENGAGE_ANGLE 100
-#define DRUM_RELEASE_DELAY 100
-
+#define DRUM_START_ANGLE 0
+#define DRUM_ENGAGE_ANGLE 180
+#define DRUM_RELEASE_DELAY 2000
 
 // ------------------- linear actuator ------------------------
 #define DIR_PIN 9
 #define PWM_PIN 10
+#define DELAY_SHOOTER 10000
 
 // ------------- tmc 2209 ------------------------------
 #define SW_RX 6
 #define SW_TX 7
 #define R_SENSE 0.11f
 #define DRIVER_ADDRESS 0b00
-#define EN 2
+#define EN_PIN 2
 
-#define microstep 16
+#define microstep 8
+
+#define STEPPER_RUNSPEED 1024
+#define STEPPER_RUNTIME 520
 
 
 #endif // _DEFINES_H

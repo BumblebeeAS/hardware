@@ -16,13 +16,12 @@
 // 2. Run reloading mechanism (1 stepper, 1 servo) 
 // 
 // Todo: 
-// Add UART stepper code for drum
-// Add servo movement for drum
 // Add CAN heartbeat & receive
+// Calibrate servo angles
 //
 // Written by Titus Ng 
-// Change log v0.1: 
-// Inital commit 
+// Change log v0.2: 
+// Add serial control for basic ballshooter movement
 //###################################################
 
 #include "define.h" 
@@ -36,12 +35,13 @@ TMC2209Stepper drum_stepper (SW_RX, SW_TX, R_SENSE, 0b00);
 
 MCP_CAN CAN(CS_CAN);
 Servo servo_latch;
+Servo servo_drum;
 
 void setup() {
+  initialize_serial();     
   initialize_firing();       // linear actuator + latch servo
   initialize_stepper();      // tmc2209
   initialize_drum_servo();   // drum servo
-  initialize_serial();     
           
   // CAN init 
   CAN_init();
@@ -74,12 +74,17 @@ void initialize_firing(void) {
 }
 
 void initialize_drum_servo(void) {
-  servo_latch.attach(DRUM_PIN);
-  servo_latch.write(DRUM_START_ANGLE);
+  servo_drum.attach(DRUM_PIN);
+  servo_drum.write(DRUM_START_ANGLE);
 }
-
 void initialize_stepper(void) {
-  
+  // enable pin
+  pinMode(EN_PIN, OUTPUT);
+  digitalWrite(EN_PIN, LOW);
+  drum_stepper.begin();
+  drum_stepper.blank_time(16);
+  drum_stepper.microsteps(microstep);
+  drum_stepper.VACTUAL(0);
 }
 //===========================================
 //
@@ -90,19 +95,45 @@ void release_latch(void) {
     servo_latch.write(LATCH_ENGAGE_ANGLE);
     delay(LATCH_RELEASE_DELAY);
     servo_latch.write(LATCH_START_ANGLE);
+
     Serial.println("3: Released latch");
 }
 
-void cock_act(){
-  
+void cock_act(){      // to adjust direction
+  digitalWrite(DIR_PIN, LOW);
+  digitalWrite(PWM_PIN, HIGH);
+  delay(DELAY_SHOOTER);
+  digitalWrite(PWM_PIN, LOW);
+  Serial.println("1: Cocked shooter");
 }
 
 void release_act() {
-  
+  digitalWrite(DIR_PIN, HIGH);
+  digitalWrite(PWM_PIN, HIGH);
+  delay(DELAY_SHOOTER);
+  digitalWrite(PWM_PIN, LOW);
+  Serial.println("2: Released shooter");
+
 }
 
+//===========================================
+//
+//    Reloading movement
+//
+//===========================================
+
 void reload_drum() {
-  
+    servo_drum.write(DRUM_ENGAGE_ANGLE);
+    delay(DRUM_RELEASE_DELAY);
+
+    drum_stepper.VACTUAL(STEPPER_RUNSPEED);
+    delay(STEPPER_RUNTIME); 
+    drum_stepper.VACTUAL(0);
+
+    servo_drum.write(DRUM_START_ANGLE);
+    delay(DRUM_RELEASE_DELAY);
+
+    Serial.println("4: Reload drum");
 }
 
 

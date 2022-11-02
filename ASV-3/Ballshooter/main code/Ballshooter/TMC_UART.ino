@@ -7,7 +7,7 @@
 // -------------------------------
 
 void check_all_UART() {
-  Serial.print(F(" Testing UART of Stepper 0: ...  "));
+  Serial.print(" Testing UART of Stepper 0: ...  ");
   stepper_talk(drum_stepper);
 }
 
