@@ -21,12 +21,14 @@ void CAN_parse_command() {
     if (id == CAN_BALL_SHOOTER) {
       int command = CAN.parseCANFrame(buf, 0, 1);
       switch(command) {
-        case COCK: {
-          cock_act();
+        case COCK: {          // Takes abt 20s
+          retract_act();
+          extend_act();
           CAN_acknowledgement(COCK);
           break;
         }
         case LOAD: {
+          reload_drum();
           CAN_acknowledgement(LOAD);
           break;
         }
@@ -39,6 +41,7 @@ void CAN_parse_command() {
           Serial.println("wrong command");
       }
     }
+    CAN.clearMsg();     // clear buffer to prevent execution of double msgs
   }
 }
 

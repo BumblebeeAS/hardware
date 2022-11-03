@@ -99,7 +99,7 @@ void release_latch(void) {
     Serial.println("3: Released latch");
 }
 
-void cock_act(){      
+void retract_act(){      
   digitalWrite(DIR_PIN, LOW);
   digitalWrite(PWM_PIN, HIGH);
   delay(DELAY_SHOOTER);
@@ -107,7 +107,7 @@ void cock_act(){
   Serial.println("1: Cocked shooter");
 }
 
-void release_act() {
+void extend_act() {
   digitalWrite(DIR_PIN, HIGH);
   digitalWrite(PWM_PIN, HIGH);
   delay(DELAY_SHOOTER);
@@ -148,9 +148,9 @@ void loop() {
     Serial.print("I got: ");
     Serial.println(val, DEC);
     if (val == 1) { 
-      cock_act();
+      retract_act();
     } else if (val == 2) {
-      release_act();
+      extend_act();
     } else if (val == 3) {
       release_latch();
     } else if (val == 4) {
