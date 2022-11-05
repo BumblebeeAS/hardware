@@ -14,14 +14,13 @@
 // Board functions: 
 // 1. Run firing and cocking mechanism (1 latch release servo, 1 linear actuator)
 // 2. Run reloading mechanism (1 stepper, 1 servo) 
-// 
-// Todo: 
-// Exact motor control for each CAN msg
-// Calibrate servo angles
 //
 // Written by Titus Ng 
-// Change log v0.3: 
-// Add can hb, send receive
+// Change log v1.0: 
+// MVP ball shooter
+// working and tested with software controls & logic backplane
+// tested with reloader and latch system
+// missing cock mechanism using linear acutator
 //###################################################
 
 #include "define.h" 
@@ -126,12 +125,12 @@ void reload_drum() {
     servo_drum.write(DRUM_ENGAGE_ANGLE);
     delay(DRUM_RELEASE_DELAY);
 
+    servo_drum.write(DRUM_START_ANGLE);
+    delay(DRUM_RELEASE_DELAY);
+
     drum_stepper.VACTUAL(STEPPER_RUNSPEED);
     delay(STEPPER_RUNTIME); 
     drum_stepper.VACTUAL(0);
-
-    servo_drum.write(DRUM_START_ANGLE);
-    delay(DRUM_RELEASE_DELAY);
 
     Serial.println("4: Reload drum");
 }
@@ -158,6 +157,5 @@ void loop() {
     }
   }
   while (Serial.available()) Serial.read();
-  delay(100);
   #endif
 }

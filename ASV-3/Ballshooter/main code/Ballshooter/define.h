@@ -12,13 +12,16 @@
 #define COCK 1
 #define LOAD 2
 #define FIRE 3
-#define BALL_HEARTBEAT 0x0A
+#define ACK_COCK 4
+#define ACK_LOAD 5
+#define ACK_FIRE 6
+#define BALL_HEARTBEAT 10
 #define HB_TIMEOUT 500
 // ---------------- servo 1 (latch release for firing)-----------
 #define LATCH_PIN 3
-#define LATCH_START_ANGLE 180
-#define LATCH_ENGAGE_ANGLE 150
-#define LATCH_RELEASE_DELAY 500
+#define LATCH_START_ANGLE 0
+#define LATCH_ENGAGE_ANGLE 70
+#define LATCH_RELEASE_DELAY 1000
 
 // ---------------- servo 2 (drum servo)----------------------
 #define DRUM_PIN 5
@@ -41,7 +44,7 @@
 #define microstep 8
 
 #define STEPPER_RUNSPEED 1024
-#define STEPPER_RUNTIME 520
+#define STEPPER_RUNTIME 540
 
 
 #endif // _DEFINES_H

@@ -22,17 +22,23 @@ void CAN_parse_command() {
       int command = CAN.parseCANFrame(buf, 0, 1);
       switch(command) {
         case COCK: {          // Takes abt 20s
+          Serial.println("recieve COCK");
+          CAN_acknowledgement(ACK_COCK);
           retract_act();
           extend_act();
           CAN_acknowledgement(COCK);
           break;
         }
         case LOAD: {
+          Serial.println("recieve LOAD");
+          CAN_acknowledgement(ACK_LOAD);
           reload_drum();
           CAN_acknowledgement(LOAD);
           break;
         }
         case FIRE: {
+          Serial.println("recieve FIRE");
+          CAN_acknowledgement(ACK_FIRE);
           release_latch();
           CAN_acknowledgement(FIRE);
           break;
@@ -78,4 +84,11 @@ void CAN_init() {
   Filt decide which bit to accept
 */
 void CAN_mask() {
+    /* Both masks needs to be set in mcp2515 */
+  CAN.init_Mask(0, 0, 0);
+  CAN.init_Mask(1, 0, 0);
+
+//  /* set 1 filter to receive from id 21 only */
+//  CAN.init_Filt(0, 0, 0x15);
+//  CAN.init_Filt(1, 0, 0x0E);
 }
