@@ -35,6 +35,7 @@ TMC2209Stepper drum_stepper (SW_RX, SW_TX, R_SENSE, 0b00);
 MCP_CAN CAN(CS_CAN);
 Servo servo_latch;
 Servo servo_drum;
+bool retracted = false;    // IMPT! linear actuator must start at extended position
 
 void setup() {
   initialize_serial();     
@@ -91,28 +92,37 @@ void initialize_stepper(void) {
 //
 //===========================================
 void release_latch(void) {
-    servo_latch.write(LATCH_ENGAGE_ANGLE);
-    delay(LATCH_RELEASE_DELAY);
-    servo_latch.write(LATCH_START_ANGLE);
+  servo_latch.write(LATCH_ENGAGE_ANGLE);
+  delay(LATCH_RELEASE_DELAY);
+  servo_latch.write(LATCH_START_ANGLE);
 
-    Serial.println("3: Released latch");
+  Serial.println("3: Released latch");
 }
 
 void retract_act(){      
-  digitalWrite(DIR_PIN, LOW);
-  digitalWrite(PWM_PIN, HIGH);
-  delay(DELAY_SHOOTER);
-  digitalWrite(PWM_PIN, LOW);
-  Serial.println("1: Cocked shooter");
+  if (!retracted) {
+    digitalWrite(DIR_PIN, LOW);
+    digitalWrite(PWM_PIN, HIGH);
+    delay(DELAY_SHOOTER_RETRACT);
+    digitalWrite(PWM_PIN, LOW);
+    Serial.println("1: Cocked shooter");
+    retracted = true;
+  } else {
+    Serial.println("WHY U TRYNA BREAK BALLSHOOTER");
+  }
 }
 
 void extend_act() {
-  digitalWrite(DIR_PIN, HIGH);
-  digitalWrite(PWM_PIN, HIGH);
-  delay(DELAY_SHOOTER);
-  digitalWrite(PWM_PIN, LOW);
-  Serial.println("2: Released shooter");
-
+  if (retracted) {
+    digitalWrite(DIR_PIN, HIGH);
+    digitalWrite(PWM_PIN, HIGH);
+    delay(DELAY_SHOOTER_EXTEND);
+    digitalWrite(PWM_PIN, LOW);
+    Serial.println("2: Released shooter");
+    retracted = false;
+  } else {
+    Serial.println("ACTL WON'T BREAK BALLSHOOTER BUT STILL ITS ALREADY EXTENDED");
+  }
 }
 
 //===========================================
