@@ -113,16 +113,12 @@ void retract_act(){
 }
 
 void extend_act() {
-  if (retracted) {
     digitalWrite(DIR_PIN, HIGH);
     digitalWrite(PWM_PIN, HIGH);
     delay(DELAY_SHOOTER_EXTEND);
     digitalWrite(PWM_PIN, LOW);
     Serial.println("2: Released shooter");
     retracted = false;
-  } else {
-    Serial.println("ACTL WON'T BREAK BALLSHOOTER BUT STILL ITS ALREADY EXTENDED");
-  }
 }
 
 //===========================================
