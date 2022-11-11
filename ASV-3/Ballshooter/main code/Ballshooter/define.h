@@ -20,7 +20,7 @@
 // ---------------- servo 1 (latch release for firing)-----------
 #define LATCH_PIN 3
 #define LATCH_START_ANGLE 0
-#define LATCH_ENGAGE_ANGLE 75
+#define LATCH_ENGAGE_ANGLE 80
 #define LATCH_RELEASE_DELAY 2000
 
 // ---------------- servo 2 (drum servo)----------------------
@@ -32,7 +32,7 @@
 // ------------------- linear actuator ------------------------
 #define DIR_PIN 9
 #define PWM_PIN 10
-#define DELAY_SHOOTER_RETRACT 3800
+#define DELAY_SHOOTER_RETRACT 3550
 #define DELAY_SHOOTER_EXTEND 4000
 
 // ------------- tmc 2209 ------------------------------

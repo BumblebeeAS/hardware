@@ -52,10 +52,10 @@ void initialize_serial(void) {
   Serial.begin(115200);
   Serial.println("Hi I'm ASV 3 Ballshooter!");
   Serial.println("Serial controls:");
-  Serial.println("1: Cock linear actuator");
-  Serial.println("2: Unload linear actuator");
-  Serial.println("3: Fire (release latch)");
-  Serial.println("4: Reload drum");
+  Serial.println("1: Retract linear actuator");
+  Serial.println("2: Extend linear actuator");
+  Serial.println("3: Load shooter");
+  Serial.println("4: Fire");
 }
 //===========================================
 //
@@ -96,7 +96,7 @@ void release_latch(void) {
   delay(LATCH_RELEASE_DELAY);
   servo_latch.write(LATCH_START_ANGLE);
 
-  Serial.println("3: Released latch");
+  Serial.println("4: Released latch");
 }
 
 void retract_act(){      
@@ -133,21 +133,19 @@ void reload_drum() {
 
     servo_drum.write(DRUM_START_ANGLE);
     delay(DRUM_RELEASE_DELAY);
-
     drum_stepper.VACTUAL(STEPPER_RUNSPEED);
     delay(STEPPER_RUNTIME); 
     drum_stepper.VACTUAL(0);
 
-    Serial.println("4: Reload drum");
+    Serial.println("3: Reload drum");
 }
 
-
+int val = 0;
 void loop() {
   CAN_send_heartbeat();
   CAN_parse_command();
   
   #ifdef DEBUG
-  int val = 0;
   val = Serial.parseInt();
   if (val != 0) {
     Serial.print("I got: ");
@@ -157,9 +155,10 @@ void loop() {
     } else if (val == 2) {
       extend_act();
     } else if (val == 3) {
-      release_latch();
-    } else if (val == 4) {
       reload_drum();
+    } else if (val == 4) {
+      release_latch();
+
     }
   }
   while (Serial.available()) Serial.read();
