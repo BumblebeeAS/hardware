@@ -63,7 +63,7 @@
 #define TELEMETRY 4
 #define DTLS 5
 #define SBC 6
-#define OCS 7
+#define RADIO 7
 #define FRSKY 8
 #define LOGICBACKPLANE 9
 #define BALLSHOOTER 10
@@ -75,7 +75,7 @@
 #define ESC2 16
 
 // TIMEOUTS
-#define HB_TIMEOUT 1000
+#define HB_TIMEOUT 1500
 #define STAT_TIMEOUT 3000
 #define FAILSAFE_TIMEOUT 2000
 
@@ -93,6 +93,10 @@
 #define CONTROLLINK_LOOP 500
 #define THRUSTER_LOOP 100
 #define KILL_LOOP 100
+
+// N2420
+#define N2420_BAUD_RATE 115200
+#define RECEIVE_RADIO_TIMEOUT 500
 
 
 #endif // _DEFINES_H

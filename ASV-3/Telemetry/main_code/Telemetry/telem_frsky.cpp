@@ -10,6 +10,7 @@
 void frsky_get_rssi() {
   // Map RSSI from 1000 to 2000 duty cycle to 0 to 100 dB
   internalStats[RSSI_FRSKY] = calculate_rssi();
+//  Serial.println(internalStats[RSSI_FRSKY]);
   if ((internalStats[RSSI_FRSKY] != 255) && (internalStats[RSSI_FRSKY] > RSSI_THRESHOLD)) {
     heartbeat_timeout[FRSKY] = millis();
   }
@@ -76,7 +77,7 @@ void frsky_send_batt_capacity() {
 
 void frsky_get_kill() {
   int tempbut = frsky.get_ch(FRISKY_KILL);
-
+//  Serial.println(tempbut);
   if (tempbut <= 1500 && frsky_alive)
   {
     frsky_kill = false;

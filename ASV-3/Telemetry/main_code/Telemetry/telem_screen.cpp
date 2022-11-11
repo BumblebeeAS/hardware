@@ -19,7 +19,7 @@ void screen_prepare() {
   screen.write_string("POKB OK:");
   screen.write_string("DTLS OK:");
   screen.write_string("SBC OK:");
-  screen.write_string("OCS OK:");
+  screen.write_string("Radio OK:");
   screen.write_string("Frsky OK:");
 
   screen.set_cursor(300 + OFFSET, 0);
@@ -106,7 +106,9 @@ void screen_update_hb() {
         } else if (OCS_kill) {                    // Software kill activated
           value = "OCS kill";
         } else if (SBC_kill) {
-          value = "SBC_kill";
+          value = "SBC kill";
+        } else if (radio_kill) {
+          value = "Radio kill";
         }
         screen.write_string(value);
       }

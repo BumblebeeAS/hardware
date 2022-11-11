@@ -24,6 +24,7 @@
 #define CAN_HEARTBEAT 3
 #define CAN_SOFT_E_STOP 4
 #define CAN_E_STOP 5 
+#define CAN_ESC_CONTROL 6 
 
 #define CAN_POPB_CONTROL 7
 #define CAN_BALL_SHOOTER 8
@@ -43,4 +44,3 @@
 #define CAN_DTLS_STATS 22
 
 #endif
-

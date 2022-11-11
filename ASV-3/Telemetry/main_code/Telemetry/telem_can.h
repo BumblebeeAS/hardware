@@ -10,6 +10,8 @@
 #ifndef TELEM_CAN
 #define TELEM_CAN
 
+//#define CANDEBUG
+
 #include <can_asv3_defines.h>
 #include "define.h"
 #include <SPI.h> 
@@ -31,6 +33,7 @@ extern bool frsky_kill;
 extern bool OCS_kill;
 extern bool SBC_kill;
 extern bool hard_kill;
+extern bool radio_kill;
 
 void CAN_init();
 void CAN_mask();
