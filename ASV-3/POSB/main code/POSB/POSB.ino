@@ -6,7 +6,7 @@
 // | __ \| __ \\__  \  /  ___/\  \/ /
 // | \_\ \ \_\ \/ __ \_\___ \  \   / 
 // |___  /___  (____  /____  >  \_/  
-//     \/    \/     \/     \/        
+//     \/    \/     \/     \/    chrome     
 
 // Written by Ng Ren Zhi
 // Edited by Justin
@@ -195,6 +195,10 @@ void loop()
 				Serial.print("Set speed2: ");
 				Serial.println(speed2);
 				break;
+      case 'z':
+        Serial.println("Kill batt");
+        Battery1.onBattery(false);
+        break;
 			}
 			serialidx = -1;
 			//Serial.println("(a) amps (k) kill (u) unkill");
@@ -450,11 +454,11 @@ void readTempHumid()
 			int_temperature = humidTempSensor.getTemperature() + 0.5;
 			int_humidity = humidTempSensor.getHumidity() + 0.5;
 #endif
-			/*
+			
 			Serial.print("Temp: ");
 			Serial.print(posb_stat_buf[0]);
 			Serial.print("\t");
-			Serial.println(posb_stat_buf[1]);*/
+			Serial.println(posb_stat_buf[1]);
 			humid_ctr = 0;
 			break;
 		}
@@ -647,10 +651,13 @@ void publishCAN_heartbeat()
     Serial.println("ESC1 heartbeat sent");
     buf[0] = HEARTBEAT_ESC1;
     CAN.sendMsgBuf(CAN_HEARTBEAT, 0, 1, buf);
+    CAN.sendMsgBuf(25, 0, 1, buf);
   }
   if (heartbeat_esc2) {
+    Serial.println("ESC2 heartbeat sent");
     buf[0] = HEARTBEAT_ESC2;
     CAN.sendMsgBuf(CAN_HEARTBEAT, 0, 1, buf);
+    CAN.sendMsgBuf(25, 0, 1, buf);
   }
 	Serial.println("HEARTBEAT!");
 }
@@ -801,6 +808,9 @@ void checkCANmsg() {
 			esc2_loop = millis(); 
       Serial.println("esc 2 read data\n");
 			break;
+    case CAN_BATT_CTRL:
+      batt_ctrl = CAN.parseCANFrame(buf, 0, 1);
+      if (batt_ctrl == 1) Battery1.onBattery(false);
 		default:
 			Serial.println("Others");
 			break;
