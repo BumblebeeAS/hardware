@@ -6,18 +6,16 @@
 //  - single line rx tx transmission (1k resistor)
 //  - talk to me baby
 // -------------------------------
-
-void check_all_UART() {
-  Serial.print(F(" Testing UART of Stepper 0: ...  "));
-  stepper_talk(stepper0);
-  Serial.print(F(" Testing UART of Stepper 1: ...  "));
-  stepper_talk(stepper1);
-  Serial.print(F(" Testing UART of Stepper 2: ...  "));
-  stepper_talk(stepper2);
-  Serial.print(F(" Testing UART of Stepper 3: ...  "));
-  stepper_talk(stepper3);
+void check_all_UART(TMC2209Stepper *s, int num_of_steppers) {
+   for (int i = 0; i < num_of_steppers; i ++) {
+    Serial.print(F("Testing UART of Stepper ")); 
+    Serial.print(i);
+    Serial.println(F(" : ...."));
+    stepper_talk(s[i]);
+   }
   Serial.println(F("UART test complete."));
 }
+
 
 bool stepper_talk(TMC2209Stepper s) {
   auto versionS = s.version();
