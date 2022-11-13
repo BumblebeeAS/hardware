@@ -20,11 +20,12 @@ void CAN_init() {
 }
 
 /* Receive these CAN ID
- *  4:  CAN_HEARTBEAT
- *  10: CAN_BATT1_STATS
- *  11: CAN_BATT2_STATS
- *  17: CAN_SBC_TEMP
- *  18: CAN_POSB_STATS
+ *  3:  CAN_HEARTBEAT           0b00000011
+ *  5:  CAN_E_STOP              0b00000101
+ *  10: CAN_BATT1_STATS         0b00001010
+ *  11: CAN_BATT2_STATS         0b00001011
+ *  17: CAN_SBC_TEMP            0b00010001
+ *  18: CAN_POSB_STATS          0b00010010
  */
 
 // Initialize CAN mask using truth table 
@@ -42,6 +43,9 @@ void CAN_init() {
   Filt decide which bit to accept
 */
 void CAN_mask() {
+//  CAN.init_Mask(0, 0, 0xf0);
+//  CAN.init_Mask(1, 0, 0xf0);
+//  CAN.init_Filt(0, 0, 0x00);
 }
 
 // Receive CAN messages
@@ -77,7 +81,14 @@ void CAN_read_msg() {
         uint8_t kill = CAN.parseCANFrame(buf, 0, 1);
         hard_kill = kill & 0b00001000;
         SBC_kill = kill & 0b00000100; 
+        OCS_kill = kill & 0b00000001;
+        radio_kill = kill & 0b00010000;
         break;
+      }
+      case 25: {
+         uint8_t device = CAN.parseCANFrame(buf, 0, 1);
+         heartbeat_timeout[device] = millis();
+         break;
       }
       default: {
         #ifdef CANDEBUG
@@ -107,9 +118,6 @@ void read_batt_stats(int batt_no) {
         Serial.println("Too many batteries");
       #endif
       break;
-  }
-  for (int i = 0; i < 6; i++) {
-    
   }
 }
 
@@ -149,9 +157,9 @@ void CAN_publish_controllink() {
 
 void CAN_publish_kill() {
   // OCS kill
-  CAN.setupCANFrame(buf, 0, 1, OCS_kill ? 1 : 0);
-  CAN.setupCANFrame(buf, 1, 1, 0);
-  CAN.sendMsgBuf(CAN_SOFT_E_STOP, 0, 2, buf);
+//  CAN.setupCANFrame(buf, 0, 1, OCS_kill ? 1 : 0);
+//  CAN.setupCANFrame(buf, 1, 1, 0);
+//  CAN.sendMsgBuf(CAN_SOFT_E_STOP, 0, 2, buf);
   // Frsky kill
   CAN.setupCANFrame(buf, 0, 1, frsky_kill ? 1 : 0);
   CAN.setupCANFrame(buf, 1, 1, 1);

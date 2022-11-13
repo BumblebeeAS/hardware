@@ -20,11 +20,13 @@
 
 // QUERIES
 #define INDEX_READ_MOTOR_AMPS 0x2100
+#define INDEX_READ_MOTOR_POWER 0x2102
 #define INDEX_READ_FAULT_FLAGS 0x2112
 #define INDEX_READ_MOTOR_STATUS_FLAGS 0x2122
 #define INDEX_READ_ACTUAL_MOTOR_COMMAND 0x2101
 #define INDEX_READ_BATTERY_AMPS 0x210C
 #define INDEX_READ_BATTERY_VOLTS 0x210D
+#define INDEX_READ_MCU_TEMP 0x210F
 
 #define ESC1_ID 1
 #define ESC2_ID 1
@@ -32,10 +34,13 @@
 typedef struct RoboteqStats{
 	int16_t motor_current1;
 	int16_t motor_current2;
+	int16_t motor_power1;
+	int16_t motor_power2;
 	int16_t battery_current;
-  int16_t battery_volt;
+  	int16_t battery_volt;
 	int16_t motor_comand1;
 	int16_t motor_comand2;
+	int8_t 	mcu_temp;
 	uint8_t fault_flags;
 	uint8_t motor_status_flags1;
 	uint8_t motor_status_flags2;
@@ -69,8 +74,10 @@ private:
 	void requestUpdate();
 	void setMotorSpeed(int32_t speed, uint8_t channel);
 	void requestMotorAmps(uint8_t ch);
+	void requestMotorPower(uint8_t ch);
 	void requestFaultFlags();
 	void requestMotorStatusFlags(uint8_t ch);
+	void requestMCUTemp(uint8_t ch);
 	void readRoboteqReply(uint32_t id, uint8_t len, uint8_t *buf);
 	void readRoboteqReply_fromCAN();
 
