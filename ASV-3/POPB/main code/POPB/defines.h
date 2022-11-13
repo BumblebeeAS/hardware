@@ -1,5 +1,5 @@
 /* Load Switch Pin Mappings */
-#define DEBUG_MODE true
+#define DEBUG_MODE false
 //old
 //#define LS_NAVTIC 16
 //#define LS_VELODYNE 17
@@ -17,11 +17,12 @@
 #define TEMP2 A1
 
 /* Load Switch Bit Comparison */
-#define ENABLE_OUSTER 0x01
-#define ENABLE_VELODYNE 0x02
-#define ENABLE_NAVTIC 0x04
-#define ENABLE_INVERTER 0X08
-#define ENABLE_SBC 0X16
+#define ENABLE_OUSTER 1
+#define ENABLE_VELODYNE 2
+#define ENABLE_NAVTIC 4
+#define ENABLE_INVERTER 8
+
+#define ENABLE_SBC 16
 
 #define STAGGER_TIME 250
 #define AUTORESET_TIME 5000

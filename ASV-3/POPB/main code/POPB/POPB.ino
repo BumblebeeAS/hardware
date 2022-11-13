@@ -12,7 +12,7 @@ uint32_t CanHeartbeatLoop = 0;
 uint32_t CanStatusLoop = 0;
 uint32_t SerialLoop = 0;
 uint32_t TempLoop = 0;
-uint8_t LsControl = 0x15; //Indicates which LS are turned on/off
+uint8_t LsControl = 15; //Indicates which LS are turned on/off
 
 bool SBC_stat_on = false;
 bool relay_on = false;
