@@ -5,8 +5,7 @@
 #ifndef _DEFINES_H
 #define _DEFINES_H
 
- #define DEBUG 
-// #define SERIAL
+#define DEBUG 
 
 //---- CAN definitions ---------------------
 #define CAN_CS_CHIP 8
@@ -33,7 +32,6 @@
 #define SW_RX 6 //sw serial for uart line 1
 #define SW_TX 7
 #define R_SENSE 0.11f
-#define DRIVER_ADDRESS 0b00
 #define EN 5
 
 #define microstep 16 
@@ -42,10 +40,7 @@
 #define STALL_VALUE 330
 
 #define FORWARD 0
-#define BACKWORD 1
-
-#define OPENING 0
-#define CLOSING 1
+#define BACKWARD 1
 
 //-----------------------------------
 

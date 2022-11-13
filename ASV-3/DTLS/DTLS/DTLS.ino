@@ -24,13 +24,13 @@ TMC2209Stepper stepper3 (SW_RX, SW_TX, R_SENSE, 0b11);
 MCP_CAN CAN(CAN_CS_CHIP);
 
 // Global Flags,
-int stepper_num = 4; // number of steppers
-int STALL_THRESHOLD[4] = {150, 220, 220, 150}; // higher = more sensitive
+int stepper_num = 2; // number of steppers
+int STALL_THRESHOLD[2] = {200, 200}; // higher = more sensitive
 
-//TMC2209Stepper steppers[4] = {stepper0, stepper1, stepper2, stepper3};
+TMC2209Stepper steppers[4] = {stepper0, stepper1, stepper2, stepper3};
 
 void setup() {
-  Serial.begin(250000);
+  Serial.begin(115200);
   Serial.println( "Bonjour. C'est DTLS de Isabella.");
 
   CAN_init();
@@ -38,7 +38,7 @@ void setup() {
 //  dtls_init();
   acous_init();
 #ifdef DEBUG
-  check_all_UART();
+  check_all_UART(steppers, 4);
 #endif
 }
 
@@ -47,22 +47,22 @@ void loop() {
   CAN_send_heartbeat();
   CAN_parse_command();
 
-#ifdef SERIAL
+#ifdef DEBUG
   while (Serial.available() > 0) {
     int8_t commandIndex = Serial.parseInt();
 
     switch (commandIndex)
     {
       case 0: // check UART status of all drivers
-        check_all_UART();
+        check_all_UART(steppers, 4);
         break;
       case 1:
-        parse_steppers_action(CLOSING);
-        Serial.println("steppers closed.");
+        parse_steppers_action(FORWARD);
+        Serial.println("steppers moved forward.");
         break;
       case 2:
-        parse_steppers_action(OPENING);
-        Serial.println("steppers opened.");
+        parse_steppers_action(BACKWARD);
+        Serial.println("steppers moved backward.");
         break;
       case 3: // enable all motors
         digitalWrite(5, LOW);
@@ -77,6 +77,8 @@ void loop() {
         break;
     }
   }
+#else 
+  return;
 #endif
 }
 
@@ -97,16 +99,21 @@ void dtls_init() {
   steppers_init(stepper1);
   steppers_init(stepper2);
   steppers_init(stepper3);
-
-//  #ifdef DEBUG 
-//  return;      //if steppers are not connected, it will hang here for 4*100000 
-//  #endif 
-
-  /* move steppers to the open positions */
-  move_one_stepper(stepper0, FORWARD, STALL_THRESHOLD[0], gSpeed, 100000);
-  move_one_stepper(stepper3, FORWARD, STALL_THRESHOLD[3], gSpeed, 100000);
-  move_one_stepper(stepper1, BACKWORD, STALL_THRESHOLD[1], gSpeed, 100000);
-  move_one_stepper(stepper2, BACKWORD, STALL_THRESHOLD[2], gSpeed, 100000);
+#ifdef DEBUG
+  Serial.println(F("===============DEBUG MODE==============="));
+  Serial.println(F("Servers: initialising DTLS to open position"));
+  // move steppers to the open positions
+  parse_steppers_action(BACKWARD);
+  Serial.println(F("DTLS Init Done"));
+  Serial.println(F("========================================"));
+#else 
+  Serial.println(F("===============NORMAL MODE==============="));
+  Serial.println(F("Servers: initialising DTLS to open position"));
+  // move steppers to the open positions
+  parse_steppers_action(BACKWARD);
+  Serial.println(F("DTLS Init Done"));
+  Serial.println(F("========================================"));
+#endif
 }
 
 void steppers_init(TMC2209Stepper s) {
@@ -114,52 +121,4 @@ void steppers_init(TMC2209Stepper s) {
   s.blank_time(16);
   s.microsteps(microstep);
   s.VACTUAL(0);
-}
-
-void parse_steppers_action(int dir) {
-  bool STALLED[2] = {false, false};
-  //  uint32_t now = millis();
-  //  uint32_t start_time = millis();
-
-  if (dir) { // closing
-    all_stepper_move(-gSpeed, gSpeed, gSpeed, -gSpeed);
-  } else {  // opening
-    all_stepper_move(gSpeed, -gSpeed, -gSpeed, gSpeed);
-  }
-
-  while (!STALLED[0] || !STALLED[1]) {
-    if (STALLED[0]) {
-      // Serial.println("Stall detected for stepper 0 and 3");
-      stepper0.VACTUAL(0);
-      stepper3.VACTUAL(0);
-    } else {
-      STALLED[0] = stall_guard(stepper0, STALL_THRESHOLD[0]) || stall_guard(stepper3, STALL_THRESHOLD[3]);
-    }
-
-    if (STALLED[1]) {
-      // Serial.println("Stall detected for stepper 1 and 2");
-      stepper1.VACTUAL(0);
-      stepper2.VACTUAL(0);
-    } else {
-      STALLED[1] = stall_guard(stepper1, STALL_THRESHOLD[1]) || stall_guard(stepper2, STALL_THRESHOLD[2]);
-    }
-    //now = millis();
-  } // loop only exit when all motors stalled
-
-  // a safety function that does nothing fundamentally
-  all_stepper_stop();
-}
-
-void all_stepper_move(int speed0, int speed1, int speed2, int speed3) {
-  stepper0.VACTUAL(speed0);
-  stepper1.VACTUAL(speed1);
-  stepper2.VACTUAL(speed2);
-  stepper3.VACTUAL(speed3);
-}
-
-void all_stepper_stop() {
-  stepper0.VACTUAL(0);
-  stepper1.VACTUAL(0);
-  stepper2.VACTUAL(0);
-  stepper3.VACTUAL(0);
 }

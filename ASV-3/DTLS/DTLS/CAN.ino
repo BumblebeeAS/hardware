@@ -58,7 +58,7 @@ void CAN_parse_command() {
       int dtlsCommand = CAN.parseCANFrame(buf, 0, 1); //convert buf[0] to decimal
       switch (dtlsCommand) {
         case CLOSE:
-          parse_steppers_action(CLOSING);
+          parse_steppers_action(FORWARD);
           CAN_send_status(FINISH_CLOSING);
 #ifdef DEBUG
           Serial.print("[DTLS] Finish closing ");
@@ -66,7 +66,7 @@ void CAN_parse_command() {
 #endif
           break;
         case OPEN:
-          parse_steppers_action(OPENING);
+          parse_steppers_action(BACKWARD);
           CAN_send_status(FINISH_OPENING);
 #ifdef DEBUG
           Serial.print("[DTLS] Finish opening ");

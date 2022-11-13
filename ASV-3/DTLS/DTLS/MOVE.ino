@@ -1,5 +1,6 @@
-
+/* move one stepper, just to testing.*/
 void move_one_stepper(TMC2209Stepper s, int dir, int threshold, int spd, int t) {
+  // this code will block other steppers from moving
   uint32_t ms = millis();
   uint32_t start_time = millis();
   bool STALLED = false;
@@ -50,6 +51,44 @@ void move_one_stepper(TMC2209Stepper s, int dir, int threshold, int spd, int t) 
     default: // stop
       s.VACTUAL(0);
 //      Serial.println("Error direction. Stepper stopped");
+  }
+}
+
+/* main function to move the steppers */
+void parse_steppers_action(int dir) {
+  bool STALLED = false;
+//  uint32_t now = millis();
+//  uint32_t start_time = millis();
+
+  if (dir == FORWARD) { // moving forward
+     all_stepper_move(steppers,2, gSpeed);
+  } else {  // moving backward
+    all_stepper_move(steppers,2, -gSpeed);
+  }
+
+  while (!STALLED) {
+     STALLED = stall_guard(stepper0, STALL_THRESHOLD[0])||stall_guard(stepper1, STALL_THRESHOLD[1]);
+  } // loop only exit when all motors stalled
+  
+  // a safety function that does nothing fundamentally
+  all_stepper_stop(steppers, 2);
+}
+
+/* move all steppers */
+void all_stepper_move(TMC2209Stepper *s, int num_of_steppers,int spd) {
+  for (int i = 0; i < num_of_steppers; i ++) {
+    s[i].VACTUAL(spd);
+    s[i].VACTUAL(spd);
+    s[i].VACTUAL(spd);
+  }
+}
+
+/* stop all steppers */
+void all_stepper_stop(TMC2209Stepper *s, int num_of_steppers) {
+  for (int i = 0; i < num_of_steppers; i ++) {
+    s[i].VACTUAL(0);
+    s[i].VACTUAL(0);
+    s[i].VACTUAL(0);
   }
 }
 
