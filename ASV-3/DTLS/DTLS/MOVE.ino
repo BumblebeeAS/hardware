@@ -57,8 +57,8 @@ void move_one_stepper(TMC2209Stepper s, int dir, int threshold, int spd, int t) 
 /* main function to move the steppers */
 void parse_steppers_action(int dir) {
   bool STALLED = false;
-//  uint32_t now = millis();
-//  uint32_t start_time = millis();
+  uint32_t now = millis();
+  uint32_t start_time = millis();
 
   if (dir == FORWARD) { // moving forward
      all_stepper_move(steppers,2, gSpeed);
@@ -66,9 +66,17 @@ void parse_steppers_action(int dir) {
     all_stepper_move(steppers,2, -gSpeed);
   }
 
-  while (!STALLED) {
-     STALLED = stall_guard(stepper0, STALL_THRESHOLD[0])||stall_guard(stepper1, STALL_THRESHOLD[1]);
+  while (!STALLED && now - start_time < 20000) {
+    now = millis();
+    STALLED = stall_guard(stepper0, STALL_THRESHOLD[0])||stall_guard(stepper1, STALL_THRESHOLD[1]);
   } // loop only exit when all motors stalled
+
+  if (!STALLED) {
+    CAN_send_status(FAULTY_STEPPER);
+#ifdef DEBUG 
+    Serial.println(F("stepper actuation hang"));
+#endif
+  }
   
   // a safety function that does nothing fundamentally
   all_stepper_stop(steppers, 2);
@@ -80,12 +88,18 @@ void all_stepper_move(TMC2209Stepper *s, int num_of_steppers,int spd) {
     s[i].VACTUAL(spd);
     s[i].VACTUAL(spd);
     s[i].VACTUAL(spd);
+    s[i].VACTUAL(spd);
+    s[i].VACTUAL(spd);
+    s[i].VACTUAL(spd);
   }
 }
 
 /* stop all steppers */
 void all_stepper_stop(TMC2209Stepper *s, int num_of_steppers) {
   for (int i = 0; i < num_of_steppers; i ++) {
+    s[i].VACTUAL(0);
+    s[i].VACTUAL(0);
+    s[i].VACTUAL(0);
     s[i].VACTUAL(0);
     s[i].VACTUAL(0);
     s[i].VACTUAL(0);
@@ -106,7 +120,7 @@ bool stall_guard(TMC2209Stepper s, int stall_value) {
 
 // Acoustics actaution
 void extend_acous() {
-  digitalWrite(ACOUS_DIR_PIN, HIGH);     // Not sure if dir is correct, to find out at sea trial lol 
+  digitalWrite(ACOUS_DIR_PIN, LOW);     // Not sure if dir is correct, to find out at sea trial lol 
   digitalWrite(ACOUS_PWM_PIN, HIGH);
   delay(ACOUS_DELAY);      // Didn't wire up limit switches so no idea if its done. Arbitary delay to send ok msg.
   digitalWrite(ACOUS_PWM_PIN, LOW);
@@ -115,7 +129,7 @@ void extend_acous() {
 }
 
 void retract_acous() {
-  digitalWrite(ACOUS_DIR_PIN, LOW);
+  digitalWrite(ACOUS_DIR_PIN, HIGH);
   digitalWrite(ACOUS_PWM_PIN, HIGH);
   delay(ACOUS_DELAY);
   digitalWrite(ACOUS_PWM_PIN, LOW);

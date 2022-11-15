@@ -2,13 +2,10 @@
 // Testing code for controlling multiple tmc2209
 // writen by Isabella
 // v5.1
-// 9 Oct 2022
+// 16 Nov 2022
 // Log:
-// - remote dtls init as it was preventing can from init
-// - Actuated hydrophone integrated
-// - Not sure if extend and retract directions are correct, to test at sea trial
-// - can code is done woohoo, not thoroughly tested
-// - connectors done and testing 
+// - the code will send back a stepper fault msg back to can if
+//   dtls is not closed/opened within 20s of the command
 //----------------------------------
 
 #include <TMCStepper.h> // The library is edited
@@ -28,16 +25,19 @@ int stepper_num = 2; // number of steppers
 int STALL_THRESHOLD[2] = {200, 200}; // higher = more sensitive
 
 TMC2209Stepper steppers[4] = {stepper0, stepper1, stepper2, stepper3};
+bool STALLED; 
 
 void setup() {
   Serial.begin(115200);
-  Serial.println( "Bonjour. C'est DTLS de Isabella.");
+  Serial.println(F("Bonjour. C'est DTLS de Isabella."));
 
   CAN_init();
   CAN_mask(); // to stop printing debug msg, comment out debug mode in can_define.h
-//  dtls_init();
+  dtls_init();
   acous_init();
+  retract_acous(); 
 #ifdef DEBUG
+  Serial.println(F("DTLS Set Up Completed. Checking UART"));
   check_all_UART(steppers, 4);
 #endif
 }
