@@ -24,7 +24,7 @@
 //###################################################
 
 #include "define.h" 
-#define DEBUG
+//#define DEBUG
 #include <can.h>
 #include <can_asv3_defines.h>
 #include <Servo.h>
@@ -153,23 +153,23 @@ void loop() {
   CAN_send_heartbeat();
   CAN_parse_command();
   
-//  #ifdef DEBUG
-//  val = Serial.parseInt();
-//  if (val != 0) {
-//    Serial.print("I got: ");
-//    Serial.println(val, DEC);
-//    if (val == 1) { 
-//      retract_act();
-//    } else if (val == 2) {
-//      extend_act();
-//    } else if (val == 3) {
-//      reload_drum();
-//    } else if (val == 4) {
-//      release_latch();
-//    } else if (val == 5) {
-//      software_cock();
-//    }
-//  }
-//  while (Serial.available()) Serial.read();
-//  #endif
+  #ifdef DEBUG
+  val = Serial.parseInt();
+  if (val != 0) {
+    Serial.print("I got: ");
+    Serial.println(val, DEC);
+    if (val == 1) { 
+      retract_act();
+    } else if (val == 2) {
+      extend_act();
+    } else if (val == 3) {
+      reload_drum();
+    } else if (val == 4) {
+      release_latch();
+    } else if (val == 5) {
+      software_cock();
+    }
+  }
+  while (Serial.available()) Serial.read();
+  #endif
 }

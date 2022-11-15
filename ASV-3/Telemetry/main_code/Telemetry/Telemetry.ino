@@ -25,7 +25,7 @@
 //###################################################
 
 // FOR DEBUG
-//#define DEBUG
+#define DEBUG
 #define RADIODEBUG
 
 #include <Wire.h>
@@ -67,6 +67,7 @@ static uint32_t hbloop;
 static uint32_t controllinkloop;
 static uint32_t thrusterloop;
 static uint32_t killloop;
+static uint32_t hydrophoneloop;
 
 // control 
 bool frsky_alive = false;
@@ -124,21 +125,27 @@ void setup() {
   }
 
   // initalize radio 
-  Serial2.begin(N2420_BAUD_RATE);
+    Serial2.begin(N2420_BAUD_RATE);
   n2420.setSerial(&Serial2);
   receiveRadioTime = millis();
 
 }
 
 void loop() {
-#ifdef DEBUG 
-  Serial.print("loop: ");
-  Serial.println(millis());
-#endif
+//#ifdef DEBUG 
+//  Serial.print("loop: ");
+//  Serial.println(millis());
+//#endif
 
   screen_reset_stats();   // reset stats if past timeout
   CAN_read_msg();         // read incoming CAN messages
 
+  if (millis() - hydrophoneloop > HYDROPHONE_LOOP) {
+    CAN_publish_hydroact(frsky_get_hydrophone_act());     // send actuation signal
+    hydrophoneloop = millis();
+
+  }
+  
   if ((millis() - screenloop) > SCREEN_LOOP) {      // update screen
     screen_update_stats();
     screen_update_hb();

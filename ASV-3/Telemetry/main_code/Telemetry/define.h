@@ -9,6 +9,8 @@
 
 #define CAN_Chip_Select 54
 
+#define CAN_BATT_CTRL 25
+
 //CONTROL MODE
 #define AUTONOMOUS 1
 #define MANUAL_FRSKY 2
@@ -31,6 +33,7 @@
 #define FRISKY_ARM 4
 #define FRISKY_RSSI 5
 #define FRISKY_KILL 6
+#define FRISKY_HYDRO 7
 
 //Internal stats
 #define INT_STAT_COUNT 7
@@ -97,6 +100,12 @@
 // N2420
 #define N2420_BAUD_RATE 115200
 #define RECEIVE_RADIO_TIMEOUT 500
+
+// HYDROPHONE ACT
+#define NOTHING 0
+#define EXTEND_ACT 1
+#define RETRACT_ACT 2
+#define HYDROPHONE_LOOP 100
 
 
 #endif // _DEFINES_H

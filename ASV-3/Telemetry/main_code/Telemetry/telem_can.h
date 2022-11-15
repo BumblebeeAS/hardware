@@ -44,6 +44,7 @@ void read_posb_stats();
 void CAN_publish_hb(int hb);
 void CAN_publish_controllink();
 void CAN_publish_kill();
+void CAN_publish_hydroact(int is_kill);
 
 
 
