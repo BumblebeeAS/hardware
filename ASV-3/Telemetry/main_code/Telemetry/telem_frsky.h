@@ -28,4 +28,5 @@ void frsky_get_controlmode();
 void frsky_send_batt_capacity();
 void frsky_get_kill();
 void frsky_get_hydrophone();
+int frsky_get_hydrophone_act();
 #endif

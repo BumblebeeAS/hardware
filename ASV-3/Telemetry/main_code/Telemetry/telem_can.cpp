@@ -165,3 +165,10 @@ void CAN_publish_kill() {
   CAN.setupCANFrame(buf, 1, 1, 1);
   CAN.sendMsgBuf(CAN_SOFT_E_STOP, 0, 2, buf);
 }
+
+void CAN_publish_hydroact(int hydrophone_act) {
+  if (hydrophone_act != 0) {
+    CAN.setupCANFrame(buf, 0, 1, hydrophone_act);
+    CAN.sendMsgBuf(CAN_BATT_CTRL, 0, 1, buf);
+  }
+}
