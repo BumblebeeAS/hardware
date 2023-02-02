@@ -57,6 +57,30 @@ void frsky_get_controlmode() {
   }
 }
 
+int prev = NOTHING;
+int frsky_get_hydrophone_act() {
+  if (frsky.get_ch(FRISKY_HYDRO) == 1500) {
+    return NOTHING;
+  }
+  if (frsky.get_ch(FRISKY_HYDRO) == 1000) {
+    if (prev != EXTEND_ACT) {
+      prev = EXTEND_ACT;
+      return EXTEND_ACT;
+    } else {
+      return NOTHING;
+    }
+  }
+  if (frsky.get_ch(FRISKY_HYDRO) == 2000) {
+    if (prev != RETRACT_ACT) {
+      prev = RETRACT_ACT;
+      return RETRACT_ACT;
+    } else {
+      return NOTHING;
+    }
+  }
+  return NOTHING;
+}
+
 // Scale and batt capacity then send over i2c to DAC for transmission to x8r -> frsky
 void frsky_send_batt_capacity() {
   uint32_t capacity;
@@ -92,7 +116,4 @@ void frsky_get_kill() {
     Serial.println("Kill");
     #endif 
   }
-}
-
-void frsky_get_hydrophone() {
 }

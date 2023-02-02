@@ -13,6 +13,7 @@
 #define CAN_DTLS_STATS 0x16             // id for can dtls send 
 #define FINISH_CLOSING 1
 #define FINISH_OPENING 2
+#define FAULTY_STEPPER 3
 #define CLOSE 1
 #define OPEN 2
 #define CAN_HEARTBEAT 0x03              // id for can heartbeat msg

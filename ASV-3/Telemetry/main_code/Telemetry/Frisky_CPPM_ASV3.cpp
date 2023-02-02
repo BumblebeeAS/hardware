@@ -104,6 +104,14 @@ inline void Frisky::checkppm() {
 	ppm[3] = ((ppm[3] <= 1524) && (ppm[3] >= 1476)) ? 1500 : ppm[3];
 	ppm[4] = (ppm[4] <= 1000) ? 1000 : ppm[4];
   ppm[6] = (ppm[6] <= 1000) ? 1000 : ppm [6];
+  if (ppm[7] > 1600) {
+    ppm[7] = 2000;
+  } else if (ppm[7] < 1200) {
+    ppm[7] = 1000;
+  } else {
+    ppm[7]= 1500;
+  }
+  
 	
 	ppm_buffer[5] = ppm[5];     
 	
@@ -116,6 +124,7 @@ inline void Frisky::checkppm() {
 		ppm_buffer[3] = ppm[3];
 		ppm_buffer[4] = ppm[4];
     ppm_buffer[6] = ppm[6];
+    ppm_buffer[7] = ppm[7];
 	}
 	else {
 		counter++;
@@ -128,9 +137,9 @@ inline void Frisky::checkppm() {
 		ppm_buffer[3] = ppm[3];
 		ppm_buffer[4] = ppm[4];
     ppm_buffer[6] = ppm[6];
+    ppm_buffer[7] = ppm[7];
 		counter = 0;
 	}
-	
 }
 
 uint32_t Frisky::get_ch(int ch)   // ppm_buffer[0] contains Frsky channel 1 data and so on
