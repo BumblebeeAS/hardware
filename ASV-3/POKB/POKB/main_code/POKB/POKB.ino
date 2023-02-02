@@ -63,10 +63,10 @@ void loop() {
   }
 
   // Receive Remote Kill via N2420
-  if ((millis() - receiveRemoteKillTime) > RECEIVE_REMOTE_KILL_TIMEOUT) {
-    receiveRemoteKill();
-    receiveRemoteKillTime = millis();
-  }
+//  if ((millis() - receiveRemoteKillTime) > RECEIVE_REMOTE_KILL_TIMEOUT) {
+//    receiveRemoteKill();
+//    receiveRemoteKillTime = millis();
+//  }
 
   // Receive Software Kill and POSB Heartbeat via CAN
   receiveCanMessage();
@@ -119,7 +119,7 @@ void receiveRemoteKill() {
     Serial.print("inByte: ");
     Serial.println(inByte, HEX);
 
-    if (receiveID == REMOTE_KILL || receiveID == OCS_EXTENSION){    //REMOTE_KILL is defined as 4 from library
+    if (receiveID == REMOTE_KILL || receiveID == OCS_EXTENSION){    
   
       //remoteKill = (inByte == 0x15) ? false : true;
       if (inByte == 0x15) {
