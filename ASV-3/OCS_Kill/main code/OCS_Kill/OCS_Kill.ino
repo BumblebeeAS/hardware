@@ -1,5 +1,4 @@
 #include "n2420.h"
-#include <SoftwareSerial.h>
 
 // create the N2420 object
 N2420 n2420 (OCS_EXTENSION);
@@ -9,13 +8,12 @@ int8_t sentByte = 0x15;
 uint8_t inByte;
 static uint32_t radio_loop = 0;
 
-SoftwareSerial mySerial(6, 7); // RX, TX
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200); 
-  mySerial.begin(115200); 
-  n2420.setSerial(&mySerial);
+  Serial1.begin(115200); 
+  n2420.setSerial(&Serial1);
 
   pinMode(3, INPUT);
   Serial.println("Restart");
