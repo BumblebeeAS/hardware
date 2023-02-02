@@ -17,6 +17,12 @@ uint32_t read_size;
 uint32_t read_id;
 uint32_t read_ctr;
 
+SPI_HandleTypeDef hspi1;
+TIM_HandleTypeDef htim17;
+UART_HandleTypeDef huart1;
+UART_HandleTypeDef huart2;
+CAN_HandleTypeDef hcan;
+
 // power control status
 uint8_t power_control_status = 0xFF;
 

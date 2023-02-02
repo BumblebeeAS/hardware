@@ -6,14 +6,14 @@
 
 /***************Struct Declaration**************/
 
-uint32_t TIM_Tick;
-uint32_t counter;
+extern uint32_t TIM_Tick;
+extern uint32_t counter;
 
-SPI_HandleTypeDef hspi1;
-TIM_HandleTypeDef htim17;
-UART_HandleTypeDef huart1;
-UART_HandleTypeDef huart2;
-CAN_HandleTypeDef hcan; 			//hcan struct
+extern SPI_HandleTypeDef hspi1;
+extern TIM_HandleTypeDef htim17;
+extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart2;
+extern CAN_HandleTypeDef hcan; 			//hcan struct
 
 /***************Function Prototypes**************/
 void MX_GPIO_Init(void);

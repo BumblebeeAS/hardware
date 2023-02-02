@@ -16,7 +16,7 @@ extern "C" {
 
 #define START_BYTE 254		// (uint8_t) 254 ==> (int8_t) -2
 
-msg_queue uart_txbuf, uart_rxbuf;
+extern msg_queue uart_txbuf, uart_rxbuf;
 
 #define CAN_PCB_STAT 3
 
