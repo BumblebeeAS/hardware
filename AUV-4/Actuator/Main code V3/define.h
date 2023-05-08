@@ -43,6 +43,7 @@
 //CAN Definitions
 #define CAN_Chip_Select 8
 #define HEARTBEAT_TIMEOUT 500
+#define CAN_ACT_CONTROL 2
 
 //CAN Heartbeat
 #define CAN_ACT_HEARTBEAT 0x0A
