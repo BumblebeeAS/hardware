@@ -43,17 +43,17 @@
 //CAN Definitions
 #define CAN_Chip_Select 8
 #define HEARTBEAT_TIMEOUT 500
-#define CAN_ACT_CONTROL 2
+#define CAN_ACT_CONTROL 0x02
 
 //CAN Heartbeat
 #define CAN_ACT_HEARTBEAT 0x0A
 
 //CAN commands mapping for manipulation
-#define FIRE_TOP_TORPEDO 0x04
-#define FIRE_BOT_TORPEDO 0x10
-#define FIRE_DROPPER 0x40
 #define ACTIVATE_GRABBER 0x01
 #define RELEASE_GRABBER 0x02
+#define FIRE_TOP_TORPEDO 0x04
+#define FIRE_BOT_TORPEDO 0x10
 #define BOTTLE_GRABBER 0x20
+#define FIRE_DROPPER 0x40
 
 #endif // _DEFINES_H

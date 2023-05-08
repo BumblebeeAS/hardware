@@ -1,14 +1,12 @@
 //###################################################
-//###################################################
 //
-//#  #     #  #      ######  ######## ########
-//#  ####  #  ####   #    ## #  ##  # #  ##  #
-//#     ## #     ##  ####  # #  ##  # #  ##  #
-//#  ##  # #  ##  # ##     # #  ##  # #  ##  #
-//#  ##  # #  ##  # #  ##  # #  ##  # ##    ##
-//#     ## #     ## ##     # ##     #  ##  ##
-// # ####   # ####   #######  #######   ####
-//
+// ____________________    _____   ____ _______   ____
+// \______   \______   \  /  _  \ |    |   \   \ /   /
+//  |    |  _/|    |  _/ /  /_\  \|    |   /\   Y   / 
+//  |    |   \|    |   \/    |    \    |  /  \     /  
+//  |______  /|______  /\____|__  /______/    \___/   
+//         \/        \/         \/                    
+// 
 // BBAUV 4.0 Actuation
 // Firmware Version : v3.0
 //
@@ -16,11 +14,10 @@
 // Torpedo: Servo 2
 // Dropper: Servo 1
 //
-// Written by Titus & Isabella
-// Change log v3.2
-// add pinmode in init sequence to ensure actuator do not ignore first command
-// add checks to prevent actuator activation due to extended frame message of same CAN id sent to esc 2 
-//###################################################
+// Written by Titus, Isabella
+// Change log v3.3
+// modify define file to suit: 
+//  add checks to prevent actuator activation due to extended frame message of same CAN id sent to esc 2 
 //###################################################
 
 #define DEBUG
@@ -54,7 +51,7 @@ uint32_t id = 0;
 uint8_t len = 0;
 uint8_t buf[8] = { 0 };
 
-uint8_t maniControl = 0x00;  // Bit 0 to 7: RETXTXDX
+uint8_t maniControl = 0x00;  // Bit 0 to  7: RETXTXDX
 
 unsigned long dropperTimer = 0;
 unsigned long torpedoTopTimer = 0;
@@ -364,15 +361,15 @@ void publishCanHB() {
 }
 
 boolean receiveCanMessage() {
-  if (CAN_MSGAVAIL == CAN.checkReceive()) {
+  if (CAN.checkReceive() == CAN_MSGAVAIL) {
     CAN.readMsgBufID(&id, &len, buf);
-    boolean messageForMani = false;
+    boolean is_ActMsg = false;
     switch (id) {
-      case CAN_ACT_CONTROL: { //CAN_ACT_CONTROL
+      case CAN_ACT_CONTROL: {  // CAN msg received is for actuation
           if (len == 1)
           {
             maniControl = CAN.parseCANFrame(buf, 0, 1);
-            messageForMani = true;
+            is_ActMsg = true;
 #ifdef DEBUG
             Serial.print("Mani Control Received: ");
             Serial.println(maniControl, HEX);
@@ -389,13 +386,14 @@ boolean receiveCanMessage() {
         }
       default: {
 #ifdef DEBUG
+          //Serial.print("not Actuation Control, CAN id is: ")
           //Serial.println(id);
 #endif
           break;
         }
     }
     CAN.clearMsg();
-    return messageForMani;
+    return is_ActMsg;
   }
 
   else {
